@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\GeneratedSite;
+
+// بيبني بيانات رندر الموقع (الأقسام مرتّبة ومفلترة بمحتواها الفعلي + الألوان النهائية) من
+// موقع ناتج معيّن — نفس المنطق مستخدم في المعاينة الحية (SiteController) وفي التصدير كملفات
+// ثابتة (SiteExportService)، عشان الاتنين يعرضوا بالظبط نفس المحتوى من غير تكرار المنطق.
+class SiteRenderer
+{
+    public function render(GeneratedSite $site): array
+    {
+        $project = $site->project;
+        $template = $project->template;
+        $variant = $project->variant;
+
+        $slotsBySection = $template->slots->groupBy('section_key');
+
+        // ترتيب الأقسام: بنستخدم اللي متحدد في النسخة صراحة، وإلا بنرجع لترتيب أول ظهور
+        // للأقسام جوّه خانات القالب نفسه (اللي أصلاً مرتّبة بـ sort_order).
+        $sectionOrder = filled($variant?->sections_json)
+            ? $variant->sections_json
+            : $slotsBySection->keys()->all();
+
+        $sections = collect($sectionOrder)
+            ->filter(fn ($key) => $slotsBySection->has($key))
+            ->map(function ($key) use ($slotsBySection, $site) {
+                $items = $slotsBySection->get($key)
+                    ->sortBy('sort_order')
+                    ->map(fn ($slot) => [
+                        'slot' => $slot,
+                        'value' => $site->content($slot->key),
+                    ])
+                    ->filter(fn (array $item) => filled($item['value']))
+                    ->values();
+
+                return ['key' => $key, 'items' => $items];
+            })
+            // قسم من غير أي قيمة متعبّاة فيه لسه (المشروع لسه بيتظبط) بنسيبه من غير ما يترندر
+            // فاضي وسط الصفحة.
+            ->filter(fn (array $section) => $section['items']->isNotEmpty())
+            ->values();
+
+        $colors = array_merge([
+            'primary' => '#f59e0b',
+            'background' => '#0b1220',
+            'surface' => '#111a2e',
+            'text' => '#f1f5f9',
+            'muted' => '#94a3b8',
+        ], $variant?->colors_json ?? []);
+
+        return [
+            'project' => $project,
+            'sections' => $sections,
+            'colors' => $colors,
+        ];
+    }
+}

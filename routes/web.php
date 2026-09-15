@@ -55,4 +55,6 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.publish');
     Route::post('projects/{project}/site/unpublish', [GeneratedSiteController::class, 'unpublish'])
         ->name('projects.site.unpublish');
+    Route::get('projects/{project}/site/export', [GeneratedSiteController::class, 'export'])
+        ->name('projects.site.export');
 });

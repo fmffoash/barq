@@ -132,6 +132,17 @@
                             </button>
                         </form>
                     @endif
+
+                    {{-- تصدير كملفات ثابتة متاح لصفحات الهبوط بس — الـ wordpress مالهاش رندر
+                    حقيقي لسه (Phase 5)، فتصديرها مش هيطلّع حاجة مفيدة. --}}
+                    @if ($project->template->kind === 'landing')
+                        <a
+                            href="{{ route('projects.site.export', $project) }}"
+                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:border-amber-400 hover:text-amber-400"
+                        >
+                            صدّر الموقع
+                        </a>
+                    @endif
                 </div>
             @endif
         </div>
@@ -144,6 +155,12 @@
             @if ($project->site->last_generated_at)
                 <p class="mt-2 text-xs text-slate-500">
                     آخر تحديث للمحتوى: {{ $project->site->last_generated_at->diffForHumans() }}
+                </p>
+            @endif
+
+            @if ($project->site->exported_at)
+                <p class="mt-1 text-xs text-slate-500">
+                    آخر تصدير كملفات ثابتة: {{ $project->site->exported_at->diffForHumans() }}
                 </p>
             @endif
         @else

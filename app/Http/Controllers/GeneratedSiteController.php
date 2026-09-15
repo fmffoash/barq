@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Services\OllamaService;
+use App\Services\SiteExportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 
 // تعبئة محتوى الموقع الناتج من مشروع معيّن يدوياً — خانة بخانة حسب تعريفها في القالب —
 // ونشر/إلغاء نشر الموقع لما المحتوى يخلص.
@@ -148,5 +151,24 @@ class GeneratedSiteController extends Controller
         return redirect()
             ->route('projects.show', $project)
             ->with('status', 'تم إلغاء نشر الموقع.');
+    }
+
+    // بيولّد نسخة تصدير كاملة كملفات ثابتة (HTML/CSS/الخطوط/الصور) وينزّلها zip واحد — شوف
+    // SiteExportService لتفاصيل البناء. لو القالب مش "landing" (يعني wordpress، مالوش رندر
+    // حقيقي أصلاً لسه) بيرجع رسالة واضحة بدل ما يحاول يصدّر صفحة "قريباً" بلا فايدة.
+    public function export(Project $project): Response
+    {
+        $project->loadMissing(['template.slots', 'variant']);
+        $site = $project->site()->firstOrFail();
+
+        try {
+            $zipPath = app(SiteExportService::class)->export($site);
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('projects.show', $project)
+                ->with('status', $e->getMessage());
+        }
+
+        return response()->download($zipPath)->deleteFileAfterSend();
     }
 }
