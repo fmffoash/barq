@@ -7,10 +7,17 @@
 **ملحوظة مهمة:** برق مشروع مستقل تماماً — كود منفصل بالكامل عن نظام Tafra ERP (اللي شغّال
 على نفس السيرفر لاحقاً كـ subdomain تاني). صفر مشاركة كود أو داتابيز بينهم.
 
-## الحالة الحالية (Phase 1 — الأساس اليدوي)
-اللي شغّال فعلياً دلوقتي: أدمن واحد بس بيدخل ويعمل قوالب بخاناتها (slots) يدوياً، وبعدين
-يعمل مشروع من أي قالب، يملي الخانات، والموقع بيتولّد على طول على سب دومين. **صفر ذكاء
-اصطناعي لسه** — ده Phase 2 القادمة (تفاصيلها في `ROADMAP.md`).
+## الحالة الحالية (Phase 1-5 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
+اللي شغّال فعلياً دلوقتي: أدمن واحد بيدخل ويعمل قوالب بخاناتها (slots) يدوياً أو من مكتبة
+قوالب قابلة للبحث/الفلترة، يعمل منها مشروع، ويملّي الخانات يدوي أو بمساعدة اقتراح محتوى
+بالذكاء الاصطناعي (Ollama محلي، صفر بيانات بتتبعت لأي API خارجي). الموقع الناتج (قوالب
+`landing`) بيتولّد على طول على سب دومين خاص بيه، وقابل للتصدير كملفات HTML/CSS ثابتة
+(zip) لو العميل عايز يستضيفه بنفسه بره برق. قوالب `wordpress` بقت شغّالة فعلياً كمان —
+مشروع منها بيقدر يعمل site حقيقي على شبكة WordPress Multisite منفصلة (عن طريق
+`docs/wordpress-mu-plugin.php` اللي بينتقل يدوي لشبكة الـ WordPress) ويتبعتله المحتوى نفسه
+اللي بيتملّى بيه أي مشروع عادي — ولحد ما ده يحصل، زوّار السب دومين بتاعه بيشوفوا شاشة
+"لسه بيتجهّز". **صفر deploy فعلي للسيرفر لسه** — كل الشغل ده محلي (SQLite) + مدفوع على
+GitHub بس.
 
 ## التقنيات
 Laravel 13 · PHP 8.5 · Blade · Tailwind CSS v4 (عن طريق `@tailwindcss/vite`) · SQLite محلي
@@ -23,14 +30,22 @@ app/Http/Controllers/     — TemplateController, TemplateVariantController, Tem
                              ProjectController, GeneratedSiteController, SiteController, DashboardController,
                              Auth/AuthController
 app/Http/Middleware/      — DetectSite.php (بيحدد الموقع من السب دومين لطلبات العملاء)
+app/Services/             — OllamaService (اقتراح محتوى بالذكاء الاصطناعي، Phase 2)،
+                             SiteRenderer (بناء الأقسام/الألوان المشترك بين المعاينة والتصدير)،
+                             SiteExportService (تصدير zip ثابت، Phase 4)،
+                             WordPressService (توفير site + دفع محتوى على شبكة Multisite، Phase 5)
 app/Console/Commands/     — CreateAdminUser.php (الأمر الوحيد لعمل/تحديث حساب الأدمن)
 routes/web.php            — مسارات لوحة التحكم (login + dashboard + templates + projects)
 routes/site.php           — مسارات المواقع المنشورة (تحت {siteSlug}.barq.tafraos.com بس)
 routes/console.php        — أوامر الطرفية
 config/barq.php           — إعدادات المشروع (BARQ_BASE_DOMAIN وغيرها)
+config/services.php       — إعدادات Ollama + شبكة WordPress (network_url/shared_secret)
+docs/wordpress-mu-plugin.php — الملف deliverable اللي بينتقل يدوي لشبكة WordPress (Phase 5)
 resources/views/site/     — الشِل والبارشيالز اللي بترندر الموقع المنشور فعلياً للعميل
 resources/views/errors/   — 404.blade.php (نفس التصميم لمسارات لوحة التحكم والمواقع المنشورة)
-tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest, SiteRenderingTest
+tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest,
+                             SiteRenderingTest, OllamaContentSuggestionTest, TemplateLibraryTest,
+                             SiteExportTest, WordPressIntegrationTest
 ```
 
 ## المعمار: التوجيه بالدومين (Domain Routing)
@@ -66,8 +81,10 @@ then: function (): void {
 properties على الـ `<body>` (زي `--site-primary`) — ده أسلوب متعمّد بدل كلاسات Tailwind
 ثابتة، عشان الألوان بتتغيّر لكل مشروع وقت التشغيل (runtime)، مش وقت الـ build.
 
-قوالب من نوع `kind = 'wordpress'` (Phase 5 مؤجّلة) بتاخد شاشة "لسه بيتجهّز" (coming-soon)
-بدل الرندر العادي — البنية التحتية لـ WordPress Multisite لسه مبنيتش.
+قوالب من نوع `kind = 'wordpress'` بتاخد شاشة "لسه بيتجهّز" (coming-soon) بدل الرندر العادي
+**لحد ما يتعملهم site فعلي على شبكة WordPress Multisite** (Phase 5 — `WordPressService` +
+`docs/wordpress-mu-plugin.php`) — بعد كده الزائر بيتحوّل تلقائي (`redirect()->away(...)`)
+لموقعه الحقيقي هناك، مش بيشوف رندر محلي خالص.
 
 ## نظام الأدمن (مستخدم واحد بس)
 **صفر تسجيل حسابات جديدة وصفر استرجاع باسورد** — النظام مبني على افتراض إن فيه أدمن واحد
