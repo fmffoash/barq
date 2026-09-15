@@ -133,8 +133,8 @@
                         </form>
                     @endif
 
-                    {{-- تصدير كملفات ثابتة متاح لصفحات الهبوط بس — الـ wordpress مالهاش رندر
-                    حقيقي لسه (Phase 5)، فتصديرها مش هيطلّع حاجة مفيدة. --}}
+                    {{-- تصدير كملفات ثابتة متاح لصفحات الهبوط بس — الـ wordpress مواقعها بتتعمل
+                    فعلياً على شبكة الـ Multisite (شوف تحت)، مش ملفات ثابتة. --}}
                     @if ($project->template->kind === 'landing')
                         <a
                             href="{{ route('projects.site.export', $project) }}"
@@ -142,6 +142,36 @@
                         >
                             صدّر الموقع
                         </a>
+                    @endif
+
+                    {{-- مواقع "ووردبريس" ما بتتصدّرش كملفات ثابتة — بدل كده بتتعمل كـ site حقيقي
+                    على شبكة الـ WordPress Multisite، والمحتوى بيتبعتله من نفس فورم "تعبئة
+                    المحتوى" اللي فوق (Phase 5). --}}
+                    @if ($project->template->kind === 'wordpress')
+                        @if (! $project->site->isWordPressProvisioned())
+                            <form method="POST" action="{{ route('projects.site.provision-wordpress', $project) }}">
+                                @csrf
+                                <button type="submit" class="rounded-lg border border-emerald-800 px-3 py-1.5 text-sm text-emerald-300 transition hover:bg-emerald-950/40">
+                                    اعمل site على ووردبريس
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('projects.site.push-wordpress-content', $project) }}">
+                                @csrf
+                                <button type="submit" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:border-amber-400 hover:text-amber-400">
+                                    حدّث المحتوى على ووردبريس
+                                </button>
+                            </form>
+
+                            <a
+                                href="{{ $project->site->wp_admin_url }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:border-amber-400 hover:text-amber-400"
+                            >
+                                لوحة تحكم ووردبريس
+                            </a>
+                        @endif
                     @endif
                 </div>
             @endif
@@ -161,6 +191,12 @@
             @if ($project->site->exported_at)
                 <p class="mt-1 text-xs text-slate-500">
                     آخر تصدير كملفات ثابتة: {{ $project->site->exported_at->diffForHumans() }}
+                </p>
+            @endif
+
+            @if ($project->site->wp_provisioned_at)
+                <p class="mt-1 text-xs text-slate-500">
+                    اتعمل على شبكة ووردبريس: {{ $project->site->wp_provisioned_at->diffForHumans() }}
                 </p>
             @endif
         @else

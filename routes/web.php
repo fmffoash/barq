@@ -57,4 +57,8 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.unpublish');
     Route::get('projects/{project}/site/export', [GeneratedSiteController::class, 'export'])
         ->name('projects.site.export');
+    Route::post('projects/{project}/site/provision-wordpress', [GeneratedSiteController::class, 'provisionWordPress'])
+        ->name('projects.site.provision-wordpress');
+    Route::post('projects/{project}/site/push-wordpress-content', [GeneratedSiteController::class, 'pushWordPressContent'])
+        ->name('projects.site.push-wordpress-content');
 });

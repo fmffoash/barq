@@ -26,6 +26,22 @@ class GeneratedSiteFactory extends Factory
             'status' => 'draft',
             'exported_at' => null,
             'last_generated_at' => null,
+            'wp_site_id' => null,
+            'wp_site_url' => null,
+            'wp_admin_url' => null,
+            'wp_provisioned_at' => null,
         ];
+    }
+
+    // موقع ووردبريس اتعمل بالفعل على الشبكة — Phase 5 tests بتستخدمها لتجربة سلوك الموقع
+    // بعد التوفير (redirect للرابط الحقيقي بدل صفحة "لسه بيتجهّز").
+    public function wordpressProvisioned(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'wp_site_id' => fake()->unique()->numberBetween(1, 9999),
+            'wp_site_url' => 'https://'.Str::slug($attributes['slug']).'.example-network.test',
+            'wp_admin_url' => 'https://'.Str::slug($attributes['slug']).'.example-network.test/wp-admin',
+            'wp_provisioned_at' => now(),
+        ]);
     }
 }

@@ -42,4 +42,13 @@ return [
         'model' => env('OLLAMA_MODEL', 'qwen3:8b'),
     ],
 
+    // شبكة WordPress Multisite اللي بنعمل عليها المواقع من نوع "ووردبريس" — Phase 5.
+    // network_url بيشاور على شبكة الـ Multisite (فيها mu-plugin بيعرّض REST endpoint خاص
+    // تحت namespace اسمه barq/v1)، وshared_secret ده توكن ثابت بنبعته كـ Bearer في كل نداء
+    // عشان الـ plugin يتأكد إن النداء جاي من برق فعلاً مش من حد تاني.
+    'wordpress' => [
+        'network_url' => env('WORDPRESS_NETWORK_URL'),
+        'shared_secret' => env('WORDPRESS_SHARED_SECRET'),
+    ],
+
 ];

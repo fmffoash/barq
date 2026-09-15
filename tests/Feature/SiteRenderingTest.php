@@ -118,6 +118,19 @@ class SiteRenderingTest extends TestCase
         $response->assertSee('لسه بيتجهّز');
     }
 
+    // Phase 5 — لما الموقع يتعمله site فعلي على شبكة ووردبريس، زوّار الرابط دلوقتي بيتحوّلوا
+    // مباشرة لموقعه الحقيقي هناك بدل ما يشوفوا صفحة "قريباً" (اللي عمرها ما هتعرض ووردبريس فعلي).
+    public function test_a_provisioned_wordpress_site_redirects_visitors_to_its_real_wordpress_url(): void
+    {
+        $template = Template::factory()->create(['kind' => 'wordpress']);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->wordpressProvisioned()->create();
+
+        $response = $this->get($this->siteUrl($site));
+
+        $response->assertRedirect($site->wp_site_url);
+    }
+
     public function test_variant_colors_are_applied_as_css_custom_properties(): void
     {
         $template = Template::factory()->create(['kind' => 'landing']);

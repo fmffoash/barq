@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Services\OllamaService;
 use App\Services\SiteExportService;
+use App\Services\WordPressService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -170,5 +171,42 @@ class GeneratedSiteController extends Controller
         }
 
         return response()->download($zipPath)->deleteFileAfterSend();
+    }
+
+    // بيعمل site فعلي لأول مرة على شبكة WordPress Multisite — متاح بس للمشاريع من نوع
+    // "ووردبريس". لو الموقع اتعمل بالفعل من قبل، النداء idempotent (WordPressService بترجع
+    // true على طول من غير نداء تاني). لو الشبكة مش متاحة دلوقتي، الأدمن بيرجع رسالة واضحة
+    // ويقدر يحاول تاني من نفس الزرار وقت ما يحب.
+    public function provisionWordPress(Project $project): RedirectResponse
+    {
+        $project->loadMissing('template');
+        $site = $project->site()->firstOrFail();
+
+        try {
+            $succeeded = app(WordPressService::class)->provisionSite($project, $site);
+        } catch (RuntimeException $e) {
+            return redirect()->route('projects.show', $project)->with('status', $e->getMessage());
+        }
+
+        $message = $succeeded
+            ? 'اتعمل site فعلي على شبكة ووردبريس. تقدر دلوقتي تبعتله المحتوى من زرار "حدّث المحتوى على ووردبريس".'
+            : 'معرفناش نتواصل مع شبكة ووردبريس دلوقتي — حاول تاني بعد شوية.';
+
+        return redirect()->route('projects.show', $project)->with('status', $message);
+    }
+
+    // بيبعت محتوى الموقع الحالي (content_json — نفس اللي اتملى بالفورم اليدوي أو باقتراح
+    // الذكاء الاصطناعي، صفر فورم منفصل مخصّص لووردبريس) لموقع اتعمل بالفعل على الشبكة.
+    public function pushWordPressContent(Project $project): RedirectResponse
+    {
+        $site = $project->site()->firstOrFail();
+
+        $succeeded = app(WordPressService::class)->pushContent($site);
+
+        $message = $succeeded
+            ? 'تم تحديث محتوى موقع ووردبريس بالمحتوى الحالي.'
+            : 'معرفناش نبعت المحتوى للشبكة دلوقتي — حاول تاني بعد شوية.';
+
+        return redirect()->route('projects.show', $project)->with('status', $message);
     }
 }

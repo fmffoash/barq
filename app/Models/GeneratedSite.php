@@ -22,6 +22,10 @@ class GeneratedSite extends Model
         'status',
         'exported_at',
         'last_generated_at',
+        'wp_site_id',
+        'wp_site_url',
+        'wp_admin_url',
+        'wp_provisioned_at',
     ];
 
     protected function casts(): array
@@ -30,6 +34,7 @@ class GeneratedSite extends Model
             'content_json' => 'array',
             'exported_at' => 'datetime',
             'last_generated_at' => 'datetime',
+            'wp_provisioned_at' => 'datetime',
         ];
     }
 
@@ -50,9 +55,21 @@ class GeneratedSite extends Model
         return data_get($this->content_json, $key, $default);
     }
 
-    // الرابط الكامل لمعاينة الموقع ده على الدومين الفرعي الخاص بيه.
+    // اتعمل فعلاً site حقيقي على شبكة الـ WordPress ولا لسه (Phase 5). wp_site_id بيتملى
+    // بس بعد ما WordPressService::provisionSite() ينجح.
+    public function isWordPressProvisioned(): bool
+    {
+        return $this->wp_site_id !== null;
+    }
+
+    // الرابط الكامل لمعاينة الموقع ده. لو ده موقع ووردبريس اتعمل فعلاً على الشبكة، بنودّي
+    // لرابطه الحقيقي هناك بدل subdomain المعاينة بتاع برق (اللي عمره ما هيعرض ووردبريس فعلي).
     public function previewUrl(): string
     {
+        if ($this->isWordPressProvisioned()) {
+            return $this->wp_site_url;
+        }
+
         $scheme = request()?->isSecure() ? 'https' : (app()->environment('production') ? 'https' : 'http');
         $baseDomain = config('barq.base_domain');
 
