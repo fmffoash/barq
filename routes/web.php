@@ -47,6 +47,8 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.edit');
     Route::put('projects/{project}/site', [GeneratedSiteController::class, 'update'])
         ->name('projects.site.update');
+    Route::post('projects/{project}/site/suggest', [GeneratedSiteController::class, 'suggest'])
+        ->name('projects.site.suggest');
     Route::post('projects/{project}/site/publish', [GeneratedSiteController::class, 'publish'])
         ->name('projects.site.publish');
     Route::post('projects/{project}/site/unpublish', [GeneratedSiteController::class, 'unpublish'])

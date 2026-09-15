@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Services\OllamaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,6 +68,59 @@ class GeneratedSiteController extends Controller
         return redirect()
             ->route('projects.show', $project)
             ->with('status', 'تم حفظ محتوى الموقع.');
+    }
+
+    // بتاخد وصف قصير للنشاط وتقترح محتوى بالذكاء الاصطناعي (Ollama) للخانات الفاضية بس —
+    // أي خانة اتكتب فيها حاجة يدوي بالفعل بتفضل زي ما هي، صفر دعس على محتوى الأدمن.
+    public function suggest(Request $request, Project $project): RedirectResponse
+    {
+        $validated = $request->validate([
+            'business_description' => ['required', 'string', 'max:500'],
+        ]);
+
+        $project->loadMissing('template.slots');
+
+        $site = $project->site()->firstOrFail();
+        $content = $site->content_json ?? [];
+
+        $suggestions = app(OllamaService::class)->suggestContent(
+            $project->template,
+            $validated['business_description'],
+        );
+
+        if ($suggestions === []) {
+            return redirect()
+                ->route('projects.site.edit', $project)
+                ->with('status', 'معرفناش نقترح محتوى دلوقتي — النموذج مش متاح. كمّل الخانات يدوي.');
+        }
+
+        $filledCount = 0;
+
+        foreach ($suggestions as $key => $value) {
+            if (! $this->slotIsEmpty($content[$key] ?? null)) {
+                continue;
+            }
+
+            $content[$key] = $value;
+            $filledCount++;
+        }
+
+        $site->update(['content_json' => $content]);
+
+        $message = $filledCount > 0
+            ? "تم اقتراح محتوى لـ {$filledCount} خانة فاضية — راجعها وعدّل اللي محتاجه."
+            : 'كل الخانات معبّاة بالفعل — مفيش خانة فاضية تتقترح ليها محتوى.';
+
+        return redirect()->route('projects.site.edit', $project)->with('status', $message);
+    }
+
+    private function slotIsEmpty(mixed $value): bool
+    {
+        if (is_array($value)) {
+            return $value === [];
+        }
+
+        return $value === null || trim((string) $value) === '';
     }
 
     public function publish(Project $project): RedirectResponse

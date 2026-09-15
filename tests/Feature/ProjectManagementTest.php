@@ -8,7 +8,9 @@ use App\Models\Template;
 use App\Models\TemplateVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -284,6 +286,76 @@ class ProjectManagementTest extends TestCase
         $site->refresh();
         $this->assertSame('جديد', $site->content('hero_title'));
         $this->assertSame('وصف قديم', $site->content('hero_desc'));
+    }
+
+    public function test_suggesting_content_only_fills_empty_slots_and_never_overwrites_manual_content(): void
+    {
+        Http::fake([
+            '*/api/generate' => Http::response([
+                'response' => json_encode([
+                    'hero_title' => 'عنوان مقترح بالذكاء الاصطناعي',
+                    'hero_desc' => 'وصف مقترح',
+                    'services_list' => ['توصيل', 'حجز طاولات'],
+                ]),
+            ], 200),
+        ]);
+
+        $user = User::factory()->create();
+        $template = Template::factory()->create();
+        $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'عنوان', 'slot_type' => 'text']);
+        $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_desc', 'label_ar' => 'وصف', 'slot_type' => 'textarea']);
+        $template->slots()->create(['section_key' => 'services', 'key' => 'services_list', 'label_ar' => 'الخدمات', 'slot_type' => 'list']);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'عنوان كتبه الأدمن يدوي']]);
+
+        $response = $this->actingAs($user)->post(route('projects.site.suggest', $project), [
+            'business_description' => 'مطعم فطاير في المهندسين',
+        ]);
+
+        $response->assertRedirect(route('projects.site.edit', $project));
+        $site->refresh();
+
+        // الخانة اللي كانت مكتوبة يدوي فضلت زي ما هي — الذكاء الاصطناعي مادعّهاش.
+        $this->assertSame('عنوان كتبه الأدمن يدوي', $site->content('hero_title'));
+        // الخانات الفاضية اتعبّت بالمقترح.
+        $this->assertSame('وصف مقترح', $site->content('hero_desc'));
+        $this->assertSame(['توصيل', 'حجز طاولات'], $site->content('services_list'));
+    }
+
+    public function test_suggesting_content_shows_a_helpful_message_when_ollama_is_unreachable(): void
+    {
+        Http::fake(function () {
+            throw new ConnectionException('Connection refused');
+        });
+
+        $user = User::factory()->create();
+        $template = Template::factory()->create();
+        $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'عنوان', 'slot_type' => 'text']);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create();
+
+        $response = $this->actingAs($user)->post(route('projects.site.suggest', $project), [
+            'business_description' => 'مطعم فطاير في المهندسين',
+        ]);
+
+        $response->assertRedirect(route('projects.site.edit', $project));
+        $response->assertSessionHas('status');
+        $this->assertNull($site->fresh()->content('hero_title'));
+    }
+
+    public function test_suggest_content_requires_a_business_description(): void
+    {
+        Http::fake();
+
+        $user = User::factory()->create();
+        $template = Template::factory()->create();
+        $project = Project::factory()->for($template)->create();
+        GeneratedSite::factory()->for($project)->create();
+
+        $response = $this->actingAs($user)->post(route('projects.site.suggest', $project), []);
+
+        $response->assertSessionHasErrors('business_description');
+        Http::assertNothingSent();
     }
 
     public function test_admin_can_publish_a_site_which_bumps_a_draft_project_to_generated(): void

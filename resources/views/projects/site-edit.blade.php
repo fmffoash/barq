@@ -40,6 +40,28 @@
             القالب دا لسه مفيهوش أي خانة محتوى. ضيف خانات من صفحة القالب الأول.
         </div>
     @else
+        <form method="POST" action="{{ route('projects.site.suggest', $project) }}" class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+            @csrf
+            <h2 class="mb-1.5 text-sm font-semibold text-slate-200">✨ اقترح محتوى بالذكاء الاصطناعي</h2>
+            <p class="mb-3 text-xs text-slate-500">
+                اكتب وصف قصير للنشاط، والنظام هيقترح محتوى للخانات الفاضية بس — مش هيدعس على أي حاجة مكتوبة بالفعل.
+            </p>
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <input
+                    type="text"
+                    name="business_description"
+                    required
+                    maxlength="500"
+                    placeholder="مثال: مطعم فطاير في المهندسين"
+                    value="{{ old('business_description') }}"
+                    class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
+                >
+                <button type="submit" class="shrink-0 rounded-lg border border-amber-400/60 bg-transparent px-5 py-2.5 text-sm font-semibold text-amber-400 transition hover:bg-amber-400 hover:text-slate-950">
+                    اقترح محتوى
+                </button>
+            </div>
+        </form>
+
         <form method="POST" action="{{ route('projects.site.update', $project) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
