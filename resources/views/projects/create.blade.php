@@ -14,10 +14,45 @@
             {{-- الخطوة الأولى: اختيار القالب --}}
             <h1 class="mb-6 text-2xl font-bold text-slate-100">مشروع جديد — اختار القالب</h1>
 
+            {{-- بحث وفلترة --}}
+            <form method="GET" action="{{ route('projects.create') }}" class="mb-6 flex flex-wrap gap-3">
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ request('q') }}"
+                    placeholder="بحث بالاسم..."
+                    class="min-w-[160px] flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                >
+
+                <select
+                    name="category"
+                    class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                >
+                    <option value="">كل التصنيفات</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category }}" @selected(request('category') === $category)>{{ $category }}</option>
+                    @endforeach
+                </select>
+
+                <button type="submit" class="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 transition hover:border-amber-400 hover:text-amber-400">
+                    فلترة
+                </button>
+
+                @if (request('q') || request('category'))
+                    <a href="{{ route('projects.create') }}" class="rounded-lg px-4 py-2 text-sm text-slate-500 transition hover:text-slate-300">
+                        إلغاء الفلترة
+                    </a>
+                @endif
+            </form>
+
             @if ($templates->isEmpty())
                 <div class="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-10 text-center text-slate-500">
-                    لسه مفيش أي قالب متاح.
-                    <a href="{{ route('templates.create') }}" class="text-amber-400 hover:underline">ضيف قالب الأول</a>.
+                    @if (request('q') || request('category'))
+                        مفيش قوالب مطابقة للفلترة دي.
+                    @else
+                        لسه مفيش أي قالب متاح.
+                        <a href="{{ route('templates.create') }}" class="text-amber-400 hover:underline">ضيف قالب الأول</a>.
+                    @endif
                 </div>
             @else
                 <div class="grid gap-4 sm:grid-cols-2">

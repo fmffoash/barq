@@ -18,6 +18,7 @@ class TemplateSlot extends Model
         'slot_type',
         'is_required',
         'sort_order',
+        'default_value',
     ];
 
     protected function casts(): array
@@ -25,6 +26,7 @@ class TemplateSlot extends Model
         return [
             'is_required' => 'boolean',
             'sort_order' => 'integer',
+            'default_value' => 'array',
         ];
     }
 

@@ -43,20 +43,33 @@ class ProjectController extends Controller
             }
         }
 
+        $categories = Template::query()
+            ->where('is_active', true)
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
         $templates = Template::where('is_active', true)
             ->withCount('variants')
+            ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
+            ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
             ->orderBy('name')
             ->get();
 
         return view('projects.create', [
             'template' => null,
             'templates' => $templates,
+            'categories' => $categories,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $template = Template::where('is_active', true)->findOrFail($request->integer('template_id'));
+        $template = Template::where('is_active', true)
+            ->with('slots')
+            ->findOrFail($request->integer('template_id'));
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -81,7 +94,7 @@ class ProjectController extends Controller
             GeneratedSite::create([
                 'project_id' => $project->id,
                 'slug' => $this->uniqueSiteSlug($data['name']),
-                'content_json' => [],
+                'content_json' => $this->defaultContentFromTemplate($template),
                 'status' => 'draft',
             ]);
 
@@ -158,6 +171,22 @@ class ProjectController extends Controller
         }
 
         return $slug;
+    }
+
+    // محتوى مبدئي للموقع الناتج مبني من الـ default_value بتاع خانات القالب (لو موجودة) —
+    // بيدّي انطلاقة أسرع بدل ما يبدأ فاضي تماماً، خصوصاً لو القالب اتعمل من مشروع سابق
+    // بمحتواه (TemplateController::storeFromProject).
+    private function defaultContentFromTemplate(Template $template): array
+    {
+        $content = [];
+
+        foreach ($template->slots as $slot) {
+            if ($slot->default_value !== null) {
+                $content[$slot->key] = $slot->default_value;
+            }
+        }
+
+        return $content;
     }
 
     // بيولّد slug فريد على مستوى المنصة كلها للموقع الناتج — ده اللي فعلياً بيتستخدم

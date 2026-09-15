@@ -42,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::post('projects/{project}/deliver', [ProjectController::class, 'deliver'])
         ->name('projects.deliver');
+    Route::post('projects/{project}/save-as-template', [TemplateController::class, 'storeFromProject'])
+        ->name('templates.store-from-project');
 
     Route::get('projects/{project}/site', [GeneratedSiteController::class, 'edit'])
         ->name('projects.site.edit');

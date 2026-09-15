@@ -150,4 +150,55 @@
             <p class="text-sm text-slate-500">مفيش موقع مربوط بالمشروع دا.</p>
         @endif
     </div>
+
+    {{-- حفظ كقالب جديد --}}
+    @if ($project->template)
+        <div class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+            <h2 class="mb-1 text-lg font-semibold text-slate-100">احفظ كقالب جديد</h2>
+            <p class="mb-4 text-sm text-slate-500">
+                بيولّد قالب مستقل بنفس خانات "{{ $project->template->name }}" — تعديله بعد كده متأثرش على القالب الأصلي.
+            </p>
+
+            <form method="POST" action="{{ route('templates.store-from-project', $project) }}" class="space-y-4">
+                @csrf
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="template_name" class="mb-1.5 block text-sm font-medium text-slate-300">اسم القالب الجديد</label>
+                        <input
+                            id="template_name"
+                            type="text"
+                            name="name"
+                            value="{{ old('name', $project->name) }}"
+                            required
+                            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="template_category" class="mb-1.5 block text-sm font-medium text-slate-300">التصنيف (اختياري)</label>
+                        <input
+                            id="template_category"
+                            type="text"
+                            name="category"
+                            value="{{ old('category', $project->template->category) }}"
+                            placeholder="{{ $project->template->category ?: 'مفيش تصنيف' }}"
+                            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
+                        >
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-2 text-sm text-slate-300">
+                    <input type="checkbox" name="with_content" value="1" checked class="rounded border-slate-700 bg-slate-950 text-amber-400 focus:ring-amber-400">
+                    احفظ بمحتوى الموقع الحالي كقيم افتراضية (بدل ما القالب الجديد يبدأ فاضي)
+                </label>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="rounded-lg border border-amber-400 px-4 py-2 text-sm font-semibold text-amber-400 transition hover:bg-amber-400/10">
+                        احفظ كقالب جديد
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
 @endsection
