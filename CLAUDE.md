@@ -17,11 +17,16 @@
 `docs/wordpress-mu-plugin.php` اللي بينتقل يدوي لشبكة الـ WordPress) ويتبعتله المحتوى نفسه
 اللي بيتملّى بيه أي مشروع عادي — ولحد ما ده يحصل، زوّار السب دومين بتاعه بيشوفوا شاشة
 "لسه بيتجهّز". **صفر deploy فعلي للسيرفر لسه** — كل الشغل ده محلي (SQLite) + مدفوع على
-GitHub بس.
+GitHub بس. فيه دلوقتي (Phase 6) خطوات ديبلوي جاهزة بالكامل في مجلد `deploy/` (كونفيج nginx
++ قالب `.env` إنتاج + دليل خطوة بخطوة) — بس ده توثيق/تجهيز، مش تنفيذ فعلي؛ لازم شخص أو جلسة
+عندها وصول SSH حقيقي للسيرفر تنفّذها.
 
 ## التقنيات
-Laravel 13 · PHP 8.5 · Blade · Tailwind CSS v4 (عن طريق `@tailwindcss/vite`) · SQLite محلي
-(هيتغيّر لـ MySQL على السيرفر) · صفر JS framework — كله Blade + Tailwind.
+Laravel 13 · PHP 8.3+ (القيد الفعلي في `composer.json`، مش 8.5 زي ما كان مكتوب هنا غلط —
+8.5 جاية من الـ boilerplate العام بتاع Laravel Boost في `AGENTS.md`، مش من قيد المشروع
+الحقيقي) · Blade · Tailwind CSS v4 (عن طريق `@tailwindcss/vite`) · SQLite محلي (هيتغيّر
+لـ MySQL على السيرفر — خطوات التحويل والقالب الكامل لـ `.env` الإنتاج في
+`deploy/DEPLOYMENT.md`) · صفر JS framework — كله Blade + Tailwind.
 
 ## هيكل المجلدات المهم
 ```
@@ -41,6 +46,8 @@ routes/console.php        — أوامر الطرفية
 config/barq.php           — إعدادات المشروع (BARQ_BASE_DOMAIN وغيرها)
 config/services.php       — إعدادات Ollama + شبكة WordPress (network_url/shared_secret)
 docs/wordpress-mu-plugin.php — الملف deliverable اللي بينتقل يدوي لشبكة WordPress (Phase 5)
+deploy/                   — كونفيج nginx + قالب .env إنتاج + دليل النشر خطوة بخطوة (Phase 6،
+                             توثيق/تجهيز بس — التنفيذ الفعلي محتاج وصول SSH حقيقي للسيرفر)
 resources/views/site/     — الشِل والبارشيالز اللي بترندر الموقع المنشور فعلياً للعميل
 resources/views/errors/   — 404.blade.php (نفس التصميم لمسارات لوحة التحكم والمواقع المنشورة)
 tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest,
