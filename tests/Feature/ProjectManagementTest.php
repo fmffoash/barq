@@ -270,6 +270,28 @@ class ProjectManagementTest extends TestCase
         Storage::disk('public')->assertExists($storedPath);
     }
 
+    // بدون التحقق ده أي ملف (حتى .php) كان هيتخزن زي ما هو في storage العامة — رفض أي ملف
+    // مش صورة حقيقية بامتداد معروف قبل ما يوصل للتخزين خالص.
+    public function test_uploading_a_non_image_file_for_an_image_slot_is_rejected(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $template = Template::factory()->create();
+        $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_image', 'label_ar' => 'صورة', 'slot_type' => 'image']);
+        $project = Project::factory()->for($template)->create();
+        GeneratedSite::factory()->for($project)->create();
+
+        $file = UploadedFile::fake()->create('shell.php', 10, 'application/x-php');
+
+        $response = $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content_files' => ['hero_image' => $file],
+        ]);
+
+        $response->assertSessionHasErrors('content_files.hero_image');
+        Storage::disk('public')->assertDirectoryEmpty('site-images');
+    }
+
     public function test_updating_site_content_preserves_fields_that_were_not_submitted(): void
     {
         $user = User::factory()->create();

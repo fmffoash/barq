@@ -79,6 +79,16 @@ class TemplateVariantController extends Controller
             $data[$field] = filled($raw) ? json_decode($raw, true) : null;
         }
 
+        // colors_json بيتحط مباشرة جوّه CSS custom properties في site/document.blade.php
+        // (`--site-primary: {value};`) — أي قيمة مش hex سليم ممكن تكسر الـ style block أو
+        // تحقن تصريحات تانية جواه، فبنرفض أي قيمة مش على شكل #rrggbb بدل ما نثق في أي نص جاي.
+        if (is_array($data['colors_json'])) {
+            $data['colors_json'] = array_filter(
+                $data['colors_json'],
+                fn ($value) => is_string($value) && preg_match('/^#[0-9a-fA-F]{6}$/', $value)
+            );
+        }
+
         $data['is_default'] = $request->boolean('is_default');
 
         return $data;

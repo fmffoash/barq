@@ -89,6 +89,28 @@ class TemplateManagementTest extends TestCase
         $show->assertSee('قالب متاجر');
     }
 
+    // فجوة كانت موجودة قبل كده: كل تستات POST/PUT بتاعة النسخ كانت بترجع assertRedirect
+    // لـ templates.show من غير ما حد فعلياً يعمل GET للصفحة ويشوفها بترندر — يعني كود
+    // color-picker.blade.php/font-select.blade.php بتاع نسخة *موجودة فعلاً* (مش فورم
+    // "إضافة نسخة جديدة" الفاضي) عمره ما اتنفّذ في أي تست حقيقي.
+    public function test_admin_can_view_the_template_show_page_with_an_existing_variant(): void
+    {
+        $user = User::factory()->create();
+        $template = Template::factory()->create(['name' => 'قالب فيه نسخة']);
+        TemplateVariant::factory()->for($template)->create([
+            'name' => 'الأساسية',
+            'colors_json' => ['primary' => '#123456'],
+            'font' => 'tajawal',
+            'is_default' => true,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('templates.show', $template));
+
+        $response->assertOk();
+        $response->assertSee('الأساسية');
+        $response->assertSee('#123456', false);
+    }
+
     public function test_admin_can_update_a_template(): void
     {
         $user = User::factory()->create();
@@ -137,6 +159,25 @@ class TemplateManagementTest extends TestCase
         $this->assertSame(['primary' => '#f59e0b'], $variant->colors_json);
         $this->assertSame(['hero', 'services'], $variant->sections_json);
         $this->assertTrue($variant->is_default);
+    }
+
+    // colors_json بيتحط مباشرة جوّه CSS custom properties وقت رندر الموقع — قيمة مش hex
+    // سليم لازم تترفض بدل ما تتخزن وتتحط جوّه style= زي ما هي.
+    public function test_a_non_hex_color_value_is_dropped_from_a_new_variant(): void
+    {
+        $user = User::factory()->create();
+        $template = Template::factory()->create();
+
+        $this->actingAs($user)->post(route('templates.variants.store', $template), [
+            'name' => 'الأساسية',
+            'colors_json' => json_encode([
+                'primary' => '#f59e0b',
+                'background' => 'red; } * { display:none',
+            ]),
+        ]);
+
+        $variant = $template->variants()->first();
+        $this->assertSame(['primary' => '#f59e0b'], $variant->colors_json);
     }
 
     public function test_only_one_variant_can_be_default_per_template(): void

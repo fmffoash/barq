@@ -210,6 +210,27 @@ class SiteLayoutTest extends TestCase
         $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
     }
 
+    public function test_a_malformed_style_override_color_or_font_is_silently_ignored(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $template = Template::factory()->create(['kind' => 'landing']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان',
+            'slot_type' => 'text', 'sort_order' => 1,
+        ]);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'أهلاً']]);
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'أهلاً'],
+            // "لون" ده مش hex صالح (زي محاولة كسر الـ CSS block)، و"font" مش من القايمة المعروفة.
+            'style' => ['hero_title' => ['color' => 'red; } * { display:none', 'font' => 'evil-font']],
+        ]);
+
+        $site->refresh();
+        $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
+    }
+
     public function test_an_invalid_layout_value_is_rejected_when_updating_a_template(): void
     {
         $user = \App\Models\User::factory()->create();

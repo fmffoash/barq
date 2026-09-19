@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\TemplateVariant;
 use App\Services\OllamaService;
 use App\Services\SiteExportService;
 use App\Services\WordPressService;
@@ -33,6 +34,13 @@ class GeneratedSiteController extends Controller
     {
         $project->loadMissing('template.slots');
 
+        // نوع/حجم أي صورة مرفوعة — بدون التحقق ده أي ملف (حتى .php أو SVG فيه سكريبت) كان
+        // هيتخزن في storage/site-images/ العامة زي ما هو. استبعاد svg عمداً (مش داخل mimes
+        // تحت) عشان ملف SVG ممكن يحتوي <script> جواه فعلياً.
+        $request->validate([
+            'content_files.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
+        ]);
+
         $site = $project->site()->firstOrFail();
         $content = $site->content_json ?? [];
         $styleOverrides = $site->style_overrides_json ?? [];
@@ -42,10 +50,20 @@ class GeneratedSiteController extends Controller
 
             // تخصيص لون/خط الخانة دي بس (Phase 8) — بيتقرا لنص/فقرة/قايمة بس (صفر لون/خط
             // لصورة أو زرار رابط، مالهمش معنى "شكل كتابة"). حقل فاضي بيمسح التخصيص القديم
-            // بدل ما يسيب قيمة فاضية عالقة في الـ JSON.
+            // بدل ما يسيب قيمة فاضية عالقة في الـ JSON. القيمتين بيتحطوا مباشرة جوّه CSS
+            // (`color: {value} !important;` و`var(--font-{value})`) في site/document.blade.php،
+            // فلازم نتحقق من شكلهم هنا قبل التخزين — مش بس تنظيف شكلي، ده اللي بيمنع أي قيمة
+            // غريبة (مسافة/فاصلة منقوطة/قوس) تكسر الـ CSS block أو تحقن قواعد تانية جواه.
             if (in_array($slot->slot_type, ['text', 'textarea', 'list'], true)) {
                 $color = trim((string) $request->input("style.{$key}.color"));
+                if ($color !== '' && ! preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
+                    $color = '';
+                }
+
                 $font = (string) $request->input("style.{$key}.font");
+                if ($font !== '' && $font !== 'default' && ! array_key_exists($font, TemplateVariant::FONTS)) {
+                    $font = '';
+                }
 
                 if ($color !== '' || ($font !== '' && $font !== 'default')) {
                     $styleOverrides[$key] = array_filter([
