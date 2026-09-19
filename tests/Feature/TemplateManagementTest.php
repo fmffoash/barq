@@ -27,6 +27,7 @@ class TemplateManagementTest extends TestCase
             'name' => 'قالب المطاعم',
             'category' => 'مطاعم',
             'kind' => 'landing',
+            'layout' => 'classic',
             'license_note' => null,
             'is_active' => '1',
         ]);
@@ -47,11 +48,13 @@ class TemplateManagementTest extends TestCase
         $this->actingAs($user)->post('/templates', [
             'name' => 'قالب العيادات',
             'kind' => 'landing',
+            'layout' => 'classic',
         ]);
 
         $this->actingAs($user)->post('/templates', [
             'name' => 'قالب العيادات',
             'kind' => 'wordpress',
+            'layout' => 'classic',
         ]);
 
         $slugs = Template::orderBy('id')->pluck('slug')->all();
@@ -94,6 +97,7 @@ class TemplateManagementTest extends TestCase
         $response = $this->actingAs($user)->put(route('templates.update', $template), [
             'name' => 'اسم جديد',
             'kind' => $template->kind,
+            'layout' => $template->layout,
             'is_active' => '0',
         ]);
 

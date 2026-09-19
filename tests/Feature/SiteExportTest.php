@@ -120,6 +120,45 @@ class SiteExportTest extends TestCase
         $zip->close();
     }
 
+    // Phase 7 — التصميمات البصرية الجديدة (modern/gallery) بتستخدم نفس نظام تصدير الصور بالظبط،
+    // حتى لما الصورة بتترندر جوّه CSS (background-image: url(...)) بدل <img> عادي زي هيرو الـ
+    // gallery layout — لازم المسار يتحول لنسبي جوّه الـ url() برضه، مش بس جوّه src=.
+    public function test_exporting_a_non_classic_layout_rewrites_image_paths_inside_css_url_functions_too(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $template = Template::factory()->create(['kind' => 'landing', 'layout' => 'gallery']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان',
+            'slot_type' => 'text', 'sort_order' => 1,
+        ]);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_image', 'label_ar' => 'صورة الغلاف',
+            'slot_type' => 'image', 'sort_order' => 2,
+        ]);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'أهلاً بيكم']]);
+
+        $file = UploadedFile::fake()->image('cover.jpg');
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content_files' => ['hero_image' => $file],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('projects.site.export', $project));
+        $response->assertOk();
+
+        $zipPath = $response->baseResponse->getFile()->getPathname();
+        $zip = new ZipArchive();
+        $zip->open($zipPath);
+
+        $html = $zip->getFromName('index.html');
+        $this->assertStringNotContainsString('/storage/', $html);
+        $this->assertMatchesRegularExpression('~url\(&\#039;assets/images/[a-zA-Z0-9._-]+\.jpg&\#039;\)~', $html);
+
+        $zip->close();
+    }
+
     public function test_exporting_a_wordpress_project_redirects_with_an_error_and_does_not_mark_it_as_exported(): void
     {
         $user = User::factory()->create();

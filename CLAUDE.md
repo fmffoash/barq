@@ -7,7 +7,7 @@
 **ملحوظة مهمة:** برق مشروع مستقل تماماً — كود منفصل بالكامل عن نظام Tafra ERP (اللي شغّال
 على نفس السيرفر لاحقاً كـ subdomain تاني). صفر مشاركة كود أو داتابيز بينهم.
 
-## الحالة الحالية (Phase 1-5 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
+## الحالة الحالية (Phase 1-7 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
 اللي شغّال فعلياً دلوقتي: أدمن واحد بيدخل ويعمل قوالب بخاناتها (slots) يدوياً أو من مكتبة
 قوالب قابلة للبحث/الفلترة، يعمل منها مشروع، ويملّي الخانات يدوي أو بمساعدة اقتراح محتوى
 بالذكاء الاصطناعي (Ollama محلي، صفر بيانات بتتبعت لأي API خارجي). الموقع الناتج (قوالب
@@ -20,6 +20,11 @@
 GitHub بس. فيه دلوقتي (Phase 6) خطوات ديبلوي جاهزة بالكامل في مجلد `deploy/` (كونفيج nginx
 + قالب `.env` إنتاج + دليل خطوة بخطوة) — بس ده توثيق/تجهيز، مش تنفيذ فعلي؛ لازم شخص أو جلسة
 عندها وصول SSH حقيقي للسيرفر تنفّذها.
+
+قوالب `landing` بقى ليها 3 تصميمات بصرية مختلفة فعلياً (`classic`/`modern`/`gallery`، Phase 7
+— شوف "التصميمات البصرية المتعددة" تحت)، ومعاها مكتبة قوالب أصلية جاهزة (`php artisan
+barq:seed-template-library`) بتغطي 14 فئة نشاط شائعة × 3 قوالب لكل فئة (42 قالب بمحتوى عربي
+افتراضي جاهز).
 
 ## التقنيات
 Laravel 13 · PHP 8.3+ (القيد الفعلي في `composer.json`، مش 8.5 زي ما كان مكتوب هنا غلط —
@@ -39,7 +44,8 @@ app/Services/             — OllamaService (اقتراح محتوى بالذك�
                              SiteRenderer (بناء الأقسام/الألوان المشترك بين المعاينة والتصدير)،
                              SiteExportService (تصدير zip ثابت، Phase 4)،
                              WordPressService (توفير site + دفع محتوى على شبكة Multisite، Phase 5)
-app/Console/Commands/     — CreateAdminUser.php (الأمر الوحيد لعمل/تحديث حساب الأدمن)
+app/Console/Commands/     — CreateAdminUser.php (عمل/تحديث حساب الأدمن)،
+                             SeedTemplateLibrary.php (توليد/تحديث مكتبة القوالب الأصلية، Phase 7)
 routes/web.php            — مسارات لوحة التحكم (login + dashboard + templates + projects)
 routes/site.php           — مسارات المواقع المنشورة (تحت {siteSlug}.barq.tafraos.com بس)
 routes/console.php        — أوامر الطرفية
@@ -49,10 +55,11 @@ docs/wordpress-mu-plugin.php — الملف deliverable اللي بينتقل ي
 deploy/                   — كونفيج nginx + قالب .env إنتاج + دليل النشر خطوة بخطوة (Phase 6،
                              توثيق/تجهيز بس — التنفيذ الفعلي محتاج وصول SSH حقيقي للسيرفر)
 resources/views/site/     — الشِل والبارشيالز اللي بترندر الموقع المنشور فعلياً للعميل
+                             (layouts/classic|modern|gallery.blade.php — التصميمات البصرية، Phase 7)
 resources/views/errors/   — 404.blade.php (نفس التصميم لمسارات لوحة التحكم والمواقع المنشورة)
 tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest,
                              SiteRenderingTest, OllamaContentSuggestionTest, TemplateLibraryTest,
-                             SiteExportTest, WordPressIntegrationTest
+                             SiteExportTest, WordPressIntegrationTest, SiteLayoutTest (Phase 7)
 ```
 
 ## المعمار: التوجيه بالدومين (Domain Routing)
@@ -80,13 +87,53 @@ then: function (): void {
 
 ### رندر الموقع المنشور
 `SiteController::show()` بيجمّع أقسام الموقع (`sections`) من ترتيب `TemplateVariant.sections_json`
-لو موجود، وإلا من أول ظهور طبيعي للأقسام في خانات القالب (`TemplateSlot`). كل خانة جوّه
-القسم بترندر بشكل مختلف حسب `slot_type` بتاعها (`text`/`textarea`/`image`/`list`/`link`) —
-البارشيال العام `site/partials/section.blade.php` بيتعامل مع الأنواع دي كلها بمكان واحد
-(صفر بارشيال منفصل لكل قسم أو نوع). الخانات الفاضية بتتفلتر، والأقسام اللي كل خاناتها فاضية
-بتختفي بالكامل من الرندر. الألوان (`TemplateVariant.colors_json`) بتتحط كـ CSS custom
-properties على الـ `<body>` (زي `--site-primary`) — ده أسلوب متعمّد بدل كلاسات Tailwind
-ثابتة، عشان الألوان بتتغيّر لكل مشروع وقت التشغيل (runtime)، مش وقت الـ build.
+لو موجود، وإلا من أول ظهور طبيعي للأقسام في خانات القالب (`TemplateSlot`، مرتّبة بـ
+`sort_order` ثم `id` كفاصل ثانوي — `Template::slots()` — عشان ترتيب الأقسام يبقى مضمون حتى
+لما أكتر من خانة من أقسام مختلفة عندها نفس `sort_order`). كل خانة جوّه القسم بترندر بشكل
+مختلف حسب `slot_type` بتاعها (`text`/`textarea`/`image`/`list`/`link`). الخانات الفاضية
+بتتفلتر، والأقسام اللي كل خاناتها فاضية بتختفي بالكامل من الرندر. الألوان
+(`TemplateVariant.colors_json`) بتتحط كـ CSS custom properties على الـ `<body>` (زي
+`--site-primary`) — ده أسلوب متعمّد بدل كلاسات Tailwind ثابتة، عشان الألوان بتتغيّر لكل
+مشروع وقت التشغيل (runtime)، مش وقت الـ build.
+
+### التصميمات البصرية المتعددة (Phase 7)
+كل قالب `landing` بيختار `layout` واحد من `Template::LAYOUTS` (`classic`/`modern`/`gallery`) —
+الاختلاف بينهم **بس** في شكل العرض، صفر تأثير على بنية الخانات أو اقتراح المحتوى بالذكاء
+الاصطناعي (`OllamaService` وباقي النظام بيشتغلوا على `TemplateSlot` نفسه أياً كان الـ layout).
+`SiteController`/`SiteExportService` الاتنين بيرندروا عن طريق شِل واحد مشترك
+(`site/document.blade.php`) بياخد `layout` من `SiteRenderer::render()` ويعمل
+`@include('site.layouts.'.$layout)` — نفس الشِل مستخدم في المعاينة الحية (`@vite`) والتصدير
+الثابت (رابط CSS نسبي)، الفرق بس في `$cssMode`.
+
+كل تصميم غير "classic" (اللي هو نفس السلوك القديم بالحرف، عمود واحد بسيط زي زمان) بيحتاج يعرف
+شكل كل قسم (هيرو/جاليري/قايمة/cta/نص عادي) — ده بيتحسب في `SiteRenderer::classifySection()`
+**من موقع القسم وأنواع خاناته**، مش من اسم القسم (`section_key`) نفسه، عشان يشتغل مع أي قالب
+أياً كان تسميات أقسامه (بتاع المكتبة أو أي قالب الأدمن يعمله يدوي):
+- أول قسم في الترتيب دايماً `hero`.
+- أي قسم فيه خانة `image` بيبقى `gallery`.
+- آخر قسم لو فيه خانة `link` بيبقى `cta`.
+- قسم فيه خانة `list` بيبقى `list`.
+- غير كده `text` (نص عادي).
+
+البارشيالز الفعلية: `site/partials/modern-section.blade.php` و`site/partials/gallery-section.blade.php`
+(بيتسويتشوا على `$section['kind']`)، بالإضافة لـ `site/partials/nav.blade.php` (نافبار بروابط
+تنقل، تسميات عربية معروفة للأقسام الشائعة + fallback لاسم القسم نفسه) و`site/partials/footer.blade.php`
+— الاتنين مشتركين بين modern وgallery. تصميم "classic" لسه بيستخدم `site/partials/section.blade.php`
+القديم زي ما هو بالحرف (صفر نافبار أو فوتر).
+
+### مكتبة القوالب الأصلية (Phase 7)
+```bash
+php artisan barq:seed-template-library
+```
+بيولّد (أو يحدّث — الأمر idempotent بالكامل عن طريق `updateOrCreate` على كل مستوى) 14 فئة نشاط
+شائعة (مطاعم، عيادات، صالونات، جيم، عقارات، متاجر، تعليم، استشارات، مقاولات، صيانة سيارات،
+فعاليات، سياحة، ستارت أب، بورتفوليو) × 3 قوالب لكل فئة (توزيع تلقائي على الـ 3 تصميمات) = 42
+قالب. كل قوالب المكتبة دي **تصميم ومحتوى أصلي اتكتب خصيصاً للمشروع** (موثّق في
+`license_note` بتاع كل قالب) — مفيش أي قالب أو تصميم منسوخ من مصدر خارجي، عشان صفر مخاطرة
+ترخيص. بنية الخانات موحّدة لكل القوالب (6 أقسام: hero/about/services/gallery/testimonials/contact)
+لكن التسميات والمحتوى الافتراضي (`TemplateSlot.default_value`) بيجي من بيانات الفئة نفسها —
+خانات الروابط (`hero_cta`/`contact_link`) عمداً من غير `default_value` عشان محدش يشوف رابط
+وهمي بالغلط.
 
 قوالب من نوع `kind = 'wordpress'` بتاخد شاشة "لسه بيتجهّز" (coming-soon) بدل الرندر العادي
 **لحد ما يتعملهم site فعلي على شبكة WordPress Multisite** (Phase 5 — `WordPressService` +

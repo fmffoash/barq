@@ -50,6 +50,24 @@
     </div>
 
     <div>
+        <label for="layout" class="mb-1.5 block text-sm font-medium text-slate-300">التصميم البصري</label>
+        <select
+            id="layout"
+            name="layout"
+            required
+            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
+        >
+            @php $layout = old('layout', $template->layout ?? 'classic'); @endphp
+            <option value="classic" @selected($layout === 'classic')>كلاسيك — عمود واحد بسيط</option>
+            <option value="modern" @selected($layout === 'modern')>مودرن — نافبار وهيرو وشبكة خدمات</option>
+            <option value="gallery" @selected($layout === 'gallery')>جاليري — هيرو بصورة وتقسيمات متعرجة</option>
+        </select>
+        @error('layout')
+            <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
         <label for="license_note" class="mb-1.5 block text-sm font-medium text-slate-300">ملاحظة الترخيص (اختياري)</label>
         <textarea
             id="license_note"

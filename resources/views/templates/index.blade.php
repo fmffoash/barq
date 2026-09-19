@@ -77,6 +77,14 @@
                     <p class="mb-4 text-sm text-slate-500">
                         {{ $template->category ?: 'بدون تصنيف' }} &middot;
                         {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
+                        @if ($template->kind === 'landing')
+                            &middot;
+                            {{ match ($template->layout) {
+                                'modern' => 'مودرن',
+                                'gallery' => 'جاليري',
+                                default => 'كلاسيك',
+                            } }}
+                        @endif
                     </p>
 
                     <div class="flex gap-4 text-xs text-slate-500">

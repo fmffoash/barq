@@ -37,6 +37,14 @@
             <p class="text-sm text-slate-500">
                 {{ $template->category ?: 'بدون تصنيف' }} &middot;
                 {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
+                @if ($template->kind === 'landing')
+                    &middot;
+                    {{ match ($template->layout) {
+                        'modern' => 'تصميم مودرن',
+                        'gallery' => 'تصميم جاليري',
+                        default => 'تصميم كلاسيك',
+                    } }}
+                @endif
             </p>
             @if ($template->license_note)
                 <p class="mt-2 text-sm text-slate-400">{{ $template->license_note }}</p>

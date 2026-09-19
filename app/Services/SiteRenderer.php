@@ -42,6 +42,18 @@ class SiteRenderer
             ->filter(fn (array $section) => $section['items']->isNotEmpty())
             ->values();
 
+        // بنحسب "نوع" كل قسم (hero/gallery/list/cta/text) بناءً على موقعه وأنواع خاناته —
+        // مش من اسم القسم نفسه، عشان يشتغل مع أي قالب (بتاعنا أو أي قالب الأدمن يعمله يدوي)
+        // من غير ما نفرض تسميات أقسام معينة. التصميمات البصرية (modern/gallery) بتستخدم النوع
+        // ده عشان تقرر شكل العرض، بينما "classic" بيتجاهله تماماً (نفس السلوك القديم بالحرف).
+        $sectionCount = $sections->count();
+
+        $sections = $sections->values()->map(
+            fn (array $section, int $index) => $section + [
+                'kind' => $this->classifySection($section, $index === 0, $index === $sectionCount - 1),
+            ]
+        );
+
         $colors = array_merge([
             'primary' => '#f59e0b',
             'background' => '#0b1220',
@@ -54,6 +66,33 @@ class SiteRenderer
             'project' => $project,
             'sections' => $sections,
             'colors' => $colors,
+            'layout' => $template->layout ?: 'classic',
         ];
+    }
+
+    /**
+     * @param  array{key: string, items: \Illuminate\Support\Collection<int, array{slot: \App\Models\TemplateSlot, value: mixed}>}  $section
+     */
+    private function classifySection(array $section, bool $isFirst, bool $isLast): string
+    {
+        if ($isFirst) {
+            return 'hero';
+        }
+
+        $types = $section['items']->pluck('slot.slot_type');
+
+        if ($types->contains('image')) {
+            return 'gallery';
+        }
+
+        if ($isLast && $types->contains('link')) {
+            return 'cta';
+        }
+
+        if ($types->filter(fn ($type) => $type === 'list')->isNotEmpty()) {
+            return 'list';
+        }
+
+        return 'text';
     }
 }

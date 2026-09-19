@@ -25,6 +25,7 @@ class TemplateFactory extends Factory
             'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1000, 9999),
             'category' => fake()->word(),
             'kind' => fake()->randomElement(['landing', 'wordpress']),
+            'layout' => 'classic',
             'license_note' => null,
             'is_active' => true,
         ];

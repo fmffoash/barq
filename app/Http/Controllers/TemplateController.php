@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 // إدارة القوالب — إضافة/تعديل/حذف بيانات القالب الأساسية بس (الاسم/التصنيف/النوع...).
@@ -46,6 +47,7 @@ class TemplateController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:255'],
             'kind' => ['required', 'in:landing,wordpress'],
+            'layout' => ['required', Rule::in(Template::LAYOUTS)],
             'license_note' => ['nullable', 'string'],
         ]);
 
@@ -79,6 +81,7 @@ class TemplateController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:255'],
             'kind' => ['required', 'in:landing,wordpress'],
+            'layout' => ['required', Rule::in(Template::LAYOUTS)],
             'license_note' => ['nullable', 'string'],
         ]);
 
@@ -123,6 +126,7 @@ class TemplateController extends Controller
                 'slug' => $this->uniqueSlug($data['name']),
                 'category' => ($data['category'] ?? null) ?: $sourceTemplate->category,
                 'kind' => $sourceTemplate->kind,
+                'layout' => $sourceTemplate->layout,
                 'license_note' => $sourceTemplate->license_note,
                 'is_active' => true,
             ]);
