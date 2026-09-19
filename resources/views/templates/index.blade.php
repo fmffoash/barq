@@ -79,11 +79,7 @@
                         {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
                         @if ($template->kind === 'landing')
                             &middot;
-                            {{ match ($template->layout) {
-                                'modern' => 'مودرن',
-                                'gallery' => 'جاليري',
-                                default => 'كلاسيك',
-                            } }}
+                            {{ \App\Models\Template::layoutLabel($template->layout) }}
                         @endif
                     </p>
 

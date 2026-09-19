@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 // بيولّد مكتبة قوالب أصلية (Phase 7) — عدد من الفئات التجارية الشائعة، كل فئة ليها 3 قوالب
-// بتصميمات بصرية وألوان مختلفة (classic/modern/gallery) لكن بنفس بنية الخانات الموحّدة (هيرو،
-// من نحن، خدمات، جاليري، آراء العملاء، تواصل). المحتوى الافتراضي كله نصوص عربية أصلية اتكتبت
-// خصيصاً للمكتبة دي — مفيش قالب خارجي أو تصميم منسوخ من مصدر تاني، عشان صفر مخاطرة ترخيص.
-// الأمر idempotent بالكامل (updateOrCreate بكل مستوى) — تشغيله تاني آمن ومحدّش هيتكرر.
+// موزّعة على الـ 13 تصميم بصري المتاحة (Template::LAYOUTS) بنافذة متحركة، لكن بنفس بنية
+// الخانات الموحّدة (هيرو، من نحن، خدمات، جاليري، آراء العملاء، تواصل). المحتوى الافتراضي كله
+// نصوص عربية أصلية اتكتبت خصيصاً للمكتبة دي — مفيش قالب خارجي أو تصميم منسوخ من مصدر تاني،
+// عشان صفر مخاطرة ترخيص. الأمر idempotent بالكامل (updateOrCreate بكل مستوى) — تشغيله تاني
+// آمن ومحدّش هيتكرر.
 #[Signature('barq:seed-template-library')]
 #[Description('توليد/تحديث مكتبة قوالب أصلية تغطي فئات نشاط شائعة (3 قوالب لكل فئة)')]
 class SeedTemplateLibrary extends Command
@@ -29,13 +30,11 @@ class SeedTemplateLibrary extends Command
         'indigo' => ['primary' => '#818cf8', 'background' => '#0d0e1a', 'surface' => '#14152a', 'text' => '#eef2ff', 'muted' => '#9ca3c9'],
     ];
 
-    // الترتيب اللي كل فئة بتوزّع بيه 3 قوالبها على التصميمات — نفس التوزيع لكل الفئات
-    // عشان يبقى متوقّع: الأول modern، التاني gallery، التالت classic.
-    private array $layoutRotation = ['modern', 'gallery', 'classic'];
-
     public function handle(): int
     {
         $paletteKeys = array_keys($this->palettes);
+        $allLayouts = Template::LAYOUTS;
+        $layoutCount = count($allLayouts);
         $created = 0;
         $updated = 0;
 
@@ -43,7 +42,9 @@ class SeedTemplateLibrary extends Command
             $palette = $this->palettes[$paletteKeys[$categoryIndex % count($paletteKeys)]];
 
             foreach ($category['names'] as $templateIndex => $name) {
-                $layout = $this->layoutRotation[$templateIndex % count($this->layoutRotation)];
+                // نافذة متحركة على كل الـ 13 تصميم بدل تكرار نفس 3 تصميمات — كل فئة بتاخد
+                // 3 تصميمات مختلفة عن اللي قبلها، فمكتبة الـ 42 قالب تعرض تنوع حقيقي.
+                $layout = $allLayouts[($categoryIndex * 3 + $templateIndex) % $layoutCount];
 
                 [, $wasRecentlyCreated] = $this->upsertTemplate($category, $name, $layout, $palette);
 

@@ -112,6 +112,40 @@ class SiteLayoutTest extends TestCase
         $response->assertDontSee('id="gallery"', false);
     }
 
+    // Phase 7 (الدفعة التانية) — 10 تصميمات إضافية (split/magazine/bento/minimal/bold/glass/
+    // timeline/stack/diagonal/framed). بدل ما نكرر نفس التست التفصيلي 10 مرات، بنلف على كل
+    // قيمة في Template::LAYOUTS ونتأكد إنها بترندر 200 وبتعرض المحتوى الفعلي وبتحترم قاعدة
+    // إخفاء الأقسام الفاضية — أي layout جديد يتضاف للمصفوفة مستقبلاً بياخد نفس التغطية تلقائي.
+    public function test_every_registered_layout_renders_content_and_hides_empty_sections(): void
+    {
+        foreach (Template::LAYOUTS as $layout) {
+            $site = $this->buildSite($this->buildTemplate($layout));
+
+            $response = $this->get($this->siteUrl($site));
+
+            $response->assertOk();
+            $response->assertSee('أهلاً بيكم في مطعمنا');
+            $response->assertSee('فطار');
+            $response->assertSee('id="hero"', false);
+            $response->assertSee('id="services"', false);
+            $response->assertSee('id="gallery"', false);
+            $response->assertSee('id="contact"', false);
+
+            $emptyTemplate = $this->buildTemplate($layout);
+            $emptyProject = Project::factory()->for($emptyTemplate)->create();
+            $emptySite = GeneratedSite::factory()->for($emptyProject)->create([
+                'content_json' => ['hero_title' => 'أهلاً بيكم'],
+            ]);
+
+            $emptyResponse = $this->get($this->siteUrl($emptySite));
+
+            $emptyResponse->assertOk();
+            $emptyResponse->assertSee('id="hero"', false);
+            $emptyResponse->assertDontSee('id="services"', false);
+            $emptyResponse->assertDontSee('id="gallery"', false);
+        }
+    }
+
     public function test_an_invalid_layout_value_is_rejected_when_updating_a_template(): void
     {
         $user = \App\Models\User::factory()->create();

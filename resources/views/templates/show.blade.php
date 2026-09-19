@@ -39,11 +39,7 @@
                 {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
                 @if ($template->kind === 'landing')
                     &middot;
-                    {{ match ($template->layout) {
-                        'modern' => 'تصميم مودرن',
-                        'gallery' => 'تصميم جاليري',
-                        default => 'تصميم كلاسيك',
-                    } }}
+                    تصميم {{ \App\Models\Template::layoutLabel($template->layout) }}
                 @endif
             </p>
             @if ($template->license_note)
@@ -107,15 +103,7 @@
                                     >
                                 </div>
 
-                                <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-slate-300">الألوان (JSON)</label>
-                                    <textarea
-                                        name="colors_json"
-                                        rows="4"
-                                        dir="ltr"
-                                        class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 font-mono text-xs text-slate-100 outline-none focus:border-amber-400"
-                                    >{{ $variant->colors_json ? json_encode($variant->colors_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '' }}</textarea>
-                                </div>
+                                @include('templates.partials.color-picker', ['colors' => $variant->colors_json])
 
                                 <div>
                                     <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (JSON)</label>
@@ -182,16 +170,7 @@
                             >
                         </div>
 
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-300">الألوان (JSON، اختياري)</label>
-                            <textarea
-                                name="colors_json"
-                                rows="4"
-                                dir="ltr"
-                                placeholder='{"primary": "#f59e0b"}'
-                                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 font-mono text-xs text-slate-100 outline-none focus:border-amber-400"
-                            ></textarea>
-                        </div>
+                        @include('templates.partials.color-picker', ['colors' => null])
 
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (JSON، اختياري)</label>
@@ -462,3 +441,34 @@
         </section>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        // منتقي الألوان (templates/partials/color-picker.blade.php) — event delegation واحدة
+        // بتخدم أي عدد مجموعات ألوان في الصفحة، من غير تكرار سكريبت لكل نسخة/فورم.
+        document.addEventListener('input', function (event) {
+            if (!event.target.matches('[data-colors-sync]')) {
+                return;
+            }
+
+            const group = event.target.closest('[data-colors-group]');
+            if (!group) {
+                return;
+            }
+
+            const key = event.target.dataset.colorKey;
+            group.querySelectorAll(`[data-color-key="${key}"]`).forEach((el) => {
+                if (el !== event.target) {
+                    el.value = event.target.value;
+                }
+            });
+
+            const colors = {};
+            group.querySelectorAll('input[type="color"][data-colors-sync]').forEach((el) => {
+                colors[el.dataset.colorKey] = el.value;
+            });
+
+            group.querySelector('[data-colors-hidden]').value = JSON.stringify(colors);
+        });
+    </script>
+@endpush

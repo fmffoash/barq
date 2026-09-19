@@ -7,7 +7,7 @@
 **ملحوظة مهمة:** برق مشروع مستقل تماماً — كود منفصل بالكامل عن نظام Tafra ERP (اللي شغّال
 على نفس السيرفر لاحقاً كـ subdomain تاني). صفر مشاركة كود أو داتابيز بينهم.
 
-## الحالة الحالية (Phase 1-7 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
+## الحالة الحالية (Phase 1-8 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
 اللي شغّال فعلياً دلوقتي: أدمن واحد بيدخل ويعمل قوالب بخاناتها (slots) يدوياً أو من مكتبة
 قوالب قابلة للبحث/الفلترة، يعمل منها مشروع، ويملّي الخانات يدوي أو بمساعدة اقتراح محتوى
 بالذكاء الاصطناعي (Ollama محلي، صفر بيانات بتتبعت لأي API خارجي). الموقع الناتج (قوالب
@@ -21,10 +21,11 @@ GitHub بس. فيه دلوقتي (Phase 6) خطوات ديبلوي جاهزة ب
 + قالب `.env` إنتاج + دليل خطوة بخطوة) — بس ده توثيق/تجهيز، مش تنفيذ فعلي؛ لازم شخص أو جلسة
 عندها وصول SSH حقيقي للسيرفر تنفّذها.
 
-قوالب `landing` بقى ليها 3 تصميمات بصرية مختلفة فعلياً (`classic`/`modern`/`gallery`، Phase 7
-— شوف "التصميمات البصرية المتعددة" تحت)، ومعاها مكتبة قوالب أصلية جاهزة (`php artisan
+قوالب `landing` بقى ليها 13 تصميم بصري مختلف فعلياً (`Template::LAYOUTS` — Phase 7، شوف
+"التصميمات البصرية المتعددة" تحت)، ومعاها مكتبة قوالب أصلية جاهزة (`php artisan
 barq:seed-template-library`) بتغطي 14 فئة نشاط شائعة × 3 قوالب لكل فئة (42 قالب بمحتوى عربي
-افتراضي جاهز).
+افتراضي جاهز، موزّعة على الـ 13 تصميم). تغيير الألوان بقى بمنتقي ألوان بصري (`templates/
+partials/color-picker.blade.php`) بدل كتابة JSON خام يدوي.
 
 ## التقنيات
 Laravel 13 · PHP 8.3+ (القيد الفعلي في `composer.json`، مش 8.5 زي ما كان مكتوب هنا غلط —
@@ -55,7 +56,8 @@ docs/wordpress-mu-plugin.php — الملف deliverable اللي بينتقل ي
 deploy/                   — كونفيج nginx + قالب .env إنتاج + دليل النشر خطوة بخطوة (Phase 6،
                              توثيق/تجهيز بس — التنفيذ الفعلي محتاج وصول SSH حقيقي للسيرفر)
 resources/views/site/     — الشِل والبارشيالز اللي بترندر الموقع المنشور فعلياً للعميل
-                             (layouts/classic|modern|gallery.blade.php — التصميمات البصرية، Phase 7)
+                             (layouts/*.blade.php — الـ 13 تصميم بصري، Phase 7)
+resources/views/templates/partials/color-picker.blade.php — منتقي ألوان بصري (بدل JSON خام)
 resources/views/errors/   — 404.blade.php (نفس التصميم لمسارات لوحة التحكم والمواقع المنشورة)
 tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest,
                              SiteRenderingTest, OllamaContentSuggestionTest, TemplateLibraryTest,
@@ -97,13 +99,16 @@ then: function (): void {
 مشروع وقت التشغيل (runtime)، مش وقت الـ build.
 
 ### التصميمات البصرية المتعددة (Phase 7)
-كل قالب `landing` بيختار `layout` واحد من `Template::LAYOUTS` (`classic`/`modern`/`gallery`) —
-الاختلاف بينهم **بس** في شكل العرض، صفر تأثير على بنية الخانات أو اقتراح المحتوى بالذكاء
-الاصطناعي (`OllamaService` وباقي النظام بيشتغلوا على `TemplateSlot` نفسه أياً كان الـ layout).
-`SiteController`/`SiteExportService` الاتنين بيرندروا عن طريق شِل واحد مشترك
+كل قالب `landing` بيختار `layout` واحد من `Template::LAYOUTS` (13 تصميم: `classic`/`modern`/
+`gallery`/`split`/`magazine`/`bento`/`minimal`/`bold`/`glass`/`timeline`/`stack`/`diagonal`/
+`framed`) — الاختلاف بينهم **بس** في شكل العرض، صفر تأثير على بنية الخانات أو اقتراح المحتوى
+بالذكاء الاصطناعي (`OllamaService` وباقي النظام بيشتغلوا على `TemplateSlot` نفسه أياً كان الـ
+layout). `SiteController`/`SiteExportService` الاتنين بيرندروا عن طريق شِل واحد مشترك
 (`site/document.blade.php`) بياخد `layout` من `SiteRenderer::render()` ويعمل
 `@include('site.layouts.'.$layout)` — نفس الشِل مستخدم في المعاينة الحية (`@vite`) والتصدير
-الثابت (رابط CSS نسبي)، الفرق بس في `$cssMode`.
+الثابت (رابط CSS نسبي)، الفرق بس في `$cssMode`. الاسم العربي المعروض لكل تصميم مركزي في
+`Template::layoutLabel()` (مستخدم في `templates/index.blade.php` و`templates/show.blade.php`
+عشان مايتكررش الـ match في أكتر من فيو).
 
 كل تصميم غير "classic" (اللي هو نفس السلوك القديم بالحرف، عمود واحد بسيط زي زمان) بيحتاج يعرف
 شكل كل قسم (هيرو/جاليري/قايمة/cta/نص عادي) — ده بيتحسب في `SiteRenderer::classifySection()`
@@ -115,11 +120,16 @@ then: function (): void {
 - قسم فيه خانة `list` بيبقى `list`.
 - غير كده `text` (نص عادي).
 
-البارشيالز الفعلية: `site/partials/modern-section.blade.php` و`site/partials/gallery-section.blade.php`
-(بيتسويتشوا على `$section['kind']`)، بالإضافة لـ `site/partials/nav.blade.php` (نافبار بروابط
-تنقل، تسميات عربية معروفة للأقسام الشائعة + fallback لاسم القسم نفسه) و`site/partials/footer.blade.php`
-— الاتنين مشتركين بين modern وgallery. تصميم "classic" لسه بيستخدم `site/partials/section.blade.php`
-القديم زي ما هو بالحرف (صفر نافبار أو فوتر).
+كل ملفات التصميمات جوّه `resources/views/site/layouts/` — `classic.blade.php` بيستخدم
+`site/partials/section.blade.php` القديم (بس دلوقتي بياخد لمسة "hero/cta" برضه بدل ما يفضل
+مسطّح تماماً)، و`modern`/`gallery` ليهم بارشيالز خاصة بيهم (`modern-section.blade.php`/
+`gallery-section.blade.php`) بيتسويتشوا على `$section['kind']`. باقي الـ 10 تصميمات
+(split/magazine/bento/minimal/bold/glass/timeline/stack/diagonal/framed) كل واحد فيهم ملف
+واحد self-contained (نافبار + كل حالات الأقسام + فوتر جوّه نفس الملف) بدل التقسيم لبارشيال
+منفصل — أسهل مراجعة/تعديل لتصميم واحد من غير ما تقفز بين ملفات. `nav.blade.php` (نافبار "pill" عائم) و`footer.blade.php` مشتركين بس بين التصميمات اللي شكلها
+قريب من بعض (modern/gallery/bento/timeline/stack/diagonal)، والباقي (split/magazine/minimal/
+bold/glass/framed) عنده نافبار/فوتر خاص بيه مبني جوّه ملفه نفسه (مسطّح/بحدود رفيعة/بتباعد
+حروف... إلخ) عشان يفضل متسق مع هوية التصميم — "classic" لوحده من غير نافبار خالص.
 
 ### مكتبة القوالب الأصلية (Phase 7)
 ```bash

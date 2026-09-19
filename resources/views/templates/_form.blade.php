@@ -61,6 +61,16 @@
             <option value="classic" @selected($layout === 'classic')>كلاسيك — عمود واحد بسيط</option>
             <option value="modern" @selected($layout === 'modern')>مودرن — نافبار وهيرو وشبكة خدمات</option>
             <option value="gallery" @selected($layout === 'gallery')>جاليري — هيرو بصورة وتقسيمات متعرجة</option>
+            <option value="split" @selected($layout === 'split')>سبليت — هيرو نص/نص حاد الحواف</option>
+            <option value="magazine" @selected($layout === 'magazine')>مجلة — طابع تحريري بعناوين كبيرة</option>
+            <option value="bento" @selected($layout === 'bento')>بينتو — شبكة خلايا مختلفة الأحجام</option>
+            <option value="minimal" @selected($layout === 'minimal')>مينيمال — أبسط تصميم، بدون ظلال</option>
+            <option value="bold" @selected($layout === 'bold')>بولد — طباعة ضخمة وألوان صلدة</option>
+            <option value="glass" @selected($layout === 'glass')>جلاس — كروت زجاجية شفافة</option>
+            <option value="timeline" @selected($layout === 'timeline')>تايم لاين — خطوات بترتيب زمني</option>
+            <option value="stack" @selected($layout === 'stack')>ستاك — صور وكروت متراكبة بميلان</option>
+            <option value="diagonal" @selected($layout === 'diagonal')>دياجونال — قصّات مائلة بين الأقسام</option>
+            <option value="framed" @selected($layout === 'framed')>فريمد — إطار وزوايا بطابع رسمي</option>
         </select>
         @error('layout')
             <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>

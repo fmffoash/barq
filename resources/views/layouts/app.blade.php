@@ -52,5 +52,7 @@
     <main class="mx-auto max-w-6xl px-4 py-8">
         @yield('content')
     </main>
+
+    @stack('scripts')
 </body>
 </html>
