@@ -31,6 +31,9 @@ class SiteRenderer
                     ->map(fn ($slot) => [
                         'slot' => $slot,
                         'value' => $site->content($slot->key),
+                        // تخصيص لون/خط الخانة دي بس (Phase 8) — ['color' => ?, 'font' => ?]،
+                        // فاضي (null/null) لو الخانة من غير أي تخصيص، فبترجع للعام تلقائي.
+                        'style' => $site->styleFor($slot->key),
                     ])
                     ->filter(fn (array $item) => filled($item['value']))
                     ->values();
@@ -66,6 +69,7 @@ class SiteRenderer
             'project' => $project,
             'sections' => $sections,
             'colors' => $colors,
+            'font' => $variant?->font ?: 'cairo',
             'layout' => $template->layout ?: 'classic',
         ];
     }

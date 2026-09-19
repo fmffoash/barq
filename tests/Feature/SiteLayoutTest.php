@@ -146,6 +146,70 @@ class SiteLayoutTest extends TestCase
         }
     }
 
+    // Phase 8 (الدفعة التالتة) — خط عام للموقع كله + تخصيص لون/خط خانة واحدة بس.
+    public function test_the_variants_font_is_applied_as_a_css_custom_property_on_the_body(): void
+    {
+        $template = Template::factory()->create(['kind' => 'landing', 'layout' => 'modern']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان',
+            'slot_type' => 'text', 'sort_order' => 1,
+        ]);
+        $variant = \App\Models\TemplateVariant::factory()->for($template)->create(['font' => 'tajawal']);
+        $project = Project::factory()->for($template)->create(['template_variant_id' => $variant->id]);
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'أهلاً']]);
+
+        $response = $this->get($this->siteUrl($site));
+
+        $response->assertOk();
+        $response->assertSee('font-family: var(--font-tajawal);', false);
+    }
+
+    public function test_a_slot_level_style_override_renders_as_scoped_css_on_the_matching_data_slot(): void
+    {
+        $template = $this->buildTemplate('modern');
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create([
+            'content_json' => ['hero_title' => 'أهلاً بيكم في مطعمنا'],
+            'style_overrides_json' => ['hero_title' => ['color' => '#ff0000', 'font' => 'poppins']],
+        ]);
+
+        $response = $this->get($this->siteUrl($site));
+
+        $response->assertOk();
+        $response->assertSee('data-slot="hero_title"', false);
+        $response->assertSee('[data-slot="hero_title"]', false);
+        $response->assertSee('color: #ff0000 !important;', false);
+        $response->assertSee('font-family: var(--font-poppins) !important;', false);
+    }
+
+    public function test_saving_site_content_persists_and_clears_slot_style_overrides(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $template = Template::factory()->create(['kind' => 'landing']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان',
+            'slot_type' => 'text', 'sort_order' => 1,
+        ]);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'أهلاً']]);
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'أهلاً'],
+            'style' => ['hero_title' => ['color' => '#00ff00', 'font' => 'inter']],
+        ]);
+
+        $site->refresh();
+        $this->assertSame(['color' => '#00ff00', 'font' => 'inter'], $site->styleFor('hero_title'));
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'أهلاً'],
+            'style' => ['hero_title' => ['color' => '', 'font' => 'default']],
+        ]);
+
+        $site->refresh();
+        $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
+    }
+
     public function test_an_invalid_layout_value_is_rejected_when_updating_a_template(): void
     {
         $user = \App\Models\User::factory()->create();

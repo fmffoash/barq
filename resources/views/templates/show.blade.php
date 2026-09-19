@@ -104,6 +104,7 @@
                                 </div>
 
                                 @include('templates.partials.color-picker', ['colors' => $variant->colors_json])
+                                @include('templates.partials.font-select', ['font' => $variant->font])
 
                                 <div>
                                     <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (JSON)</label>
@@ -171,6 +172,7 @@
                         </div>
 
                         @include('templates.partials.color-picker', ['colors' => null])
+                        @include('templates.partials.font-select', ['font' => null])
 
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (JSON، اختياري)</label>

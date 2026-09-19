@@ -139,6 +139,48 @@
                                             class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
                                         >
                                 @endswitch
+
+                                @if (in_array($slot->slot_type, ['text', 'textarea', 'list']))
+                                    @php $override = $site?->styleFor($slot->key) ?? ['color' => null, 'font' => null]; @endphp
+                                    <details class="mt-2" @if ($override['color'] || $override['font']) open @endif>
+                                        <summary class="cursor-pointer text-xs text-amber-400/80 transition hover:text-amber-400">
+                                            تخصيص لون/خط الخانة دي بس
+                                        </summary>
+                                        <div class="mt-2 flex flex-wrap items-center gap-4 rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                                            <label class="flex items-center gap-2 text-xs text-slate-400">
+                                                <input
+                                                    type="checkbox"
+                                                    data-style-color-toggle
+                                                    data-target="style-color-{{ $slot->key }}"
+                                                    @checked($override['color'])
+                                                    class="h-3.5 w-3.5 rounded border-slate-700 bg-slate-950 text-amber-400 focus:ring-amber-400"
+                                                >
+                                                لون مخصص
+                                                <input
+                                                    type="color"
+                                                    id="style-color-{{ $slot->key }}"
+                                                    name="style[{{ $slot->key }}][color]"
+                                                    value="{{ old("style.{$slot->key}.color", $override['color'] ?: '#f1f5f9') }}"
+                                                    @disabled(! $override['color'])
+                                                    class="h-7 w-7 cursor-pointer rounded border-0 bg-transparent p-0"
+                                                >
+                                            </label>
+
+                                            <label class="flex items-center gap-2 text-xs text-slate-400">
+                                                الخط
+                                                <select
+                                                    name="style[{{ $slot->key }}][font]"
+                                                    class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-100 outline-none focus:border-amber-400"
+                                                >
+                                                    <option value="default" @selected(old("style.{$slot->key}.font", $override['font']) === null)>— الخط العام —</option>
+                                                    @foreach (\App\Models\TemplateVariant::FONTS as $fontKey => $fontLabel)
+                                                        <option value="{{ $fontKey }}" @selected(old("style.{$slot->key}.font", $override['font']) === $fontKey)>{{ $fontLabel }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </details>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -153,3 +195,21 @@
         </form>
     @endif
 @endsection
+
+@push('scripts')
+    <script>
+        // "لون مخصص" — الـ checkbox بيفعّل/يوقف مربع اللون؛ مربع لون disabled ملوش قيمة في
+        // الفورم خالص وقت الإرسال، فده اللي بيخلي "مفيش تخصيص" يترسل فعلاً بدل ما يبعت لون
+        // افتراضي عن طريق الغلط.
+        document.addEventListener('change', function (event) {
+            if (!event.target.matches('[data-style-color-toggle]')) {
+                return;
+            }
+
+            const target = document.getElementById(event.target.dataset.target);
+            if (target) {
+                target.disabled = !event.target.checked;
+            }
+        });
+    </script>
+@endpush

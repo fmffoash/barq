@@ -71,6 +71,8 @@
             <option value="stack" @selected($layout === 'stack')>ستاك — صور وكروت متراكبة بميلان</option>
             <option value="diagonal" @selected($layout === 'diagonal')>دياجونال — قصّات مائلة بين الأقسام</option>
             <option value="framed" @selected($layout === 'framed')>فريمد — إطار وزوايا بطابع رسمي</option>
+            <option value="neon" @selected($layout === 'neon')>نيون — عناوين وحدود متوهّجة</option>
+            <option value="duotone" @selected($layout === 'duotone')>دوتون — صور ثنائية اللون وبوستر جريء</option>
         </select>
         @error('layout')
             <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>

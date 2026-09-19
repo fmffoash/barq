@@ -7,6 +7,7 @@ use App\Models\TemplateVariant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 // إدارة نسخ القالب (الألوان والأقسام). القراءة والعرض بتتم من صفحة القالب نفسها
 // (TemplateController::show)، والكونترولر ده مسؤول بس عن الحفظ/التعديل/الحذف.
@@ -67,8 +68,11 @@ class TemplateVariantController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'colors_json' => ['nullable', 'json'],
+            'font' => ['nullable', Rule::in(array_keys(TemplateVariant::FONTS))],
             'sections_json' => ['nullable', 'json'],
         ]);
+
+        $data['font'] = ($data['font'] ?? null) ?: 'cairo';
 
         foreach (['colors_json', 'sections_json'] as $field) {
             $raw = $request->input($field);

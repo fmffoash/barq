@@ -1,12 +1,38 @@
 @import 'tailwindcss';
 
-/* خط Cairo مستضاف محلياً (باكدج @fontsource) — مش بيتم جلبه من CDN خارجي وقت الـ build،
-   عشان مانعتمدش على اتصال إنترنت خارجي وقت بناء الأصول (Vite build). */
+/* خطوط المواقع المنشورة كلها مستضافة محلياً (باكدجات @fontsource) — مش بيتم جلبها من CDN
+   خارجي وقت الـ build، عشان مانعتمدش على اتصال إنترنت خارجي وقت بناء الأصول (Vite build).
+   الخط الافتراضي لسه Cairo (لوحة التحكم + fallback أي موقع منشور من غير اختيار خط صريح)،
+   والباقي (Phase 8) اختياري لكل TemplateVariant عن طريق عمود "font". */
 @import '@fontsource/cairo/400.css';
 @import '@fontsource/cairo/500.css';
 @import '@fontsource/cairo/600.css';
 @import '@fontsource/cairo/700.css';
 @import '@fontsource/cairo/800.css';
+
+@import '@fontsource/tajawal/400.css';
+@import '@fontsource/tajawal/500.css';
+@import '@fontsource/tajawal/700.css';
+@import '@fontsource/tajawal/800.css';
+
+@import '@fontsource/almarai/400.css';
+@import '@fontsource/almarai/700.css';
+@import '@fontsource/almarai/800.css';
+
+@import '@fontsource/ibm-plex-sans-arabic/400.css';
+@import '@fontsource/ibm-plex-sans-arabic/500.css';
+@import '@fontsource/ibm-plex-sans-arabic/600.css';
+@import '@fontsource/ibm-plex-sans-arabic/700.css';
+
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -14,4 +40,13 @@
 @theme {
     --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* كل قيمة هنا مرجع لأي عنصر يستخدم var(--font-{key}) — سواء الخط العام لتصميم كامل
+       (site/document.blade.php) أو تخصيص خانة واحدة بس (per-slot override، Phase 8). */
+    --font-cairo: 'Cairo', sans-serif;
+    --font-tajawal: 'Tajawal', sans-serif;
+    --font-almarai: 'Almarai', sans-serif;
+    --font-ibm-plex-arabic: 'IBM Plex Sans Arabic', sans-serif;
+    --font-poppins: 'Poppins', sans-serif;
+    --font-inter: 'Inter', sans-serif;
 }

@@ -35,9 +35,27 @@ class GeneratedSiteController extends Controller
 
         $site = $project->site()->firstOrFail();
         $content = $site->content_json ?? [];
+        $styleOverrides = $site->style_overrides_json ?? [];
 
         foreach ($project->template->slots as $slot) {
             $key = $slot->key;
+
+            // تخصيص لون/خط الخانة دي بس (Phase 8) — بيتقرا لنص/فقرة/قايمة بس (صفر لون/خط
+            // لصورة أو زرار رابط، مالهمش معنى "شكل كتابة"). حقل فاضي بيمسح التخصيص القديم
+            // بدل ما يسيب قيمة فاضية عالقة في الـ JSON.
+            if (in_array($slot->slot_type, ['text', 'textarea', 'list'], true)) {
+                $color = trim((string) $request->input("style.{$key}.color"));
+                $font = (string) $request->input("style.{$key}.font");
+
+                if ($color !== '' || ($font !== '' && $font !== 'default')) {
+                    $styleOverrides[$key] = array_filter([
+                        'color' => $color !== '' ? $color : null,
+                        'font' => ($font !== '' && $font !== 'default') ? $font : null,
+                    ]);
+                } else {
+                    unset($styleOverrides[$key]);
+                }
+            }
 
             if ($slot->slot_type === 'image') {
                 if ($request->hasFile("content_files.{$key}")) {
@@ -67,7 +85,10 @@ class GeneratedSiteController extends Controller
             $content[$key] = $value;
         }
 
-        $site->update(['content_json' => $content]);
+        $site->update([
+            'content_json' => $content,
+            'style_overrides_json' => $styleOverrides === [] ? null : $styleOverrides,
+        ]);
 
         return redirect()
             ->route('projects.show', $project)

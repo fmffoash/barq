@@ -15,11 +15,24 @@ class TemplateVariant extends Model
     /** @use HasFactory<TemplateVariantFactory> */
     use HasFactory;
 
+    // الخطوط المتاحة للموقع كله — كل مفتاح هنا لازم يقابله `--font-{key}` معرّف في
+    // resources/css/app.css (@theme). نفس المفاتيح دي مستخدمة كمان في تخصيص خط خانة واحدة بس
+    // (GeneratedSite::styleFor()، Phase 8).
+    public const FONTS = [
+        'cairo' => 'كايرو (افتراضي)',
+        'tajawal' => 'تجوال',
+        'almarai' => 'المراعي',
+        'ibm-plex-arabic' => 'آي بي إم بلكس عربي',
+        'poppins' => 'بوبينز (لاتيني)',
+        'inter' => 'إنتر (لاتيني)',
+    ];
+
     protected $fillable = [
         'template_id',
         'name',
         'slug',
         'colors_json',
+        'font',
         'sections_json',
         'is_default',
     ];

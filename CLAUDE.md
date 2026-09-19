@@ -7,7 +7,7 @@
 **ملحوظة مهمة:** برق مشروع مستقل تماماً — كود منفصل بالكامل عن نظام Tafra ERP (اللي شغّال
 على نفس السيرفر لاحقاً كـ subdomain تاني). صفر مشاركة كود أو داتابيز بينهم.
 
-## الحالة الحالية (Phase 1-8 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
+## الحالة الحالية (Phase 1-9 خلصوا كلهم — تفاصيل كل فيز في `ROADMAP.md`)
 اللي شغّال فعلياً دلوقتي: أدمن واحد بيدخل ويعمل قوالب بخاناتها (slots) يدوياً أو من مكتبة
 قوالب قابلة للبحث/الفلترة، يعمل منها مشروع، ويملّي الخانات يدوي أو بمساعدة اقتراح محتوى
 بالذكاء الاصطناعي (Ollama محلي، صفر بيانات بتتبعت لأي API خارجي). الموقع الناتج (قوالب
@@ -21,11 +21,14 @@ GitHub بس. فيه دلوقتي (Phase 6) خطوات ديبلوي جاهزة ب
 + قالب `.env` إنتاج + دليل خطوة بخطوة) — بس ده توثيق/تجهيز، مش تنفيذ فعلي؛ لازم شخص أو جلسة
 عندها وصول SSH حقيقي للسيرفر تنفّذها.
 
-قوالب `landing` بقى ليها 13 تصميم بصري مختلف فعلياً (`Template::LAYOUTS` — Phase 7، شوف
+قوالب `landing` بقى ليها 15 تصميم بصري مختلف فعلياً (`Template::LAYOUTS` — Phase 7/8، شوف
 "التصميمات البصرية المتعددة" تحت)، ومعاها مكتبة قوالب أصلية جاهزة (`php artisan
 barq:seed-template-library`) بتغطي 14 فئة نشاط شائعة × 3 قوالب لكل فئة (42 قالب بمحتوى عربي
-افتراضي جاهز، موزّعة على الـ 13 تصميم). تغيير الألوان بقى بمنتقي ألوان بصري (`templates/
-partials/color-picker.blade.php`) بدل كتابة JSON خام يدوي.
+افتراضي جاهز، موزّعة على الـ 15 تصميم). تغيير الألوان بقى بمنتقي ألوان بصري (`templates/
+partials/color-picker.blade.php`) بدل كتابة JSON خام يدوي، ومعاه اختيار خط عام للموقع كله
+(`TemplateVariant.font`، 6 خطوط عربي/لاتيني). كل خانة نص/فقرة/قايمة كمان ممكن تاخد لون/خط
+تخصيصي خاص بيها بس (`GeneratedSite.style_overrides_json`، Phase 9) من صفحة تعبئة محتوى
+المشروع نفسها.
 
 ## التقنيات
 Laravel 13 · PHP 8.3+ (القيد الفعلي في `composer.json`، مش 8.5 زي ما كان مكتوب هنا غلط —
@@ -56,7 +59,7 @@ docs/wordpress-mu-plugin.php — الملف deliverable اللي بينتقل ي
 deploy/                   — كونفيج nginx + قالب .env إنتاج + دليل النشر خطوة بخطوة (Phase 6،
                              توثيق/تجهيز بس — التنفيذ الفعلي محتاج وصول SSH حقيقي للسيرفر)
 resources/views/site/     — الشِل والبارشيالز اللي بترندر الموقع المنشور فعلياً للعميل
-                             (layouts/*.blade.php — الـ 13 تصميم بصري، Phase 7)
+                             (layouts/*.blade.php — الـ 15 تصميم بصري، Phase 7/8)
 resources/views/templates/partials/color-picker.blade.php — منتقي ألوان بصري (بدل JSON خام)
 resources/views/errors/   — 404.blade.php (نفس التصميم لمسارات لوحة التحكم والمواقع المنشورة)
 tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest,
@@ -99,9 +102,9 @@ then: function (): void {
 مشروع وقت التشغيل (runtime)، مش وقت الـ build.
 
 ### التصميمات البصرية المتعددة (Phase 7)
-كل قالب `landing` بيختار `layout` واحد من `Template::LAYOUTS` (13 تصميم: `classic`/`modern`/
+كل قالب `landing` بيختار `layout` واحد من `Template::LAYOUTS` (15 تصميم: `classic`/`modern`/
 `gallery`/`split`/`magazine`/`bento`/`minimal`/`bold`/`glass`/`timeline`/`stack`/`diagonal`/
-`framed`) — الاختلاف بينهم **بس** في شكل العرض، صفر تأثير على بنية الخانات أو اقتراح المحتوى
+`framed`/`neon`/`duotone`) — الاختلاف بينهم **بس** في شكل العرض، صفر تأثير على بنية الخانات أو اقتراح المحتوى
 بالذكاء الاصطناعي (`OllamaService` وباقي النظام بيشتغلوا على `TemplateSlot` نفسه أياً كان الـ
 layout). `SiteController`/`SiteExportService` الاتنين بيرندروا عن طريق شِل واحد مشترك
 (`site/document.blade.php`) بياخد `layout` من `SiteRenderer::render()` ويعمل
@@ -129,7 +132,33 @@ layout). `SiteController`/`SiteExportService` الاتنين بيرندروا ع
 منفصل — أسهل مراجعة/تعديل لتصميم واحد من غير ما تقفز بين ملفات. `nav.blade.php` (نافبار "pill" عائم) و`footer.blade.php` مشتركين بس بين التصميمات اللي شكلها
 قريب من بعض (modern/gallery/bento/timeline/stack/diagonal)، والباقي (split/magazine/minimal/
 bold/glass/framed) عنده نافبار/فوتر خاص بيه مبني جوّه ملفه نفسه (مسطّح/بحدود رفيعة/بتباعد
-حروف... إلخ) عشان يفضل متسق مع هوية التصميم — "classic" لوحده من غير نافبار خالص.
+حروف... إلخ) عشان يفضل متسق مع هوية التصميم — "classic" لوحده من غير نافبار خالص. آخر
+اتنين اتضافوا (`neon` — عناوين/حدود متوهّجة بـ `text-shadow`/`box-shadow`، `duotone` — صور
+بتأثير ثنائي اللون عن طريق `mix-blend-mode`) نفس نمط الملف الواحد self-contained.
+
+### الخط العام + تخصيص خط/لون خانة واحدة (Phase 9)
+6 خطوط متاحة (`TemplateVariant::FONTS`: `cairo`/`tajawal`/`almarai`/`ibm-plex-arabic`/
+`poppins`/`inter`، كل واحد باكدج `@fontsource/*` مستضاف محلياً + متعرّف كـ `--font-{key}` في
+`resources/css/app.css`). **مستويين من التخصيص، منفصلين تماماً:**
+- **الخط العام للموقع كله** — `TemplateVariant.font` (زي الألوان بالظبط، عمود على نفس الجدول).
+  `SiteRenderer` بيرجّعه كـ `font`، و`site/document.blade.php` بيحطه `font-family: var(--font-
+  {key})` على الـ `<body>` (بدل الكلاس الثابت `font-[Cairo]` اللي كان موجود قبل كده).
+- **لون/خط خانة واحدة بس** (نص/فقرة/قايمة بس — صفر معنى للصور أو تسمية زرار الرابط) —
+  `GeneratedSite.style_overrides_json` (JSON: `{"hero_title": {"color": "#ff0000", "font":
+  "tajawal"}}`)، بيتقرا عن طريق `GeneratedSite::styleFor($slotKey)`. بدل ما نلمس كل تصميم من
+  الـ 15 بمنطق `style=` شرطي، `SiteRenderer` بيحط `'style' => $site->styleFor($slot->key)` على
+  كل `$item`، وكل تصميم بس بيحط خاصية `data-slot="{{ $item['slot']->key }}"` على العنصر اللي
+  بيعرض النص (بدون أي منطق ستايل جوّه التصميم نفسه). `site/document.blade.php` بيجمع كل
+  التخصيصات الموجودة فعلاً ويولّدلها `<style>` block واحد بـ attribute selector
+  (`[data-slot="..."] { color: ... !important; font-family: ... !important; }`) — فالتخصيص
+  رندر بحت (CSS)، صفر تأثير على `content_json` أو أي منطق تاني.
+  **الواجهة الإدارية:** فورم تعبئة محتوى المشروع (`projects/site-edit.blade.php`) فيه
+  `<details>` "تخصيص لون/خط الخانة دي بس" تحت كل خانة نص/فقرة/قايمة — checkbox بيفعّل مربع
+  لون (مربع لون `disabled` مالوش قيمة في الفورم أصلاً وقت الإرسال، وده اللي بيخلي "مفيش
+  تخصيص" يترسل صح)، وdropdown اختيار خط بقيمة "— الخط العام —" كخيار افتراضي يعني "امسح
+  التخصيص". `GeneratedSiteController::update()` بيبني `style_overrides_json` من `style[{key}]
+  [color]`/`style[{key}][font]`، وبيمسح مفتاح أي خانة القيمتين بتوعها فاضيين (مفيش تراكم
+  JSON فاضي).
 
 ### مكتبة القوالب الأصلية (Phase 7)
 ```bash

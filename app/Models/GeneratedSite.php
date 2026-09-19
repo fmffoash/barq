@@ -19,6 +19,7 @@ class GeneratedSite extends Model
         'project_id',
         'slug',
         'content_json',
+        'style_overrides_json',
         'status',
         'exported_at',
         'last_generated_at',
@@ -32,6 +33,7 @@ class GeneratedSite extends Model
     {
         return [
             'content_json' => 'array',
+            'style_overrides_json' => 'array',
             'exported_at' => 'datetime',
             'last_generated_at' => 'datetime',
             'wp_provisioned_at' => 'datetime',
@@ -53,6 +55,18 @@ class GeneratedSite extends Model
     public function content(string $key, mixed $default = null): mixed
     {
         return data_get($this->content_json, $key, $default);
+    }
+
+    // تخصيص لون/خط خانة واحدة بس (بدل الألوان/الخط العامة بتاعة الموقع كله، Phase 8) — بيرجع
+    // ['color' => ?string, 'font' => ?string]، والاتنين null لو الخانة دي من غير أي تخصيص.
+    public function styleFor(string $slotKey): array
+    {
+        $override = data_get($this->style_overrides_json, $slotKey, []);
+
+        return [
+            'color' => $override['color'] ?? null,
+            'font' => $override['font'] ?? null,
+        ];
     }
 
     // اتعمل فعلاً site حقيقي على شبكة الـ WordPress ولا لسه (Phase 5). wp_site_id بيتملى

@@ -58,6 +58,7 @@
                     <ul class="grid gap-4 sm:grid-cols-2">
                         @foreach ((array) $value as $listItem)
                             <li
+                                data-slot="{{ $slot->key }}"
                                 class="flex items-start gap-3 rounded-[1.5rem] px-5 py-4 text-base leading-relaxed shadow-sm"
                                 style="background-color: {{ $isHero || $isCta ? 'rgba(255,255,255,.12)' : 'var(--site-background)' }}; {{ $isHero || $isCta ? 'color: white;' : '' }}"
                             >
@@ -70,6 +71,7 @@
 
                 @case('textarea')
                     <p
+                        data-slot="{{ $slot->key }}"
                         class="whitespace-pre-line text-lg leading-loose"
                         style="color: {{ $isHero || $isCta ? 'rgba(255,255,255,.85)' : 'var(--site-muted)' }};"
                     >
@@ -79,6 +81,7 @@
 
                 @default
                     <h2
+                        data-slot="{{ $slot->key }}"
                         @class([
                             'text-3xl font-bold sm:text-4xl',
                             'text-white' => $isHero || $isCta,
