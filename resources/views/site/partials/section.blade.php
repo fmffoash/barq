@@ -1,10 +1,27 @@
 {{--
-    بارشيال عام واحد بيرندر أي قسم أياً كان اسمه (hero/services/contact/...) — كل خانة جوّه
-    القسم بتترندر حسب نوعها (slot_type)، فمفيش داعي لبارشيال منفصل لكل قسم ممكن صاحب القالب
-    يخترعه.
+    تصميم "كلاسيك" — أبسط الثلاثة هيكلياً (عمود واحد، بدون نافبار)، لكن بنفس لغة التصميم
+    (كروت دائرية الحواف، ظلال، هيرو مميز) زي modern/gallery — مش عمود نص عادي زي زمان.
+    بيستخدم نفس $section['kind'] المحسوبة في SiteRenderer (hero/gallery/list/cta/text).
 --}}
-<section id="{{ $section['key'] }}" class="border-b border-white/5 px-6 py-16 last:border-b-0 sm:px-10">
-    <div class="mx-auto flex max-w-4xl flex-col gap-8">
+@php
+    $textItems = $section['items']->whereIn('slot.slot_type', ['text', 'textarea']);
+    $listItems = $section['items']->where('slot.slot_type', 'list');
+    $imageItems = $section['items']->where('slot.slot_type', 'image');
+    $linkItems = $section['items']->where('slot.slot_type', 'link');
+    $isHero = $section['kind'] === 'hero';
+    $isCta = $section['kind'] === 'cta';
+@endphp
+
+<section id="{{ $section['key'] }}" class="px-4 py-10 sm:px-8">
+    <div
+        @class([
+            'mx-auto flex max-w-3xl flex-col items-center gap-5 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl' => $isHero || $isCta,
+            'mx-auto flex max-w-4xl flex-col gap-6 rounded-[2rem] p-8 shadow-md sm:p-10' => ! $isHero && ! $isCta,
+        ])
+        style="{{ $isHero || $isCta
+            ? 'background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));'
+            : 'background-color: var(--site-surface);' }}"
+    >
         @foreach ($section['items'] as $item)
             @php $slot = $item['slot']; $value = $item['value']; @endphp
 
@@ -13,46 +30,62 @@
                     <img
                         src="{{ $value }}"
                         alt="{{ $slot->label() }}"
-                        class="mx-auto max-h-[420px] w-full rounded-2xl object-cover shadow-lg"
+                        @class([
+                            'mx-auto w-full rounded-[1.75rem] object-cover shadow-xl',
+                            'max-h-[420px] ring-4 ring-white/20' => $isHero,
+                            'max-h-[380px]' => ! $isHero,
+                        ])
                         loading="lazy"
                     >
                     @break
 
                 @case('link')
-                    <div class="text-center">
-                        <a
-                            href="{{ $value }}"
-                            target="_blank"
-                            rel="noopener"
-                            class="inline-block rounded-full px-8 py-3 text-base font-semibold shadow-md transition hover:opacity-90"
-                            style="background-color: var(--site-primary); color: var(--site-background);"
-                        >
-                            {{ $slot->label() }}
-                        </a>
-                    </div>
+                    <a
+                        href="{{ $value }}"
+                        target="_blank"
+                        rel="noopener"
+                        @class([
+                            'inline-block rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90',
+                            'bg-white' => $isHero || $isCta,
+                        ])
+                        style="{{ $isHero || $isCta ? 'color: var(--site-primary);' : 'background-color: var(--site-primary); color: var(--site-background);' }}"
+                    >
+                        {{ $slot->label() }}
+                    </a>
                     @break
 
                 @case('list')
                     <ul class="grid gap-4 sm:grid-cols-2">
                         @foreach ((array) $value as $listItem)
                             <li
-                                class="rounded-xl border px-5 py-4 text-base leading-relaxed"
-                                style="background-color: var(--site-surface); border-color: color-mix(in srgb, var(--site-text) 10%, transparent);"
+                                class="flex items-start gap-3 rounded-[1.5rem] px-5 py-4 text-base leading-relaxed shadow-sm"
+                                style="background-color: {{ $isHero || $isCta ? 'rgba(255,255,255,.12)' : 'var(--site-background)' }}; {{ $isHero || $isCta ? 'color: white;' : '' }}"
                             >
-                                {{ $listItem }}
+                                <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $isHero || $isCta ? 'white' : 'var(--site-primary)' }};"></span>
+                                <span>{{ $listItem }}</span>
                             </li>
                         @endforeach
                     </ul>
                     @break
 
                 @case('textarea')
-                    <p class="whitespace-pre-line text-lg leading-loose" style="color: var(--site-muted);">
+                    <p
+                        class="whitespace-pre-line text-lg leading-loose"
+                        style="color: {{ $isHero || $isCta ? 'rgba(255,255,255,.85)' : 'var(--site-muted)' }};"
+                    >
                         {{ $value }}
                     </p>
                     @break
 
                 @default
-                    <h2 class="text-3xl font-bold sm:text-4xl">{{ $value }}</h2>
+                    <h2
+                        @class([
+                            'text-3xl font-bold sm:text-4xl',
+                            'text-white' => $isHero || $isCta,
+                        ])
+                    >
+                        {{ $value }}
+                    </h2>
             @endswitch
         @endforeach
     </div>

@@ -1,8 +1,7 @@
 {{--
-    نافبار مشترك بين تصميمي modern وgallery — روابط تنقل سريعة لكل قسم (غير الهيرو، لأنه أول
-    حاجة الزائر بيشوفها أصلاً). عنوان كل رابط بيتحدد من section_key نفسه: تسمية عربية معروفة
-    لو الاسم شائع (hero/about/services/...)، وإلا الاسم نفسه بعد تنظيفه كخيار احتياطي — القالب
-    ممكن يستخدم أي اسم قسم حر، فمفيش افتراض إن التسميات دي هتغطي كل الحالات.
+    نافبار على شكل "pill" عائم بدل الشريط المسطّح القديم — أقرب لشكل مواقع الوكالات/المنتجات
+    الحديثة. مشترك بين modern وgallery. عنوان كل رابط بيتحدد من section_key نفسه: تسمية عربية
+    معروفة لو الاسم شائع (hero/about/services/...)، وإلا الاسم نفسه بعد تنظيفه كخيار احتياطي.
 --}}
 @php
     $navSections = $sections->skip(1);
@@ -21,20 +20,30 @@
 @endphp
 
 @if ($navSections->isNotEmpty())
-    <nav class="sticky top-0 z-10 border-b border-white/5 backdrop-blur" style="background-color: color-mix(in srgb, var(--site-background) 85%, transparent);">
-        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 sm:px-10">
-            <a href="#{{ $sections->first()['key'] }}" class="text-lg font-bold" style="color: var(--site-primary);">
+    <div class="sticky top-4 z-20 px-4 sm:px-8">
+        <nav
+            class="mx-auto flex max-w-4xl items-center justify-between gap-4 rounded-full border border-white/5 px-5 py-3 shadow-lg backdrop-blur-md"
+            style="background-color: color-mix(in srgb, var(--site-surface) 88%, transparent);"
+        >
+            <a href="#{{ $sections->first()['key'] }}" class="text-base font-extrabold" style="color: var(--site-primary);">
                 {{ $project->name }}
             </a>
-            <ul class="flex flex-wrap items-center gap-5 text-sm font-medium">
+            <ul class="hidden flex-wrap items-center gap-6 text-sm font-medium sm:flex">
                 @foreach ($navSections as $navSection)
                     <li>
-                        <a href="#{{ $navSection['key'] }}" class="transition hover:opacity-75">
+                        <a href="#{{ $navSection['key'] }}" class="transition hover:opacity-70">
                             {{ $navLabel($navSection['key']) }}
                         </a>
                     </li>
                 @endforeach
             </ul>
-        </div>
-    </nav>
+            <a
+                href="#{{ $sections->last()['key'] }}"
+                class="shrink-0 rounded-full px-4 py-2 text-xs font-bold shadow-sm transition hover:opacity-90"
+                style="background-color: var(--site-primary); color: var(--site-background);"
+            >
+                {{ $navLabel($sections->last()['key']) }}
+            </a>
+        </nav>
+    </div>
 @endif

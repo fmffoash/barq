@@ -46,7 +46,7 @@
                     <img
                         src="{{ $mainImage['value'] }}"
                         alt="{{ $mainImage['slot']->label() }}"
-                        class="aspect-[4/3] w-full flex-1 rounded-2xl object-cover shadow-lg lg:w-1/2"
+                        class="aspect-[4/3] w-full flex-1 rounded-[1.75rem] object-cover shadow-2xl lg:w-1/2"
                         loading="lazy"
                     >
                 @endif
@@ -68,7 +68,7 @@
                         <img
                             src="{{ $item['value'] }}"
                             alt="{{ $item['slot']->label() }}"
-                            class="aspect-square w-full rounded-xl object-cover shadow-md"
+                            class="aspect-square w-full rounded-[1.5rem] object-cover shadow-lg"
                             loading="lazy"
                         >
                     @endforeach
@@ -78,21 +78,28 @@
         @break
 
     @case('list')
-        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10" style="background-color: var(--site-surface);">
-            <div class="mx-auto flex max-w-2xl flex-col gap-6">
-                @foreach ($textItems as $item)
-                    @if ($item['slot']->slot_type === 'text')
-                        <h2 class="text-center text-3xl font-bold">{{ $item['value'] }}</h2>
-                    @else
-                        <p class="text-center leading-loose" style="color: var(--site-muted);">{{ $item['value'] }}</p>
-                    @endif
-                @endforeach
+        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+            <div class="mx-auto flex max-w-4xl flex-col gap-8">
+                @if ($textItems->isNotEmpty())
+                    <div class="text-center">
+                        @foreach ($textItems as $item)
+                            @if ($item['slot']->slot_type === 'text')
+                                <h2 class="text-3xl font-bold">{{ $item['value'] }}</h2>
+                            @else
+                                <p class="mt-3 leading-loose" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
 
                 @foreach ($listItems as $item)
-                    <ul class="flex flex-col gap-3">
+                    <ul class="grid gap-4 sm:grid-cols-2">
                         @foreach ((array) $item['value'] as $listItem)
-                            <li class="flex items-start gap-3 text-base leading-relaxed">
-                                <span class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: var(--site-primary);"></span>
+                            <li
+                                class="flex items-start gap-3 rounded-[1.5rem] p-5 text-base leading-relaxed shadow-md"
+                                style="background-color: var(--site-surface);"
+                            >
+                                <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: var(--site-primary);"></span>
                                 <span>{{ $listItem }}</span>
                             </li>
                         @endforeach
@@ -103,13 +110,16 @@
         @break
 
     @case('cta')
-        <section id="{{ $section['key'] }}" class="px-6 py-16 text-center sm:px-10">
-            <div class="mx-auto flex max-w-2xl flex-col items-center gap-4">
+        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+            <div
+                class="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl"
+                style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
+            >
                 @foreach ($textItems as $item)
                     @if ($item['slot']->slot_type === 'text')
-                        <h2 class="text-3xl font-bold">{{ $item['value'] }}</h2>
+                        <h2 class="text-3xl font-bold text-white">{{ $item['value'] }}</h2>
                     @else
-                        <p class="leading-loose" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                        <p class="leading-loose" style="color: rgba(255,255,255,.85);">{{ $item['value'] }}</p>
                     @endif
                 @endforeach
 
@@ -118,8 +128,8 @@
                         href="{{ $item['value'] }}"
                         target="_blank"
                         rel="noopener"
-                        class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-semibold shadow-lg transition hover:opacity-90"
-                        style="background-color: var(--site-primary); color: var(--site-background);"
+                        class="mt-2 inline-block rounded-full bg-white px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90"
+                        style="color: var(--site-primary);"
                     >
                         {{ $item['slot']->label() }}
                     </a>

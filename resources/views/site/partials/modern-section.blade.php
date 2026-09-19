@@ -3,56 +3,58 @@
     $listItems = $section['items']->where('slot.slot_type', 'list');
     $imageItems = $section['items']->where('slot.slot_type', 'image');
     $linkItems = $section['items']->where('slot.slot_type', 'link');
-    $bandSurface = $index % 2 === 1;
 @endphp
 
 @switch($section['kind'])
     @case('hero')
-        <section
-            id="{{ $section['key'] }}"
-            class="px-6 py-20 text-center sm:px-10 sm:py-28"
-            style="background-color: var(--site-surface);"
-        >
-            <div class="mx-auto flex max-w-3xl flex-col items-center gap-5">
-                @foreach ($textItems as $item)
-                    @if ($item['slot']->slot_type === 'text')
-                        <h1 class="text-4xl font-extrabold sm:text-5xl">{{ $item['value'] }}</h1>
-                    @else
-                        <p class="text-lg leading-loose sm:text-xl" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+        @php $heroImage = $imageItems->first(); @endphp
+        <section id="{{ $section['key'] }}" class="px-4 pb-10 pt-8 sm:px-8 sm:pt-14">
+            <div
+                class="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] shadow-2xl"
+                style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
+            >
+                <div class="grid items-center gap-10 px-8 py-14 sm:px-12 sm:py-20 {{ $heroImage ? 'lg:grid-cols-2' : '' }}">
+                    <div class="relative z-10 flex flex-col items-start gap-5 text-right {{ $heroImage ? 'order-2 lg:order-1' : 'mx-auto max-w-2xl items-center text-center' }}">
+                        @foreach ($textItems as $item)
+                            @if ($item['slot']->slot_type === 'text')
+                                <h1 class="text-4xl font-extrabold leading-tight text-white sm:text-5xl">{{ $item['value'] }}</h1>
+                            @else
+                                <p class="text-lg leading-loose" style="color: rgba(255,255,255,.85);">{{ $item['value'] }}</p>
+                            @endif
+                        @endforeach
+
+                        @foreach ($linkItems as $item)
+                            <a
+                                href="{{ $item['value'] }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="mt-2 inline-block rounded-full bg-white px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90"
+                                style="color: var(--site-primary);"
+                            >
+                                {{ $item['slot']->label() }}
+                            </a>
+                        @endforeach
+                    </div>
+
+                    @if ($heroImage)
+                        <div class="relative order-1 lg:order-2">
+                            <div class="absolute -inset-8 rounded-full opacity-30 blur-3xl" style="background-color: var(--site-background);"></div>
+                            <img
+                                src="{{ $heroImage['value'] }}"
+                                alt="{{ $heroImage['slot']->label() }}"
+                                class="relative aspect-square w-full rounded-[2rem] object-cover shadow-2xl ring-4 ring-white/20"
+                                loading="lazy"
+                            >
+                        </div>
                     @endif
-                @endforeach
-
-                @foreach ($linkItems as $item)
-                    <a
-                        href="{{ $item['value'] }}"
-                        target="_blank"
-                        rel="noopener"
-                        class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-semibold shadow-lg transition hover:opacity-90"
-                        style="background-color: var(--site-primary); color: var(--site-background);"
-                    >
-                        {{ $item['slot']->label() }}
-                    </a>
-                @endforeach
-
-                @foreach ($imageItems as $item)
-                    <img
-                        src="{{ $item['value'] }}"
-                        alt="{{ $item['slot']->label() }}"
-                        class="mt-4 max-h-[420px] w-full rounded-2xl object-cover shadow-xl"
-                        loading="lazy"
-                    >
-                @endforeach
+                </div>
             </div>
         </section>
         @break
 
     @case('gallery')
-        <section
-            id="{{ $section['key'] }}"
-            class="px-6 py-16 sm:px-10"
-            style="background-color: {{ $bandSurface ? 'var(--site-surface)' : 'var(--site-background)' }};"
-        >
-            <div class="mx-auto flex max-w-5xl flex-col gap-8">
+        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+            <div class="mx-auto flex max-w-6xl flex-col gap-10">
                 @if ($textItems->isNotEmpty())
                     <div class="mx-auto max-w-2xl text-center">
                         @foreach ($textItems as $item)
@@ -65,12 +67,16 @@
                     </div>
                 @endif
 
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
                         <img
                             src="{{ $item['value'] }}"
                             alt="{{ $item['slot']->label() }}"
-                            class="aspect-square w-full rounded-xl object-cover shadow-md"
+                            @class([
+                                'w-full rounded-[1.75rem] object-cover shadow-xl',
+                                'col-span-2 row-span-2 aspect-square' => $loop->first,
+                                'aspect-square' => ! $loop->first,
+                            ])
                             loading="lazy"
                         >
                     @endforeach
@@ -80,12 +86,8 @@
         @break
 
     @case('list')
-        <section
-            id="{{ $section['key'] }}"
-            class="px-6 py-16 sm:px-10"
-            style="background-color: {{ $bandSurface ? 'var(--site-surface)' : 'var(--site-background)' }};"
-        >
-            <div class="mx-auto flex max-w-5xl flex-col gap-8">
+        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+            <div class="mx-auto flex max-w-6xl flex-col gap-10">
                 @if ($textItems->isNotEmpty())
                     <div class="mx-auto max-w-2xl text-center">
                         @foreach ($textItems as $item)
@@ -99,13 +101,19 @@
                 @endif
 
                 @foreach ($listItems as $item)
-                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ((array) $item['value'] as $listItem)
                             <li
-                                class="rounded-xl border-r-4 px-5 py-4 text-base leading-relaxed shadow-sm"
-                                style="background-color: var(--site-background); border-color: var(--site-primary);"
+                                class="flex items-start gap-4 rounded-[1.75rem] p-6 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+                                style="background-color: var(--site-surface);"
                             >
-                                {{ $listItem }}
+                                <span
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                                    style="background-color: color-mix(in srgb, var(--site-primary) 18%, transparent); color: var(--site-primary);"
+                                >
+                                    {{ $loop->iteration }}
+                                </span>
+                                <span class="pt-1 text-base leading-relaxed">{{ $listItem }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -115,17 +123,16 @@
         @break
 
     @case('cta')
-        <section
-            id="{{ $section['key'] }}"
-            class="px-6 py-16 text-center sm:px-10"
-            style="background-color: var(--site-surface);"
-        >
-            <div class="mx-auto flex max-w-2xl flex-col items-center gap-4">
+        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+            <div
+                class="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl"
+                style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
+            >
                 @foreach ($textItems as $item)
                     @if ($item['slot']->slot_type === 'text')
-                        <h2 class="text-3xl font-bold">{{ $item['value'] }}</h2>
+                        <h2 class="text-3xl font-bold text-white">{{ $item['value'] }}</h2>
                     @else
-                        <p class="leading-loose" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                        <p class="leading-loose" style="color: rgba(255,255,255,.85);">{{ $item['value'] }}</p>
                     @endif
                 @endforeach
 
@@ -134,8 +141,8 @@
                         href="{{ $item['value'] }}"
                         target="_blank"
                         rel="noopener"
-                        class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-semibold shadow-lg transition hover:opacity-90"
-                        style="background-color: var(--site-primary); color: var(--site-background);"
+                        class="mt-2 inline-block rounded-full bg-white px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90"
+                        style="color: var(--site-primary);"
                     >
                         {{ $item['slot']->label() }}
                     </a>
@@ -145,12 +152,11 @@
         @break
 
     @default
-        <section
-            id="{{ $section['key'] }}"
-            class="px-6 py-16 sm:px-10"
-            style="background-color: {{ $bandSurface ? 'var(--site-surface)' : 'var(--site-background)' }};"
-        >
-            <div class="mx-auto flex max-w-2xl flex-col gap-4 text-center">
+        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+            <div
+                class="mx-auto flex max-w-3xl flex-col gap-4 rounded-[2rem] p-10 text-center shadow-md"
+                style="background-color: var(--site-surface);"
+            >
                 @foreach ($section['items'] as $item)
                     @if ($item['slot']->slot_type === 'text')
                         <h2 class="text-3xl font-bold">{{ $item['value'] }}</h2>
