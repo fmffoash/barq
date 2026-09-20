@@ -36,6 +36,11 @@ class OllamaService
                     'prompt' => $this->buildPrompt($suggestableSlots, $businessDescription),
                     'format' => 'json',
                     'stream' => false,
+                    // qwen3 بيعمل "تفكير" داخلي قبل الرد بشكل افتراضي (chain-of-thought) —
+                    // بيطوّل الرد لعشرات الثواني (٣٤ ثانية لجملة واحدة قصيرة في التجربة الحية،
+                    // 2026-09-20) من غير أي فرق ملحوظ في جودة النتيجة لمهمة بسيطة زي دي. تعطيله
+                    // خفّض الوقت لـ٣ ثواني تقريباً — فرق كبير لمهمة بسيطة زي اقتراح محتوى موقع.
+                    'think' => false,
                 ]);
 
             if (! $response->successful()) {
