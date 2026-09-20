@@ -79,7 +79,7 @@ class SeedTemplateLibrary extends Command
                     'category' => $category['category'],
                     'kind' => 'landing',
                     'layout' => $layout,
-                    'license_note' => 'تصميم ومحتوى أصلي لمكتبة برق — صفر اعتماد على قالب خارجي.',
+                    'license_note' => 'تصميم ومحتوى أصلي — صفر اعتماد على قالب خارجي.',
                     'is_active' => true,
                 ]
             );

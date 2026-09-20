@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $project->name . ' — برق')
+@section('title', $project->name)
 
 @php
     $statusLabels = ['draft' => 'مسودة', 'generated' => 'الموقع اتولّد', 'delivered' => 'اتسلّم للعميل'];

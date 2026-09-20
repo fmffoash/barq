@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>@yield('title', 'برق')</title>
+    <title>@yield('title', '')</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -14,7 +14,6 @@
             <div class="flex items-center gap-6">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-lg font-extrabold tracking-tight text-amber-400">
                     <span class="text-2xl leading-none">⚡</span>
-                    <span>برق</span>
                 </a>
 
                 @auth

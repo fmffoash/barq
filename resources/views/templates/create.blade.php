@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إضافة قالب — برق')
+@section('title', 'إضافة قالب')
 
 @section('content')
     <div class="mx-auto max-w-2xl">

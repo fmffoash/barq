@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'تسجيل الدخول - برق')
+@section('title', 'تسجيل الدخول')
 
 @section('content')
     <h1 class="mb-6 text-center text-xl font-bold text-white">تسجيل الدخول</h1>

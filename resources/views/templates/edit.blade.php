@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تعديل ' . $template->name . ' — برق')
+@section('title', 'تعديل ' . $template->name . '')
 
 @section('content')
     <div class="mx-auto max-w-2xl">

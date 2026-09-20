@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تعبئة محتوى ' . $project->name . ' — برق')
+@section('title', 'تعبئة محتوى ' . $project->name . '')
 
 @section('content')
     <div class="mb-6 flex items-center gap-3">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $template->name . ' — برق')
+@section('title', $template->name)
 
 @section('content')
     <div class="mb-6 flex items-center gap-3">
