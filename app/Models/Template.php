@@ -21,7 +21,7 @@ class Template extends Model
         'classic', 'modern', 'gallery',
         'split', 'magazine', 'bento', 'minimal', 'bold',
         'glass', 'timeline', 'stack', 'diagonal', 'framed',
-        'neon', 'duotone',
+        'neon', 'duotone', 'signature',
     ];
 
     protected $fillable = [
@@ -68,7 +68,7 @@ class Template extends Model
             'magazine' => 'مجلة', 'bento' => 'بينتو', 'minimal' => 'مينيمال',
             'bold' => 'بولد', 'glass' => 'جلاس', 'timeline' => 'تايم لاين',
             'stack' => 'ستاك', 'diagonal' => 'دياجونال', 'framed' => 'فريمد',
-            'neon' => 'نيون', 'duotone' => 'دوتون',
+            'neon' => 'نيون', 'duotone' => 'دوتون', 'signature' => 'سيجنتشر',
             default => 'كلاسيك',
         };
     }
