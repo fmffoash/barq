@@ -29,27 +29,39 @@ class OllamaService
             return [];
         }
 
+        $decoded = $this->generateJson($this->buildPrompt($suggestableSlots, $businessDescription));
+
+        if ($decoded === null) {
+            return [];
+        }
+
+        return $this->filterToKnownKeys($suggestableSlots, $decoded);
+    }
+
+    /**
+     * بيبعت أي prompt حر لـOllama ويرجّع الرد متفكّك كـ JSON object، أو null لو Ollama مش
+     * متاح أو رجّع رد مش JSON صالح. مستخرجة من suggestContent() (Phase 2) عشان تتستخدم
+     * كمان في مساعد الشات (AiProjectAssistantService، Phase 10) بنفس إعدادات الموثوقية
+     * (timeout من config، think معطّل لسرعة الرد — شوف تعليق suggestContent فوق).
+     *
+     * @return array<mixed, mixed>|null
+     */
+    public function generateJson(string $prompt): ?array
+    {
         try {
-            // القوالب الحقيقية فيها 15-17 خانة محتوى، وتوليد رد JSON بيهم كلهم مع بعض قاس
-            // 26-49 ثانية في التجربة الحية (2026-09-20) — timeout ثابت 60 كان قريب من الحافة.
-            // config('services.ollama.timeout') بقيمته من .env (120) بدل الرقم الثابت.
             $response = Http::timeout((int) config('services.ollama.timeout', 120))
                 ->post(rtrim((string) config('services.ollama.base_url'), '/').'/api/generate', [
                     'model' => config('services.ollama.model'),
-                    'prompt' => $this->buildPrompt($suggestableSlots, $businessDescription),
+                    'prompt' => $prompt,
                     'format' => 'json',
                     'stream' => false,
-                    // qwen3 بيعمل "تفكير" داخلي قبل الرد بشكل افتراضي (chain-of-thought) —
-                    // بيطوّل الرد لعشرات الثواني (٣٤ ثانية لجملة واحدة قصيرة في التجربة الحية،
-                    // 2026-09-20) من غير أي فرق ملحوظ في جودة النتيجة لمهمة بسيطة زي دي. تعطيله
-                    // خفّض الوقت لـ٣ ثواني تقريباً — فرق كبير لمهمة بسيطة زي اقتراح محتوى موقع.
                     'think' => false,
                 ]);
 
             if (! $response->successful()) {
                 Log::warning('Ollama request failed.', ['status' => $response->status()]);
 
-                return [];
+                return null;
             }
 
             $decoded = json_decode((string) $response->json('response'), true);
@@ -57,16 +69,14 @@ class OllamaService
             if (! is_array($decoded)) {
                 Log::warning('Ollama returned a non-JSON-object response.');
 
-                return [];
+                return null;
             }
 
-            return $this->filterToKnownKeys($suggestableSlots, $decoded);
+            return $decoded;
         } catch (Throwable $e) {
-            Log::warning('Ollama service is unreachable — falling back to empty suggestions.', [
-                'message' => $e->getMessage(),
-            ]);
+            Log::warning('Ollama service is unreachable.', ['message' => $e->getMessage()]);
 
-            return [];
+            return null;
         }
     }
 

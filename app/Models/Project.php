@@ -46,4 +46,9 @@ class Project extends Model
     {
         return $this->hasOne(GeneratedSite::class);
     }
+
+    public function aiChatMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AiChatMessage::class)->orderBy('created_at');
+    }
 }

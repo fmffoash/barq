@@ -30,6 +30,13 @@
                     >
                         القوالب
                     </a>
+
+                    <a
+                        href="{{ route('ai-chat.create') }}"
+                        class="text-sm font-medium {{ request()->routeIs('ai-chat.*') ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400' }} transition"
+                    >
+                        ✨ أنشئ بالذكاء الاصطناعي
+                    </a>
                 @endauth
             </div>
 

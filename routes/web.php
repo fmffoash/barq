@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeneratedSiteController;
@@ -38,6 +39,11 @@ Route::middleware('auth')->group(function () {
         ->name('template-slots.update');
     Route::delete('template-slots/{slot}', [TemplateSlotController::class, 'destroy'])
         ->name('template-slots.destroy');
+
+    Route::get('ai', [AiChatController::class, 'create'])->name('ai-chat.create');
+    Route::post('ai', [AiChatController::class, 'store'])->name('ai-chat.store');
+    Route::get('projects/{project}/ai', [AiChatController::class, 'show'])->name('ai-chat.show');
+    Route::post('projects/{project}/ai', [AiChatController::class, 'message'])->name('ai-chat.message');
 
     Route::resource('projects', ProjectController::class);
     Route::post('projects/{project}/deliver', [ProjectController::class, 'deliver'])
