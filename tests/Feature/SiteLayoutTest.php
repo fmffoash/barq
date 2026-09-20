@@ -17,7 +17,7 @@ class SiteLayoutTest extends TestCase
 
     private function siteUrl(GeneratedSite $site): string
     {
-        return 'http://'.$site->slug.'.'.config('barq.base_domain').'/';
+        return route('site.show', ['siteSlug' => $site->slug]);
     }
 
     private function buildTemplate(string $layout): Template

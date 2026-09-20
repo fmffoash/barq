@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // الموقع الناتج فعلياً من مشروع معيّن — ده اللي middleware اكتشاف الموقع (DetectSite) بيدوّر
-// عليه بالـ slug عشان يعرف يعرض المحتوى الصح على subdomain المعاينة بتاعه.
+// عليه بالـ slug عشان يعرف يعرض المحتوى الصح على مسار المعاينة بتاعه (`/site/{slug}`).
 class GeneratedSite extends Model
 {
     /** @use HasFactory<GeneratedSiteFactory> */
@@ -82,16 +82,14 @@ class GeneratedSite extends Model
     }
 
     // الرابط الكامل لمعاينة الموقع ده. لو ده موقع ووردبريس اتعمل فعلاً على الشبكة، بنودّي
-    // لرابطه الحقيقي هناك بدل subdomain المعاينة بتاع برق (اللي عمره ما هيعرض ووردبريس فعلي).
+    // لرابطه الحقيقي هناك بدل مسار المعاينة بتاع برق (اللي عمره ما هيعرض ووردبريس فعلي).
+    // مسار (`/site/{slug}`) تحت نفس دومين لوحة التحكم — مش سب دومين منفصل (2026-09-20).
     public function previewUrl(): string
     {
         if ($this->isWordPressProvisioned()) {
             return $this->wp_site_url;
         }
 
-        $scheme = request()?->isSecure() ? 'https' : (app()->environment('production') ? 'https' : 'http');
-        $baseDomain = config('barq.base_domain');
-
-        return "{$scheme}://{$this->slug}.{$baseDomain}";
+        return route('site.show', ['siteSlug' => $this->slug]);
     }
 }

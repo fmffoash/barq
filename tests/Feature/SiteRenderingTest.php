@@ -13,9 +13,9 @@ class SiteRenderingTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function siteUrl(GeneratedSite $site, string $path = '/'): string
+    private function siteUrl(GeneratedSite $site): string
     {
-        return 'http://'.$site->slug.'.'.config('barq.base_domain').$path;
+        return route('site.show', ['siteSlug' => $site->slug]);
     }
 
     public function test_a_generated_site_renders_its_filled_content_at_its_subdomain(): void
@@ -87,9 +87,9 @@ class SiteRenderingTest extends TestCase
         $response->assertSee('الموقع لسه بيتجهّز');
     }
 
-    public function test_visiting_an_unknown_subdomain_returns_a_404(): void
+    public function test_visiting_an_unknown_slug_returns_a_404(): void
     {
-        $response = $this->get('http://ghost-slug-that-does-not-exist.'.config('barq.base_domain').'/');
+        $response = $this->get(route('site.show', ['siteSlug' => 'ghost-slug-that-does-not-exist']));
 
         $response->assertNotFound();
     }

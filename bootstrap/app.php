@@ -12,12 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function (): void {
-            // أي طلب على subdomain.{base_domain} (زي مطعم-الطعمية.barq.tafraos.com) بيروح
-            // لمسارات routes/site.php بدل مسارات لوحة التحكم — {siteSlug} بيتحط تلقائي من
-            // نفس الدومين. طلب على دومين تاني (localhost وقت التطوير، أو دومين لوحة التحكم
-            // نفسها) بيفضل يعدّي على مسارات web.php العادية زي ما هو.
-            Route::domain('{siteSlug}.'.config('barq.base_domain'))
-                ->group(base_path('routes/site.php'));
+            // معاينة أي موقع منشور بقت مسار (`/site/{siteSlug}`) تحت نفس دومين لوحة التحكم
+            // نفسه، مش سب دومين منفصل (2026-09-20 — فؤاد طلب صراحة إن المعاينة تفضل "جوّه
+            // نفس السب دومين" زي تاب عادي، عشان يتجنّب الحاجة لشهادة SSL مدفوعة من Cloudflare
+            // لتغطية مستوى wildcard تاني).
+            Route::group([], base_path('routes/site.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
