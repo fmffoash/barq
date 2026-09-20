@@ -40,6 +40,9 @@ return [
     'ollama' => [
         'base_url' => env('OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
         'model' => env('OLLAMA_MODEL', 'qwen3:8b'),
+        // كان متحط في .env من الأول (OLLAMA_TIMEOUT=120) بس مش متوصّل بحاجة — OllamaService
+        // كان بيستخدم Http::timeout(60) ثابت بدل ما يقرا القيمة دي (2026-09-20).
+        'timeout' => (int) env('OLLAMA_TIMEOUT', 120),
     ],
 
     // شبكة WordPress Multisite اللي بنعمل عليها المواقع من نوع "ووردبريس" — Phase 5.

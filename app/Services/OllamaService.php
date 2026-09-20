@@ -30,7 +30,10 @@ class OllamaService
         }
 
         try {
-            $response = Http::timeout(60)
+            // القوالب الحقيقية فيها 15-17 خانة محتوى، وتوليد رد JSON بيهم كلهم مع بعض قاس
+            // 26-49 ثانية في التجربة الحية (2026-09-20) — timeout ثابت 60 كان قريب من الحافة.
+            // config('services.ollama.timeout') بقيمته من .env (120) بدل الرقم الثابت.
+            $response = Http::timeout((int) config('services.ollama.timeout', 120))
                 ->post(rtrim((string) config('services.ollama.base_url'), '/').'/api/generate', [
                     'model' => config('services.ollama.model'),
                     'prompt' => $this->buildPrompt($suggestableSlots, $businessDescription),
