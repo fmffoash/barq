@@ -54,6 +54,9 @@ class AiChatController extends Controller
 
         $assistant->handleFollowUp($project, $data['message']);
 
-        return redirect()->route('ai-chat.show', $project);
+        // بيرجع لنفس الصفحة اللي فؤاد بعت منها — ممكن تكون صفحة المشروع الرئيسية
+        // (projects.show) أو صفحة الشات المستقلة (ai-chat.show)، الاتنين فيهم نفس
+        // البارشيال دلوقتي (ai-chat._panel).
+        return redirect()->back();
     }
 }

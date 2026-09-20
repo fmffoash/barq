@@ -204,6 +204,11 @@
         @endif
     </div>
 
+    {{-- شات الذكاء الاصطناعي — متاح لأي مشروع، اتعمل بالشات أو يدوي --}}
+    <div class="mt-8">
+        @include('ai-chat._panel', ['project' => $project])
+    </div>
+
     {{-- حفظ كقالب جديد --}}
     @if ($project->template)
         <div class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">

@@ -108,7 +108,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): View
     {
-        $project->load(['template', 'variant', 'site', 'creator']);
+        $project->load(['template', 'variant', 'site', 'creator', 'aiChatMessages']);
 
         return view('projects.show', compact('project'));
     }
