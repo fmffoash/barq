@@ -104,24 +104,34 @@ tests/Feature/            — AuthenticationTest, TemplateManagementTest, Projec
                              SiteExportTest, WordPressIntegrationTest, SiteLayoutTest (Phase 7)
 ```
 
-## المعمار: التوجيه بالدومين (Domain Routing)
-كل موقع منشور بيتفتح على `{project.slug}.barq.tafraos.com` — ده مختلف تماماً عن لوحة
-التحكم اللي بتفتح على الدومين العادي (`localhost:8000` محلياً، أو دومين لوحة التحكم على
-السيرفر). الفصل ده بيتم في `bootstrap/app.php`، جوه الـ `then:` closure اللي بيسجّل
-`routes/site.php` بس تحت `Route::domain('{siteSlug}.'.config('barq.base_domain'))`:
+## المعمار: التوجيه بالمسار (Path Routing)
+كل موقع منشور بيتفتح على `/site/{siteSlug}` **تحت نفس دومين لوحة التحكم بالظبط** (مش سب
+دومين منفصل — اتغيّر 2026-09-20 من تصميم قديم كان بيستخدم `{slug}.` سب دومين، لأن السب
+دومين المنفصل كان محتاج Advanced Certificate Manager المدفوع من Cloudflare عشان SSL يشتغل
+عليه، وفؤاد رفض يدفع وطلب إنه يفضل "جوّه نفس السب دومين زي تاب عادي"). الفصل بيتم في
+`bootstrap/app.php`، جوه الـ `then:` closure اللي بيسجّل `routes/site.php` بس:
 
 ```php
 then: function (): void {
-    Route::domain('{siteSlug}.'.config('barq.base_domain'))
-        ->group(base_path('routes/site.php'));
+    Route::group([], base_path('routes/site.php'));
 },
 ```
 
-`{siteSlug}` بتتحط تلقائي من أول جزء في الدومين (زي أي route parameter عادي)، وبتوصل
-لـ `DetectSite` middleware اللي بيدوّر على `GeneratedSite` بنفس الـ slug ده، ولو لقاه
-بيحطه في `$request->attributes` عشان `SiteController::show()` يستخدمه. لو مش لاقي حاجة،
-404 عادي — ونفس الـ 404 ده بيظهر لو الموقع `archived` (بس `draft`/`published` الاتنين
-بيترندروا عادي، القرار ده متعمّد — أي موقع اتعمل بيبان على طول حتى قبل ما يتنشر رسمياً).
+و`routes/site.php` نفسه بيحط البادئة `/site` ويعرّف `{siteSlug}` كـ route parameter عادي:
+
+```php
+Route::prefix('site')->middleware(DetectSite::class)->group(function () {
+    Route::get('/{siteSlug}', [SiteController::class, 'show'])->name('site.show');
+});
+```
+
+`{siteSlug}` بتوصل لـ `DetectSite` middleware اللي بيدوّر على `GeneratedSite` بنفس الـ slug
+ده (نفس المنطق بالظبط سواء الـ slug جاي من سب دومين أو من مسار)، ولو لقاه بيحطه في
+`$request->attributes` عشان `SiteController::show()` يستخدمه. لو مش لاقي حاجة، 404 عادي —
+ونفس الـ 404 ده بيظهر لو الموقع `archived` (بس `draft`/`published` الاتنين بيترندروا عادي،
+القرار ده متعمّد — أي موقع اتعمل بيبان على طول حتى قبل ما يتنشر رسمياً). `GeneratedSite::
+previewUrl()` بيستخدم `route('site.show', ['siteSlug' => $this->slug])` بدل بناء رابط
+سب دومين يدوي.
 
 **قاعدة دائمة:** أي مسار جديد خاص بلوحة التحكم يروح `routes/web.php`. أي مسار خاص بعرض
 الموقع المنشور للعميل النهائي يروح `routes/site.php`. الاتنين ملفات منفصلة تماماً وبيتسجّلوا
@@ -201,10 +211,15 @@ bold/glass/framed) عنده نافبار/فوتر خاص بيه مبني جوّ�
 ```bash
 php artisan barq:seed-template-library
 ```
-بيولّد (أو يحدّث — الأمر idempotent بالكامل عن طريق `updateOrCreate` على كل مستوى) 14 فئة نشاط
-شائعة (مطاعم، عيادات، صالونات، جيم، عقارات، متاجر، تعليم، استشارات، مقاولات، صيانة سيارات،
-فعاليات، سياحة، ستارت أب، بورتفوليو) × 3 قوالب لكل فئة (توزيع تلقائي على الـ 3 تصميمات) = 42
-قالب. كل قوالب المكتبة دي **تصميم ومحتوى أصلي اتكتب خصيصاً للمشروع** (موثّق في
+بيولّد (أو يحدّث — الأمر idempotent بالكامل عن طريق `updateOrCreate` على كل مستوى) 20 فئة نشاط
+شائعة × 15 قالب لكل فئة = 300 قالب، كل قالب في الفئة بتصميم (`layout`) مختلف تماماً عن باقي
+قوالب نفس الفئة (كل الـ15 تصميم من `Template::LAYOUTS` بيتستخدموا مرة واحدة بالظبط في كل
+فئة). التصميم بقى (2026-09-20) بيتحدد بمطابقة كلمات اسم القالب مع شخصية كل تصميم
+(`LAYOUT_KEYWORDS` + `matchLayoutsToNames()`) بدل توزيع دوراني عشوائي — كان فيه قالب اسمه
+"طاقة وحيوية" واقع على `layout=minimal` (أبسط تصميم في المكتبة عمداً) لمجرد إن المعادلة
+القديمة `(templateIndex + categoryIndex) % 15` مالهاش أي علاقة بمعنى الاسم، فالموقع الناتج
+كان بيبان "رصّ كلام" من غير أي تصميم بصري حقيقي رغم إن التصميم كان شغّال صح فعلياً. كل قوالب
+المكتبة دي **تصميم ومحتوى أصلي اتكتب خصيصاً للمشروع** (موثّق في
 `license_note` بتاع كل قالب) — مفيش أي قالب أو تصميم منسوخ من مصدر خارجي، عشان صفر مخاطرة
 ترخيص. بنية الخانات موحّدة لكل القوالب (6 أقسام: hero/about/services/gallery/testimonials/contact)
 لكن التسميات والمحتوى الافتراضي (`TemplateSlot.default_value`) بيجي من بيانات الفئة نفسها —
