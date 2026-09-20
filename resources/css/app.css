@@ -3,7 +3,9 @@
 /* خطوط المواقع المنشورة كلها مستضافة محلياً (باكدجات @fontsource) — مش بيتم جلبها من CDN
    خارجي وقت الـ build، عشان مانعتمدش على اتصال إنترنت خارجي وقت بناء الأصول (Vite build).
    الخط الافتراضي لسه Cairo (لوحة التحكم + fallback أي موقع منشور من غير اختيار خط صريح)،
-   والباقي (Phase 8) اختياري لكل TemplateVariant عن طريق عمود "font". */
+   والباقي (Phase 8، اتوسّعت 2026-09-20 لأكبر تشكيلة ممكنة) اختياري لكل TemplateVariant عن
+   طريق عمود "font". كل خط هنا بيستورد وزنين بس (400 عادي + وزن غامق) توفيراً لحجم الأصول،
+   إلا الخطوط اللي أصلاً بوزن واحد بس متاح. */
 @import '@fontsource/cairo/400.css';
 @import '@fontsource/cairo/500.css';
 @import '@fontsource/cairo/600.css';
@@ -34,6 +36,82 @@
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 
+/* --- خطوط عربية إضافية (2026-09-20) --- */
+@import '@fontsource/noto-kufi-arabic/400.css';
+@import '@fontsource/noto-kufi-arabic/700.css';
+
+@import '@fontsource/amiri/400.css';
+@import '@fontsource/amiri/700.css';
+
+@import '@fontsource/lalezar/400.css';
+
+@import '@fontsource/rakkas/400.css';
+
+@import '@fontsource/aref-ruqaa/400.css';
+@import '@fontsource/aref-ruqaa/700.css';
+
+@import '@fontsource/changa/400.css';
+@import '@fontsource/changa/700.css';
+
+@import '@fontsource/el-messiri/400.css';
+@import '@fontsource/el-messiri/700.css';
+
+@import '@fontsource/markazi-text/400.css';
+@import '@fontsource/markazi-text/700.css';
+
+@import '@fontsource/reem-kufi/400.css';
+@import '@fontsource/reem-kufi/700.css';
+
+@import '@fontsource/jomhuria/400.css';
+
+@import '@fontsource/mada/400.css';
+@import '@fontsource/mada/700.css';
+
+@import '@fontsource/harmattan/400.css';
+@import '@fontsource/harmattan/700.css';
+
+@import '@fontsource/baloo-bhaijaan-2/400.css';
+@import '@fontsource/baloo-bhaijaan-2/700.css';
+
+@import '@fontsource/lemonada/400.css';
+@import '@fontsource/lemonada/700.css';
+
+@import '@fontsource/alexandria/400.css';
+@import '@fontsource/alexandria/700.css';
+
+@import '@fontsource/readex-pro/400.css';
+@import '@fontsource/readex-pro/700.css';
+
+/* --- خطوط لاتينية إضافية (2026-09-20) --- */
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/700.css';
+
+@import '@fontsource/montserrat/400.css';
+@import '@fontsource/montserrat/700.css';
+
+@import '@fontsource/lato/400.css';
+@import '@fontsource/lato/700.css';
+
+@import '@fontsource/open-sans/400.css';
+@import '@fontsource/open-sans/700.css';
+
+@import '@fontsource/nunito/400.css';
+@import '@fontsource/nunito/700.css';
+
+@import '@fontsource/raleway/400.css';
+@import '@fontsource/raleway/700.css';
+
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/700.css';
+
+@import '@fontsource/merriweather/400.css';
+@import '@fontsource/merriweather/700.css';
+
+@import '@fontsource/oswald/400.css';
+@import '@fontsource/oswald/700.css';
+
+@import '@fontsource/bebas-neue/400.css';
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -42,11 +120,40 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* كل قيمة هنا مرجع لأي عنصر يستخدم var(--font-{key}) — سواء الخط العام لتصميم كامل
-       (site/document.blade.php) أو تخصيص خانة واحدة بس (per-slot override، Phase 8). */
+       (site/document.blade.php) أو تخصيص خانة واحدة بس (per-slot override، Phase 8).
+       المفاتيح والتسميات الكاملة في App\Models\TemplateVariant::FONTS. */
     --font-cairo: 'Cairo', sans-serif;
     --font-tajawal: 'Tajawal', sans-serif;
     --font-almarai: 'Almarai', sans-serif;
     --font-ibm-plex-arabic: 'IBM Plex Sans Arabic', sans-serif;
     --font-poppins: 'Poppins', sans-serif;
     --font-inter: 'Inter', sans-serif;
+
+    --font-noto-kufi-arabic: 'Noto Kufi Arabic', sans-serif;
+    --font-amiri: 'Amiri', serif;
+    --font-lalezar: 'Lalezar', sans-serif;
+    --font-rakkas: 'Rakkas', sans-serif;
+    --font-aref-ruqaa: 'Aref Ruqaa', cursive;
+    --font-changa: 'Changa', sans-serif;
+    --font-el-messiri: 'El Messiri', sans-serif;
+    --font-markazi-text: 'Markazi Text', serif;
+    --font-reem-kufi: 'Reem Kufi', sans-serif;
+    --font-jomhuria: 'Jomhuria', sans-serif;
+    --font-mada: 'Mada', sans-serif;
+    --font-harmattan: 'Harmattan', sans-serif;
+    --font-baloo-bhaijaan-2: 'Baloo Bhaijaan 2', sans-serif;
+    --font-lemonada: 'Lemonada', sans-serif;
+    --font-alexandria: 'Alexandria', sans-serif;
+    --font-readex-pro: 'Readex Pro', sans-serif;
+
+    --font-roboto: 'Roboto', sans-serif;
+    --font-montserrat: 'Montserrat', sans-serif;
+    --font-lato: 'Lato', sans-serif;
+    --font-open-sans: 'Open Sans', sans-serif;
+    --font-nunito: 'Nunito', sans-serif;
+    --font-raleway: 'Raleway', sans-serif;
+    --font-playfair-display: 'Playfair Display', serif;
+    --font-merriweather: 'Merriweather', serif;
+    --font-oswald: 'Oswald', sans-serif;
+    --font-bebas-neue: 'Bebas Neue', sans-serif;
 }

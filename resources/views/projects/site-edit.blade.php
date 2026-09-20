@@ -66,6 +66,58 @@
             @csrf
             @method('PUT')
 
+            @php
+                $variant = $project->variant;
+            @endphp
+            <details class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6" @if ($site && ($site->colors_override_json || $site->font_override || $site->sections_override_json)) open @endif>
+                <summary class="cursor-pointer list-none text-sm font-semibold text-slate-200">
+                    🎨 تخصيص شكل الموقع ده بس (مش هيأثر على القالب أو مشاريع تانية)
+                </summary>
+
+                <div class="mt-4 space-y-5 border-t border-slate-800 pt-4">
+                    <div>
+                        <label class="mb-2 flex items-center gap-2 text-sm text-slate-300">
+                            <input
+                                type="checkbox"
+                                name="use_custom_colors"
+                                value="1"
+                                @checked($site?->colors_override_json)
+                                class="h-4 w-4 rounded border-slate-700 bg-slate-950 text-amber-400 focus:ring-amber-400"
+                            >
+                            ألوان مختلفة عن القالب الأصلي لهذا الموقع بس
+                        </label>
+                        @include('templates.partials.color-picker', [
+                            'colors' => $site?->colors_override_json ?: $variant?->colors_json,
+                            'fieldName' => 'colors_override',
+                        ])
+                    </div>
+
+                    @include('templates.partials.font-select', [
+                        'font' => $site?->font_override,
+                        'fieldName' => 'font_override',
+                        'withInherit' => true,
+                    ])
+
+                    <div>
+                        <label class="mb-2 flex items-center gap-2 text-sm text-slate-300">
+                            <input
+                                type="checkbox"
+                                name="use_custom_sections"
+                                value="1"
+                                @checked($site?->sections_override_json)
+                                class="h-4 w-4 rounded border-slate-700 bg-slate-950 text-amber-400 focus:ring-amber-400"
+                            >
+                            ترتيب/إظهار أقسام مختلف عن القالب الأصلي لهذا الموقع بس
+                        </label>
+                        @include('partials.section-order-picker', [
+                            'sectionKeys' => $slotsBySection->keys(),
+                            'currentOrder' => $site?->sections_override_json ?: $variant?->sections_json,
+                            'fieldName' => 'sections_override',
+                        ])
+                    </div>
+                </div>
+            </details>
+
             @foreach ($slotsBySection as $sectionKey => $slots)
                 <section class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
                     <h2 class="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500" dir="ltr">

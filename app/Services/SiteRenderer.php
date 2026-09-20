@@ -17,11 +17,12 @@ class SiteRenderer
 
         $slotsBySection = $template->slots->groupBy('section_key');
 
-        // ترتيب الأقسام: بنستخدم اللي متحدد في النسخة صراحة، وإلا بنرجع لترتيب أول ظهور
-        // للأقسام جوّه خانات القالب نفسه (اللي أصلاً مرتّبة بـ sort_order).
-        $sectionOrder = filled($variant?->sections_json)
-            ? $variant->sections_json
-            : $slotsBySection->keys()->all();
+        // ترتيب الأقسام: تخصيص الموقع ده بس (لو مفعّل) بيغلب نسخة القالب المشتركة، وإلا
+        // بنستخدم اللي متحدد في النسخة صراحة، وإلا بنرجع لترتيب أول ظهور للأقسام جوّه خانات
+        // القالب نفسه (اللي أصلاً مرتّبة بـ sort_order).
+        $sectionOrder = filled($site->sections_override_json)
+            ? $site->sections_override_json
+            : (filled($variant?->sections_json) ? $variant->sections_json : $slotsBySection->keys()->all());
 
         $sections = collect($sectionOrder)
             ->filter(fn ($key) => $slotsBySection->has($key))
@@ -57,19 +58,21 @@ class SiteRenderer
             ]
         );
 
+        // تخصيص ألوان/خط الموقع ده بس (لو مفعّل) بيغلب نسخة القالب المشتركة — نفس منطق
+        // ترتيب الأقسام فوق، بدل ما أي تعديل يأثر على مشاريع تانية شايلة نفس النسخة.
         $colors = array_merge([
             'primary' => '#f59e0b',
             'background' => '#0b1220',
             'surface' => '#111a2e',
             'text' => '#f1f5f9',
             'muted' => '#94a3b8',
-        ], $variant?->colors_json ?? []);
+        ], $variant?->colors_json ?? [], $site->colors_override_json ?? []);
 
         return [
             'project' => $project,
             'sections' => $sections,
             'colors' => $colors,
-            'font' => $variant?->font ?: 'cairo',
+            'font' => $site->font_override ?: ($variant?->font ?: 'cairo'),
             'layout' => $template->layout ?: 'classic',
         ];
     }

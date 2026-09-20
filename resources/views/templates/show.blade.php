@@ -107,13 +107,13 @@
                                 @include('templates.partials.font-select', ['font' => $variant->font])
 
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (JSON)</label>
-                                    <textarea
-                                        name="sections_json"
-                                        rows="4"
-                                        dir="ltr"
-                                        class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 font-mono text-xs text-slate-100 outline-none focus:border-amber-400"
-                                    >{{ $variant->sections_json ? json_encode($variant->sections_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '' }}</textarea>
+                                    <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (ظهور وترتيب)</label>
+                                    <p class="mb-2 text-xs text-slate-500">اسحب ⠿ لإعادة الترتيب، وشيّك/شيل التشييك لإظهار/إخفاء القسم.</p>
+                                    @include('partials.section-order-picker', [
+                                        'sectionKeys' => $slotsBySection->keys(),
+                                        'currentOrder' => $variant->sections_json,
+                                        'fieldName' => 'sections_json',
+                                    ])
                                 </div>
 
                                 <label class="flex items-center gap-2 text-sm text-slate-300">
@@ -175,14 +175,13 @@
                         @include('templates.partials.font-select', ['font' => null])
 
                         <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (JSON، اختياري)</label>
-                            <textarea
-                                name="sections_json"
-                                rows="4"
-                                dir="ltr"
-                                placeholder='["hero", "services", "contact"]'
-                                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 font-mono text-xs text-slate-100 outline-none focus:border-amber-400"
-                            ></textarea>
+                            <label class="mb-1.5 block text-sm font-medium text-slate-300">الأقسام (ظهور وترتيب)</label>
+                            <p class="mb-2 text-xs text-slate-500">اسحب ⠿ لإعادة الترتيب، وشيّك/شيل التشييك لإظهار/إخفاء القسم.</p>
+                            @include('partials.section-order-picker', [
+                                'sectionKeys' => $slotsBySection->keys(),
+                                'currentOrder' => null,
+                                'fieldName' => 'sections_json',
+                            ])
                         </div>
 
                         <label class="flex items-center gap-2 text-sm text-slate-300">
@@ -443,34 +442,3 @@
         </section>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        // منتقي الألوان (templates/partials/color-picker.blade.php) — event delegation واحدة
-        // بتخدم أي عدد مجموعات ألوان في الصفحة، من غير تكرار سكريبت لكل نسخة/فورم.
-        document.addEventListener('input', function (event) {
-            if (!event.target.matches('[data-colors-sync]')) {
-                return;
-            }
-
-            const group = event.target.closest('[data-colors-group]');
-            if (!group) {
-                return;
-            }
-
-            const key = event.target.dataset.colorKey;
-            group.querySelectorAll(`[data-color-key="${key}"]`).forEach((el) => {
-                if (el !== event.target) {
-                    el.value = event.target.value;
-                }
-            });
-
-            const colors = {};
-            group.querySelectorAll('input[type="color"][data-colors-sync]').forEach((el) => {
-                colors[el.dataset.colorKey] = el.value;
-            });
-
-            group.querySelector('[data-colors-hidden]').value = JSON.stringify(colors);
-        });
-    </script>
-@endpush

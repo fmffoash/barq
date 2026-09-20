@@ -19,7 +19,7 @@ class GeneratedSiteController extends Controller
 {
     public function edit(Project $project): View
     {
-        $project->loadMissing(['template.slots', 'site']);
+        $project->loadMissing(['template.slots', 'site', 'variant']);
 
         $slotsBySection = $project->template->slots->groupBy('section_key');
 
@@ -106,11 +106,51 @@ class GeneratedSiteController extends Controller
         $site->update([
             'content_json' => $content,
             'style_overrides_json' => $styleOverrides === [] ? null : $styleOverrides,
+            ...$this->designOverrides($request, $project),
         ]);
 
         return redirect()
             ->route('projects.show', $project)
             ->with('status', 'تم حفظ محتوى الموقع.');
+    }
+
+    // تخصيص شكل الموقع ده بالكامل (ألوان/خط/ترتيب أقسام) — مستقل عن نسخة القالب المشتركة،
+    // عشان تعديل تصميم مشروع واحد ميأثرش على مشاريع تانية شايلة نفس القالب. كل جزء بيتفعّل
+    // بس لو الأدمن شيّك على "استخدم .. مختلف لهذا الموقع" — من غيرها القيمة بترجع null
+    // (يعني ورّث من نسخة القالب زي ما كان قبل الميزة دي، 2026-09-20).
+    private function designOverrides(Request $request, Project $project): array
+    {
+        $colorsOverride = null;
+        if ($request->boolean('use_custom_colors')) {
+            $raw = json_decode((string) $request->input('colors_override'), true);
+            if (is_array($raw)) {
+                $colorsOverride = array_filter(
+                    $raw,
+                    fn ($value) => is_string($value) && preg_match('/^#[0-9a-fA-F]{6}$/', $value)
+                );
+            }
+        }
+
+        $fontOverride = (string) $request->input('font_override');
+        $fontOverride = ($fontOverride !== '' && array_key_exists($fontOverride, TemplateVariant::FONTS)) ? $fontOverride : null;
+
+        $sectionsOverride = null;
+        if ($request->boolean('use_custom_sections')) {
+            $raw = json_decode((string) $request->input('sections_override'), true);
+            if (is_array($raw)) {
+                $validKeys = $project->template->slots->pluck('section_key')->unique();
+                $sectionsOverride = collect($raw)
+                    ->filter(fn ($key) => is_string($key) && $validKeys->contains($key))
+                    ->values()
+                    ->all();
+            }
+        }
+
+        return [
+            'colors_override_json' => $colorsOverride,
+            'font_override' => $fontOverride,
+            'sections_override_json' => $sectionsOverride,
+        ];
     }
 
     // بتاخد وصف قصير للنشاط وتقترح محتوى بالذكاء الاصطناعي (Ollama) للخانات الفاضية بس —

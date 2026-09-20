@@ -20,6 +20,9 @@ class GeneratedSite extends Model
         'slug',
         'content_json',
         'style_overrides_json',
+        'colors_override_json',
+        'font_override',
+        'sections_override_json',
         'status',
         'exported_at',
         'last_generated_at',
@@ -34,6 +37,8 @@ class GeneratedSite extends Model
         return [
             'content_json' => 'array',
             'style_overrides_json' => 'array',
+            'colors_override_json' => 'array',
+            'sections_override_json' => 'array',
             'exported_at' => 'datetime',
             'last_generated_at' => 'datetime',
             'wp_provisioned_at' => 'datetime',

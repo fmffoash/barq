@@ -5,6 +5,7 @@
     في نفس الصفحة من غير تكرار كود). $colors: مصفوفة الألوان الحالية (أو null لقيم افتراضية).
 --}}
 @php
+    $fieldName = $fieldName ?? 'colors_json';
     $defaults = ['primary' => '#f59e0b', 'background' => '#0b1220', 'surface' => '#111a2e', 'text' => '#f1f5f9', 'muted' => '#94a3b8'];
     $current = array_merge($defaults, array_filter($colors ?? []));
     $colorLabels = [
@@ -44,5 +45,40 @@
         @endforeach
     </div>
 
-    <input type="hidden" name="colors_json" data-colors-hidden value='{{ json_encode($current) }}'>
+    <input type="hidden" name="{{ $fieldName }}" data-colors-hidden value='{{ json_encode($current) }}'>
 </div>
+
+@once
+    @push('scripts')
+        <script>
+            // منتقي الألوان — event delegation واحدة بتخدم أي عدد مجموعات ألوان في نفس
+            // الصفحة (سواء نسخ قالب متعددة، أو تخصيص موقع مشروع واحد)، من غير تكرار سكريبت
+            // لكل استخدام. اتنقلت هنا جوّه الجزئية نفسها (بدل ما تتكرر في كل صفحة بتستخدمها)
+            // عشان أي صفحة تستخدم الجزئية دي تاخد السكريبت تلقائي معاها.
+            document.addEventListener('input', function (event) {
+                if (!event.target.matches('[data-colors-sync]')) {
+                    return;
+                }
+
+                const group = event.target.closest('[data-colors-group]');
+                if (!group) {
+                    return;
+                }
+
+                const key = event.target.dataset.colorKey;
+                group.querySelectorAll(`[data-color-key="${key}"]`).forEach((el) => {
+                    if (el !== event.target) {
+                        el.value = event.target.value;
+                    }
+                });
+
+                const colors = {};
+                group.querySelectorAll('input[type="color"][data-colors-sync]').forEach((el) => {
+                    colors[el.dataset.colorKey] = el.value;
+                });
+
+                group.querySelector('[data-colors-hidden]').value = JSON.stringify(colors);
+            });
+        </script>
+    @endpush
+@endonce
