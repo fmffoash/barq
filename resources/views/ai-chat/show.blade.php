@@ -31,7 +31,9 @@
             @forelse ($project->aiChatMessages as $message)
                 <div class="flex {{ $message->role === 'user' ? 'justify-start' : 'justify-end' }}">
                     <div class="max-w-2xl rounded-2xl px-4 py-2.5 text-sm {{ $message->role === 'user' ? 'bg-slate-800 text-slate-200' : 'bg-amber-400/10 text-amber-100 border border-amber-400/30' }}">
-                        {{ $message->content }}
+                        {{-- لو الرسالة نسخ ولزق طويل (زي صفحة جوجل ماب كاملة) بنقصّرها هنا بس —
+                        النص الكامل بيتبعت للذكاء الاصطناعي زي ما هو، ده تقصير عرض بس. --}}
+                        {{ \Illuminate\Support\Str::limit($message->content, 400) }}
                     </div>
                 </div>
             @empty
