@@ -240,7 +240,7 @@ class SeedTemplateLibrary extends Command
             ['section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان الرئيسي', 'slot_type' => 'text', 'is_required' => true, 'sort_order' => 1, 'default_value' => $c['hero_title']],
             ['section_key' => 'hero', 'key' => 'hero_subtitle', 'label_ar' => 'الوصف المختصر', 'slot_type' => 'textarea', 'is_required' => false, 'sort_order' => 2, 'default_value' => $c['hero_subtitle']],
             ['section_key' => 'hero', 'key' => 'hero_cta', 'label_ar' => $c['cta_label'], 'slot_type' => 'link', 'is_required' => false, 'sort_order' => 3, 'default_value' => null],
-            ['section_key' => 'hero', 'key' => 'hero_image', 'label_ar' => 'صورة الغلاف', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 4, 'default_value' => null],
+            ['section_key' => 'hero', 'key' => 'hero_image', 'label_ar' => 'صورة الغلاف', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 4, 'default_value' => $c['hero_image'] ?? null],
 
             ['section_key' => 'about', 'key' => 'about_title', 'label_ar' => 'عنوان القسم', 'slot_type' => 'text', 'is_required' => false, 'sort_order' => 1, 'default_value' => $c['about_title']],
             ['section_key' => 'about', 'key' => 'about_body', 'label_ar' => 'نبذة تعريفية', 'slot_type' => 'textarea', 'is_required' => false, 'sort_order' => 2, 'default_value' => $c['about_body']],
@@ -249,9 +249,9 @@ class SeedTemplateLibrary extends Command
             ['section_key' => 'services', 'key' => 'services_list', 'label_ar' => $c['services_label'], 'slot_type' => 'list', 'is_required' => false, 'sort_order' => 2, 'default_value' => $c['services_list']],
 
             ['section_key' => 'gallery', 'key' => 'gallery_title', 'label_ar' => 'عنوان القسم', 'slot_type' => 'text', 'is_required' => false, 'sort_order' => 1, 'default_value' => $c['gallery_title']],
-            ['section_key' => 'gallery', 'key' => 'gallery_image_1', 'label_ar' => 'صورة 1', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 2, 'default_value' => null],
-            ['section_key' => 'gallery', 'key' => 'gallery_image_2', 'label_ar' => 'صورة 2', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 3, 'default_value' => null],
-            ['section_key' => 'gallery', 'key' => 'gallery_image_3', 'label_ar' => 'صورة 3', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 4, 'default_value' => null],
+            ['section_key' => 'gallery', 'key' => 'gallery_image_1', 'label_ar' => 'صورة 1', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 2, 'default_value' => $c['gallery_image_1'] ?? null],
+            ['section_key' => 'gallery', 'key' => 'gallery_image_2', 'label_ar' => 'صورة 2', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 3, 'default_value' => $c['gallery_image_2'] ?? null],
+            ['section_key' => 'gallery', 'key' => 'gallery_image_3', 'label_ar' => 'صورة 3', 'slot_type' => 'image', 'is_required' => false, 'sort_order' => 4, 'default_value' => $c['gallery_image_3'] ?? null],
 
             ['section_key' => 'testimonials', 'key' => 'testimonials_title', 'label_ar' => 'عنوان القسم', 'slot_type' => 'text', 'is_required' => false, 'sort_order' => 1, 'default_value' => $c['testimonials_title']],
             ['section_key' => 'testimonials', 'key' => 'testimonials_list', 'label_ar' => 'آراء العملاء', 'slot_type' => 'list', 'is_required' => false, 'sort_order' => 2, 'default_value' => $c['testimonials_list']],
@@ -290,6 +290,10 @@ class SeedTemplateLibrary extends Command
                 'testimonials_list' => ['أحسن أكل جربته من زمان — أحمد س.', 'الخدمة سريعة والطعم ثابت كل مرة — منى ع.'],
                 'contact_title' => 'احجز طاولتك',
                 'contact_note' => 'متواجدين يومياً من 12 ظهراً لـ 1 بعد منتصف الليل.',
+                'hero_image' => '/images/template-library/restaurants/hero.jpg',
+                'gallery_image_1' => '/images/template-library/restaurants/gallery-1.jpg',
+                'gallery_image_2' => '/images/template-library/restaurants/gallery-2.jpg',
+                'gallery_image_3' => '/images/template-library/restaurants/gallery-3.jpg',
             ],
             [
                 'category' => 'عيادات وخدمات طبية',
