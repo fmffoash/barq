@@ -93,7 +93,7 @@
                     <select id="font-select" name="font" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400">
                         <option value="">— خط القالب الافتراضي —</option>
                         @foreach ($fonts as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
+                            <option value="{{ $key }}" style="font-family: var(--font-{{ $key }});">{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>

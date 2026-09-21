@@ -46,6 +46,22 @@
     </div>
 
     <form id="bq-design-form" class="bq-drawer-body">
+        @if ($sameCategoryTemplates->isNotEmpty())
+            {{-- تغيير القالب (2026-09-21) — قوالب تانية بس من نفس فئة القالب الحالي، عشان
+            المحتوى (نفس الـ17 مفتاح) ينتقل صح للقالب الجديد. الاختيار الافتراضي "نفس القالب
+            الحالي" عشان الحفظ العادي (ألوان/خط) ميغيّرش القالب من غير قصد. --}}
+            <div class="bq-drawer-section">
+                <label class="bq-checkbox-label" style="display: block; margin-bottom: 6px;">🔄 غيّر القالب</label>
+                <select name="template_id" style="width: 100%; border-radius: 8px; border: 1px solid #334155; background: #020617; padding: 10px 14px; font-size: 14px; color: #f1f5f9;">
+                    <option value="">— نفس القالب الحالي —</option>
+                    @foreach ($sameCategoryTemplates as $t)
+                        <option value="{{ $t->id }}">{{ $t->name }}</option>
+                    @endforeach
+                </select>
+                <p class="bq-hint">المحتوى الحالي بيتنقل زي ما هو للقالب الجديد — التغيير هيبان بعد ما تحفظ وتعمل تحديث للصفحة.</p>
+            </div>
+        @endif
+
         <div class="bq-drawer-section">
             <label class="bq-checkbox-label">
                 <input type="checkbox" name="use_custom_colors" value="1" @checked($site->colors_override_json)>

@@ -79,6 +79,7 @@
             'site' => $site,
             'variant' => $variant,
             'slotsBySection' => $slotsBySection,
+            'sameCategoryTemplates' => $sameCategoryTemplates,
         ])
         <script src="{{ asset('js/live-editor.js') }}" defer></script>
     @endif

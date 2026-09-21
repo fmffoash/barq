@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Template;
 use App\Models\TemplateVariant;
 use App\Services\OllamaService;
 use App\Services\SiteExportService;
@@ -41,12 +42,24 @@ class GeneratedSiteController extends Controller
         $project->loadMissing(['template.slots', 'site', 'variant']);
         $site = $project->site()->firstOrFail();
 
+        // قوالب تانية في نفس الفئة (2026-09-21) — عشان درج "تصميم الموقع" يقدر يعرض زرار
+        // "غيّر القالب" بدون ما يخرج المستخدم من وضع التعديل المباشر. مقصورة على نفس الفئة
+        // عشان المحتوى (نفس الـ17 مفتاح) يتنقل صح للقالب الجديد، زي بالظبط
+        // AiProjectAssistantService::applyChangeTemplate().
+        $sameCategoryTemplates = Template::where('is_active', true)
+            ->where('kind', 'landing')
+            ->where('category', $project->template->category)
+            ->where('id', '!=', $project->template_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return view('site.live-edit', array_merge(
             $renderer->render($site),
             [
                 'site' => $site,
                 'variant' => $project->variant,
                 'slotsBySection' => $project->template->slots->groupBy('section_key'),
+                'sameCategoryTemplates' => $sameCategoryTemplates,
             ]
         ));
     }
@@ -61,6 +74,26 @@ class GeneratedSiteController extends Controller
         $request->validate([
             'content_files.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
         ]);
+
+        // تغيير القالب من درج "تصميم الموقع" في المحرر البصري المباشر (2026-09-21) — بس
+        // لقالب تاني من نفس فئة القالب الحالي (عشان المحتوى، نفس الـ17 مفتاح، ينتقل صح زي
+        // بالظبط AiProjectAssistantService::applyChangeTemplate()). قيمة فاضية أو غير صالحة
+        // أو من فئة مختلفة = تجاهل صامت، مفيش تغيير — نفس سلوك باقي حقول "حدد بنفسك".
+        $newTemplateId = $request->integer('template_id') ?: null;
+        if ($newTemplateId && $newTemplateId !== $project->template_id) {
+            $newTemplate = Template::where('is_active', true)
+                ->where('kind', 'landing')
+                ->where('category', $project->template->category)
+                ->find($newTemplateId);
+
+            if ($newTemplate) {
+                $project->update([
+                    'template_id' => $newTemplate->id,
+                    'template_variant_id' => $newTemplate->defaultVariant()?->id,
+                ]);
+                $project->load('template.slots');
+            }
+        }
 
         $site = $project->site()->firstOrFail();
         $content = $site->content_json ?? [];

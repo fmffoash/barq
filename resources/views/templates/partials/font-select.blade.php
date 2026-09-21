@@ -13,8 +13,11 @@
         @if ($withInherit ?? false)
             <option value="" @selected(blank($font))>— الخط العام (بتاع القالب) —</option>
         @endif
+        {{-- كل خيار متعروض بخطه الحقيقي (style="font-family: var(--font-{key})") — عشان فؤاد
+        يشوف شكل الخط فعلياً قبل ما يختاره، مش يختار بالاسم بس. الخطوط كلها متحمّلة أصلاً في
+        app.css على كل صفحات لوحة التحكم (مش بس صفحات الموقع المنشور). --}}
         @foreach (\App\Models\TemplateVariant::FONTS as $key => $label)
-            <option value="{{ $key }}" @selected((($withInherit ?? false) ? $font : ($font ?: 'cairo')) === $key)>{{ $label }}</option>
+            <option value="{{ $key }}" style="font-family: var(--font-{{ $key }});" @selected((($withInherit ?? false) ? $font : ($font ?: 'cairo')) === $key)>{{ $label }}</option>
         @endforeach
     </select>
 </div>
