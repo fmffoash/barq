@@ -64,13 +64,13 @@
         بعرض الشاشة الفعلي (كل كارت 240px على الأقل)، والباقي بينزل صف تحت تلقائي. كانت قبل
         كده sm:grid-cols-2 lg:grid-cols-3 (تتوقف عند 3 أعمدة مهما اتسعت الشاشة أكتر) —
         فؤاد لاحظ إن الصفحة بتفضل بنفس الشكل ومساحة فاضية على الشاشات الواسعة (2026-09-21). --}}
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
             @foreach ($templates as $template)
                 @php
                     $colors = $template->defaultVariant()?->colors_json;
                     $heroImage = $template->slots->firstWhere('key', 'hero_image')?->default_value;
 
-                    $previewStyle = match (true) {
+                    $fallbackStyle = match (true) {
                         (bool) $heroImage => "background-image: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,.55)), url('{$heroImage}');",
                         (bool) $colors => "background-image: linear-gradient(135deg, {$colors['primary']}, {$colors['background']});",
                         default => '',
@@ -81,16 +81,33 @@
                     href="{{ route('templates.show', $template) }}"
                     class="block overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-amber-400/60"
                 >
-                    {{-- معاينة بصرية سريعة: صورة غلاف القالب لو موجودة، وإلا تدرّج بألوان
-                    القالب نفسها — الهدف إن الكارت يديك إحساس بشكل القالب مش بس اسمه. --}}
-                    <div
-                        class="flex h-28 items-center justify-center bg-cover bg-center"
-                        style="{{ $previewStyle }}"
-                    >
-                        @unless ($heroImage || $colors)
-                            <span class="text-3xl opacity-30">🖼️</span>
-                        @endunless
-                    </div>
+                    @if ($template->kind === 'landing')
+                        {{-- معاينة حقيقية 100% (2026-09-21) — iframe بيرندر نفس شِل الموقع
+                        الحقيقي (templates.preview) بمحتوى القالب الافتراضي، مصغّر بـ CSS
+                        container query units (cqw) عشان يتلائم مع أي عرض كارت في الشبكة
+                        المرنة من غير JS. loading="lazy" يمنع تحميل الـ300 معاينة مرة واحدة —
+                        بس اللي ظاهر فعلاً في الشاشة (أو قريب منها) بيتحمّل. --}}
+                        <div class="relative h-56 overflow-hidden bg-slate-950" style="container-type: inline-size;">
+                            <iframe
+                                src="{{ route('templates.preview', $template) }}"
+                                loading="lazy"
+                                tabindex="-1"
+                                title="معاينة {{ $template->name }}"
+                                style="width: 1280px; height: 800px; transform-origin: top left; transform: scale(calc(100cqw / 1280px)); border: 0; pointer-events: none;"
+                            ></iframe>
+                        </div>
+                    @else
+                        {{-- قوالب ووردبريس مالهاش رندر لاندنج بيدج حقيقي نعرضه هنا — نفس
+                        المعاينة التقريبية (صورة/لون) القديمة. --}}
+                        <div
+                            class="flex h-56 items-center justify-center bg-cover bg-center"
+                            style="{{ $fallbackStyle }}"
+                        >
+                            @unless ($heroImage || $colors)
+                                <span class="text-3xl opacity-30">🖼️</span>
+                            @endunless
+                        </div>
+                    @endif
 
                     <div class="p-5">
                         <div class="mb-3 flex items-start justify-between gap-2">

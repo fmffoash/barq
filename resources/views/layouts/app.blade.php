@@ -10,7 +10,7 @@
 </head>
 <body class="min-h-screen bg-slate-950 font-sans text-slate-100 antialiased">
     <nav class="border-b border-slate-800 bg-slate-900/60 backdrop-blur">
-        <div class="mx-auto flex max-w-[100rem] items-center justify-between px-4 py-3">
+        <div class="flex items-center justify-between px-6 py-3">
             <div class="flex items-center gap-6">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-lg font-extrabold tracking-tight text-amber-400">
                     <span class="text-2xl leading-none">⚡</span>
@@ -55,9 +55,10 @@
         </div>
     </nav>
 
-    {{-- عرض السنتر بقى max-w-[100rem] بدل 6xl (1152px، 2026-09-21) — فؤاد لاحظ إن الصفحة
-    فاضية على الشاشات الواسعة وبتفضل ثابتة العرض مهما كبّرت المتصفح. --}}
-    <main class="mx-auto max-w-[100rem] px-4 py-8">
+    {{-- صفر عرض أقصى للصفحة (2026-09-21) — أول محاولة (max-w-6xl ثم max-w-[100rem]) فضلت
+    سايبة مساحة فاضية على الشاشات الواسعة عند فؤاد، فشلنا الفكرة نفسها: الصفحة بقت تملأ عرض
+    الشاشة بالكامل مهما كان حجمها، بادينج ثابت بس على الجنبين. --}}
+    <main class="px-6 py-8">
         @yield('content')
     </main>
 
