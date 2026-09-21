@@ -39,15 +39,26 @@ pool.d/barq.conf`، socket `php8.3-fpm-barq.sock`، `max_children=2`) بدل م�
 ثانية) كان ممكن ياكل كل الـworkers المتاحة لعملاء طفرة الحقيقيين). عدّل `sites-enabled/barq`
 لو غيّرت اسم الـsocket، وحدّث `deploy/nginx-barq.conf` في الريبو بنفس التغيير.
 
-**⚠️ قاعدة صيانة رابعة (اتحددت 2026-09-21):** أي تعديل Blade بيضيف كلاس Tailwind **جديد
-تماماً على المشروع** (مش مستخدم في أي ملف تاني قبل كده) — وأشهر مثال كلاسات القيمة الحرة
-زي `grid-cols-[repeat(auto-fill,minmax(240px,1fr))]` أو `max-w-[100rem]` — **لازم `npm run
-build` بعد الديبلوي**، وإلا الكلاس الجديد مش هيكون موجود خالص في CSS bundle النهائي
-(Tailwind v4 JIT بيولّد بس الكلاسات اللي لقاها وقت آخر build، مش كل build جديد تلقائي).
-العرض هيفضل شغال بصمت (الكلاس المجهول اتجاهل من المتصفح) من غير أي خطأ في اللوج — يعني لو
-عدّلت تصميم وطلع مختلف عن المتوقع في المتصفح بس مفيش أي error، الشك الأول: نسيت `npm run
-build`. **حصل فعلاً 2026-09-21** — شبكة قوالب مرنة اتعملت بس فضلت تعرض عمود واحد لحد ما
-اتعمل build يدوي. بعد أي `npm run build` كـroot: `chown -R www-data:www-data public/build`.
+**⚠️ قاعدة صيانة رابعة (اتحددت 2026-09-21، اتأكدت بعد ما اتكررت مرتين ورا بعض):** أي ديبلوي
+فيه أي تعديل Blade/CSS — **من غير ما تفكر هل الكلاس "جديد فعلاً" ولا لأ** — لازم يتضمن
+`npm run build` كخطوة ثابتة، زي بالظبط `composer install`/`optimize:clear`. الحكم اليدوي
+على "الكلاس ده مش جديد فمش محتاج build" هو اللي سبب الباج مرتين (240px→280px في
+`grid-cols-[repeat(auto-fill,minmax(...))]` كانوا كلاسين مختلفين تماماً بالنسبة لـTailwind
+JIT رغم إنهم "نفس الكلاس" منطقياً في دماغ حد بيقرا الكود). **الديبلوي القياسي الكامل بقى:**
+```
+git fetch && git reset --hard origin/main
+chown -R www-data:www-data storage bootstrap/cache public/images
+npm run build && chown -R www-data:www-data public/build
+composer install --no-dev --quiet && chown -R www-data:www-data vendor
+php artisan optimize:clear
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+# قبل الريلود: curl -s http://localhost:11434/api/ps → لازم models:[] (Ollama مش شغال)
+systemctl reload php8.3-fpm
+chown -R www-data:www-data storage bootstrap/cache
+```
+العرض هيفضل شغال بصمت (الكلاس المجهول اتجاهل من المتصفح) من غير أي خطأ في اللوج لو نسيت
+الـbuild — يعني لو عدّلت تصميم وطلع مختلف عن المتوقع في المتصفح بس مفيش أي error، الشك
+الأول دايماً: نسيت `npm run build`.
 
 ## الحالة الحالية (2026-09-21 — لايف على السيرفر ومُختبر حي بالكامل)
 **دلوقتي لايف على `https://adamfoash.tafraos.com`** (nginx + PHP 8.3-fpm + MySQL، نفس
