@@ -28,63 +28,90 @@ class AiProjectAssistantService
 
     /**
      * أول رسالة — لسه معندناش مشروع. بتختار فئة وقالب مناسبين، تعمل المشروع، وتملّي محتواه.
+     *
+     * $templateId اختياري (Phase 14، 2026-09-21) — لو فؤاد اختار القالب بنفسه يدوي (زرار
+     * "حدد بنفسك" في ai-chat.create بدل ما يسيب الذكاء الاصطناعي يخمّن)، بنستخدمه مباشرة
+     * بدل تخمين الفئة/القالب، ونستخدم suggestContent() العادي (نداء واحد أخف بدل النداء
+     * المدموج، مش محتاج يخمّن حاجة تانية غير المحتوى). $color/$font اختياريين كمان — لو
+     * فؤاد اختارهم من الفورم بنفسه، بيتطبّقوا على الموقع الناتج فوراً وقت الإنشاء.
      */
-    public function createFromMessage(string $message): array
+    public function createFromMessage(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null): array
     {
-        $categories = Template::query()
-            ->where('is_active', true)
-            ->whereNotNull('category')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category');
+        if ($templateId) {
+            $template = Template::where('is_active', true)->where('kind', 'landing')->find($templateId);
 
-        if ($categories->isEmpty()) {
-            return ['ok' => false, 'reply' => 'مفيش قوالب متاحة خالص دلوقتي — لازم تتضاف فئات وقوالب الأول.'];
-        }
+            if (! $template) {
+                return ['ok' => false, 'reply' => 'القالب اللي اخترته مش موجود أو متعطّل — اختار قالب تاني من فوق.'];
+            }
 
-        // نداء واحد بس بيرجّع اختيار القالب والمحتوى مع بعض (بدل نداءين متتاليين) — كل نداء
-        // على قالب حقيقي (17 خانة) بياخد 26-49 ثانية لوحده في التجربة الحية (2026-09-20)،
-        // فنداءين ورا بعض كانوا بيخطّوا مهلة nginx (504 Gateway Timeout بعد 60 ثانية بالظبط).
-        $picked = $this->ollama->generateJson($this->buildCreatePrompt($message, $categories));
+            $category = $template->category;
+            $projectName = Str::limit($message, 40, '') ?: $template->name;
+            $content = $this->ollama->suggestContent($template, $message);
+        } else {
+            $categories = Template::query()
+                ->where('is_active', true)
+                ->whereNotNull('category')
+                ->distinct()
+                ->orderBy('category')
+                ->pluck('category');
 
-        $category = is_array($picked) && in_array($picked['category'] ?? null, $categories->all(), true)
-            ? $picked['category']
-            : $categories->first();
+            if ($categories->isEmpty()) {
+                return ['ok' => false, 'reply' => 'مفيش قوالب متاحة خالص دلوقتي — لازم تتضاف فئات وقوالب الأول.'];
+            }
 
-        $styleHint = is_string($picked['style_hint'] ?? null) ? trim($picked['style_hint']) : '';
-        $projectName = is_string($picked['project_name'] ?? null) && trim($picked['project_name']) !== ''
-            ? trim($picked['project_name'])
-            : Str::limit($message, 40, '');
+            // نداء واحد بس بيرجّع اختيار القالب والمحتوى مع بعض (بدل نداءين متتاليين) — كل
+            // نداء على قالب حقيقي (17 خانة) بياخد 26-49 ثانية لوحده في التجربة الحية
+            // (2026-09-20)، فنداءين ورا بعض كانوا بيخطّوا مهلة nginx (504 بعد 60 ثانية بالظبط).
+            $picked = $this->ollama->generateJson($this->buildCreatePrompt($message, $categories));
 
-        $template = $this->pickTemplateInCategory($category, $styleHint);
+            $category = is_array($picked) && in_array($picked['category'] ?? null, $categories->all(), true)
+                ? $picked['category']
+                : $categories->first();
 
-        if (! $template) {
-            return ['ok' => false, 'reply' => 'معرفتش ألاقي قالب مناسب — جرّب توصف النشاط بشكل مختلف شوية.'];
+            $styleHint = is_string($picked['style_hint'] ?? null) ? trim($picked['style_hint']) : '';
+            $projectName = is_string($picked['project_name'] ?? null) && trim($picked['project_name']) !== ''
+                ? trim($picked['project_name'])
+                : Str::limit($message, 40, '');
+
+            $template = $this->pickTemplateInCategory($category, $styleHint);
+
+            if (! $template) {
+                return ['ok' => false, 'reply' => 'معرفتش ألاقي قالب مناسب — جرّب توصف النشاط بشكل مختلف شوية.'];
+            }
+
+            $template->loadMissing('slots');
+            $suggestableSlots = $template->slots->where('slot_type', '!=', 'image');
+            // أحياناً qwen3 بيرجّع "content" كـstring فيه JSON متكرر ترميزه (double-encoded)
+            // بدل object متداخل فعلي — رغم إن الـprompt طالب object بالحرف (تفاوت طبيعي لنموذج
+            // صغير مع JSON متداخل، لوحظ حياً 2026-09-20). نتعامل مع الحالتين بدل ما نسيب
+            // المشروع من غير محتوى خالص.
+            $rawContentField = $picked['content'] ?? null;
+            $rawContent = match (true) {
+                is_array($rawContentField) => $rawContentField,
+                is_string($rawContentField) => (array) (json_decode($rawContentField, true) ?? []),
+                default => [],
+            };
+            $content = $this->filterToKnownSlotKeys($suggestableSlots, $rawContent);
+
+            // fallback دفاعي: لو النداء المدموج فشل يرجّع محتوى (النموذج مش متاح، أو رجّع شكل
+            // غير متوقع) بس القالب اتحدد صح، نجرّب نداء suggestContent العادي لوحده كـPlan B
+            // بدل ما نسيب المشروع من غير محتوى خالص.
+            if ($content === [] && $picked !== null) {
+                $content = $this->ollama->suggestContent($template, $message);
+            }
         }
 
         $variant = $template->defaultVariant();
-        $template->loadMissing('slots');
-        $suggestableSlots = $template->slots->where('slot_type', '!=', 'image');
-        // أحياناً qwen3 بيرجّع "content" كـstring فيه JSON متكرر ترميزه (double-encoded)
-        // بدل object متداخل فعلي — رغم إن الـprompt طالب object بالحرف (تفاوت طبيعي لنموذج
-        // صغير مع JSON متداخل، لوحظ حياً 2026-09-20). نتعامل مع الحالتين بدل ما نسيب
-        // المشروع من غير محتوى خالص.
-        $rawContentField = $picked['content'] ?? null;
-        $rawContent = match (true) {
-            is_array($rawContentField) => $rawContentField,
-            is_string($rawContentField) => (array) (json_decode($rawContentField, true) ?? []),
-            default => [],
-        };
-        $content = $this->filterToKnownSlotKeys($suggestableSlots, $rawContent);
 
-        // fallback دفاعي: لو النداء المدموج فشل يرجّع محتوى (النموذج مش متاح، أو رجّع شكل
-        // غير متوقع) بس القالب اتحدد صح، نجرّب نداء suggestContent العادي لوحده كـPlan B
-        // بدل ما نسيب المشروع من غير محتوى خالص.
-        if ($content === [] && $picked !== null) {
-            $content = $this->ollama->suggestContent($template, $message);
+        // لون/خط مختارين يدوي (اختياريين) — بيتطبّقوا كتخصيص لهذا الموقع بس، زي بالظبط
+        // applyUpdateColors/applyUpdateFont لكن وقت الإنشاء مباشرة بدل رسالة تعديل تانية.
+        $colorsOverride = null;
+        if ($color !== null && preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
+            $colorsOverride = ['primary' => $color];
         }
+        $fontOverride = ($font !== null && array_key_exists($font, TemplateVariant::FONTS)) ? $font : null;
 
-        $project = DB::transaction(function () use ($template, $variant, $projectName, $content) {
+        $project = DB::transaction(function () use ($template, $variant, $projectName, $content, $colorsOverride, $fontOverride) {
             $project = Project::create([
                 'template_id' => $template->id,
                 'template_variant_id' => $variant?->id,
@@ -97,6 +124,8 @@ class AiProjectAssistantService
                 'project_id' => $project->id,
                 'slug' => $this->uniqueSiteSlug($projectName),
                 'content_json' => $content,
+                'colors_override_json' => $colorsOverride,
+                'font_override' => $fontOverride,
             ]);
 
             return $project;

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Template;
+use App\Models\TemplateVariant;
 use App\Services\AiProjectAssistantService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,18 +18,41 @@ use Illuminate\View\View;
  */
 class AiChatController extends Controller
 {
+    // خيارات "حدد بنفسك" الاختيارية (Phase 14، 2026-09-21) — فؤاد طلب تحكّم يدوي مباشر
+    // (فئة → قالب يخص الفئة دي بس → لون → خط) بدل ما يفضل يعتمد على تخمين الذكاء الاصطناعي
+    // بس، خصوصاً بعد باج "غيّر القالب" اللي كان بيدور بين نفس القالبين. $templates بيانات
+    // خفيفة (id/name/category بس، مفيش slots/variants) عشان الفلترة بالفئة تحصل فوراً في
+    // المتصفح (JS) من غير أي نداء تاني للسيرفر.
     public function create(): View
     {
-        return view('ai-chat.create');
+        $categories = Template::where('is_active', true)->where('kind', 'landing')
+            ->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
+
+        $templates = Template::where('is_active', true)->where('kind', 'landing')
+            ->orderBy('name')->get(['id', 'name', 'category']);
+
+        return view('ai-chat.create', [
+            'categories' => $categories,
+            'templates' => $templates,
+            'fonts' => TemplateVariant::FONTS,
+        ]);
     }
 
     public function store(Request $request, AiProjectAssistantService $assistant): RedirectResponse
     {
         $data = $request->validate([
             'message' => ['required', 'string', 'max:4000'],
+            'template_id' => ['nullable', 'integer', 'exists:templates,id'],
+            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'font' => ['nullable', 'string'],
         ]);
 
-        $result = $assistant->createFromMessage($data['message']);
+        $result = $assistant->createFromMessage(
+            $data['message'],
+            $data['template_id'] ?? null,
+            $data['color'] ?? null,
+            $data['font'] ?? null,
+        );
 
         if (! $result['ok']) {
             return redirect()
