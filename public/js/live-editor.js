@@ -115,27 +115,56 @@
         });
         colorLabel.appendChild(colorInput);
 
+        // منتقي خط مخصّص (Phase 16، 2026-09-21) — <select> عادي هنا استبدلناه لأن قايمة
+        // <option> المفتوحة بترندرها واجهة نظام التشغيل نفسها في متصفحات كتير، وأي CSS
+        // بنحطه على font-family جوّه <option> بيتجاهل بالكامل (فؤاد أكّد حياً إنها مش
+        // بتظهر). البديل: عناصر <div> عادية إحنا بنتحكم فيها بالكامل، مضمون تحترم أي style.
         var fontLabel = document.createElement('label');
         fontLabel.textContent = 'الخط';
-        var fontSelect = document.createElement('select');
-        var defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '— الخط العام —';
-        fontSelect.appendChild(defaultOption);
+
+        var fontPicker = document.createElement('div');
+        fontPicker.className = 'bq-toolbar-font-picker';
+
+        var fontToggle = document.createElement('button');
+        fontToggle.type = 'button';
+        fontToggle.className = 'bq-toolbar-font-toggle';
+        var currentFontLabel = override.font ? (config.fonts[override.font] || override.font) : '— الخط العام —';
+        fontToggle.textContent = currentFontLabel;
+        fontToggle.style.fontFamily = override.font ? ('var(--font-' + override.font + ')') : '';
+
+        var fontList = document.createElement('div');
+        fontList.className = 'bq-toolbar-font-list';
+        fontList.hidden = true;
+
+        function addFontOption(value, text) {
+            var opt = document.createElement('div');
+            opt.className = 'bq-toolbar-font-option';
+            opt.textContent = text;
+            if (value) opt.style.fontFamily = 'var(--font-' + value + ')';
+            opt.addEventListener('click', function () {
+                active.fontTouched = true;
+                active.pendingFont = value;
+                fontToggle.textContent = text;
+                fontToggle.style.fontFamily = value ? ('var(--font-' + value + ')') : '';
+                fontList.hidden = true;
+            });
+            fontList.appendChild(opt);
+        }
+
+        addFontOption('', '— الخط العام —');
         Object.keys(config.fonts).forEach(function (key) {
-            var opt = document.createElement('option');
-            opt.value = key;
-            opt.textContent = config.fonts[key];
-            if (override.font === key) {
-                opt.selected = true;
-            }
-            fontSelect.appendChild(opt);
+            addFontOption(key, config.fonts[key]);
         });
-        fontSelect.addEventListener('change', function () {
-            active.fontTouched = true;
-            active.pendingFont = fontSelect.value;
+
+        fontToggle.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            fontList.hidden = !fontList.hidden;
         });
-        fontLabel.appendChild(fontSelect);
+
+        fontPicker.appendChild(fontToggle);
+        fontPicker.appendChild(fontList);
+        fontLabel.appendChild(fontPicker);
 
         var resetBtn = document.createElement('button');
         resetBtn.type = 'button';

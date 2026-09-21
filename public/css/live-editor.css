@@ -102,6 +102,52 @@
     font-size: 12px;
 }
 
+/* منتقي خط مخصّص لتولبار تعديل الخانة الواحدة (Phase 16، 2026-09-21) — بديل عن select
+   عادي، لأن قايمة option المفتوحة بترندرها واجهة نظام التشغيل في متصفحات كتير وأي تنسيق
+   بنحطه عليها بيتجاهل. عناصر div عادية هنا بدل كده، مضمون تحترم أي style. */
+.bq-toolbar-font-picker {
+    position: relative;
+}
+
+.bq-toolbar-font-toggle {
+    background: #1f2937;
+    color: #f1f5f9;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bq-toolbar-font-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 2147483001;
+    max-height: 240px;
+    width: 180px;
+    overflow-y: auto;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.bq-toolbar-font-option {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #e2e8f0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.bq-toolbar-font-option:hover {
+    background: #1e293b;
+}
+
 .bq-toolbar button {
     border: 0;
     border-radius: 6px;
