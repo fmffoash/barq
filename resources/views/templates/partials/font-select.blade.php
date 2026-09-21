@@ -60,13 +60,15 @@
     </div>
 </div>
 
-@once
-    @push('scripts')
-        <script>
-            // منتقي خط مخصّص (Phase 16، 2026-09-21) — بديل عن <option> اللي مبتظهرش بخطها
-            // الحقيقي في متصفحات كتير. @once عشان الجزئية دي ممكن تتكرر أكتر من مرة في نفس
-            // الصفحة (زي templates/show.blade.php).
-            document.addEventListener('DOMContentLoaded', function () {
+@push('scripts')
+    <script>
+        // منتقي خط مخصّص (Phase 16، 2026-09-21) — بديل عن option اللي مبتظهرش بخطها
+        // الحقيقي في متصفحات كتير. صفر تكرار-حماية هنا عمداً (تركيبة معيّنة من Blade
+        // directives سبّبت خطأ compile لما الجزئية اتضمّت مرتين في نفس الصفحة — زي
+        // templates/show.blade.php) — الكود idempotent أصلاً (querySelectorAll +
+        // addEventListener)، فتكرار الوسم لو الجزئية اتضمت أكتر من مرة مش مشكلة، أسوأ
+        // حالة الحدث بيتسجّل مرتين بدل مرة.
+        document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('.bq-font-picker').forEach(function (picker) {
                     var toggle = picker.querySelector('.bq-font-picker-toggle');
                     var list = picker.querySelector('.bq-font-picker-list');
@@ -94,11 +96,10 @@
                     });
                 });
 
-                document.addEventListener('click', function (event) {
-                    if (event.target.closest('.bq-font-picker')) return;
-                    document.querySelectorAll('.bq-font-picker-list').forEach(function (l) { l.hidden = true; });
-                });
+            document.addEventListener('click', function (event) {
+                if (event.target.closest('.bq-font-picker')) return;
+                document.querySelectorAll('.bq-font-picker-list').forEach(function (l) { l.hidden = true; });
             });
-        </script>
-    @endpush
-@endonce
+        });
+    </script>
+@endpush
