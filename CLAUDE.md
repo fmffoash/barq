@@ -26,6 +26,19 @@ PHP-FPM كـ`www-data`، بس أي أمر `php artisan` بيتنفّذ عن طر
 أي ملف routes: `php artisan optimize:clear` الأول، وبعدين `config:cache`/`route:cache`/
 `view:cache` من جديد.**
 
+**⚠️ قاعدة صيانة تالتة (اتحددت 2026-09-21بعد Bad Gateway لحظي):** السيرفر (7.6 جيجا رام)
+بيشغّل Tafra ERP + برق + Ollama (qwen3:8b) مع بعض. لمّا Ollama شغّال بيولّد (أي رسالة في
+شات الذكاء الاصطناعي)، بياخد ~2.5-5 جيجا رام لحد 5 دقايق (keep_alive)، فالرام بتبقى ضيقة
+جداً (شوهد فعلياً: أقل من 250 ميجا فاضي، سواب بيتستخدم). **قبل أي `systemctl reload
+php8.3-fpm`/`nginx`، اتأكد الأول إن Ollama مش شغّال دلوقتي (`curl -s
+http://localhost:11434/api/ps` — لو رجّع `models: []` يبقى فاضي وآمن تعمل reload)** — لو
+عملت reload وOllama شغّال في نفس اللحظة، ممكن يحصل 502 لحظي (اتصلح لوحده خلال ثواني، بس
+أفضل نتجنبه). **إصلاح دائم اتعمل:** برق بقى على PHP-FPM pool منفصل (`/etc/php/8.3/fpm/
+pool.d/barq.conf`، socket `php8.3-fpm-barq.sock`، `max_children=2`) بدل ما يشارك pool
+[www] بتاع Tafra ERP (كان `max_children=5` مشترك بين الاتنين — طلب AI بطيء على برق (لحد 49
+ثانية) كان ممكن ياكل كل الـworkers المتاحة لعملاء طفرة الحقيقيين). عدّل `sites-enabled/barq`
+لو غيّرت اسم الـsocket، وحدّث `deploy/nginx-barq.conf` في الريبو بنفس التغيير.
+
 ## الحالة الحالية (2026-09-21 — لايف على السيرفر ومُختبر حي بالكامل)
 **دلوقتي لايف على `https://adamfoash.tafraos.com`** (nginx + PHP 8.3-fpm + MySQL، نفس
 سيرفر Tafra ERP بصفر تعارض)، أدمن واحد فقط (Foash) بيدخل ويعمل قوالب بخاناتها (slots)
