@@ -26,12 +26,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('templates', TemplateController::class);
 
-    // معاينة حقيقية مصغّرة لشكل القالب (2026-09-21) — نفس الرندر الحقيقي (SiteRenderer) لكن
-    // بمحتوى القالب الافتراضي بدل مشروع حقيقي، عشان كارت القالب في /templates يقدر يعرض
-    // "شكله فعلاً هيكون إزاي" مش مجرد صورة/لون تقريبي. راجع TemplateController::preview().
-    Route::get('templates/{template}/preview', [TemplateController::class, 'preview'])
-        ->name('templates.preview');
-
     Route::post('templates/{template}/variants', [TemplateVariantController::class, 'store'])
         ->name('templates.variants.store');
     Route::put('template-variants/{variant}', [TemplateVariantController::class, 'update'])

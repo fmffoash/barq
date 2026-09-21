@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GeneratedSite;
 use App\Models\Project;
 use App\Models\Template;
-use App\Services\SiteRenderer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -74,31 +72,6 @@ class TemplateController extends Controller
         $slotsBySection = $template->slots->groupBy('section_key');
 
         return view('templates.show', compact('template', 'slotsBySection'));
-    }
-
-    // معاينة حقيقية مصغّرة (2026-09-21) — نفس شِل الموقع الحقيقي (site.show → SiteRenderer)،
-    // لكن بمحتوى افتراضي (TemplateSlot.default_value) بدل GeneratedSite حقيقي، عشان كارت
-    // القالب في /templates يعرض شكله الفعلي (تصميم + ألوان + خط) مش صورة/لون تقريبي بس.
-    // Project وGeneratedSite هنا **مش متسجّلين في الداتابيز خالص** (models مؤقتة بالذاكرة)
-    // — مفيش أي كتابة، الصفحة دي read-only بحتة.
-    public function preview(Template $template): View
-    {
-        $template->loadMissing(['slots', 'variants']);
-        $variant = $template->defaultVariant();
-
-        $content = $template->slots
-            ->mapWithKeys(fn ($slot) => [$slot->key => $slot->default_value])
-            ->filter(fn ($value) => filled($value))
-            ->all();
-
-        $project = new Project(['name' => $template->name]);
-        $project->setRelation('template', $template);
-        $project->setRelation('variant', $variant);
-
-        $site = new GeneratedSite(['content_json' => $content]);
-        $site->setRelation('project', $project);
-
-        return view('site.show', app(SiteRenderer::class)->render($site));
     }
 
     public function edit(Template $template): View

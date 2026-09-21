@@ -81,34 +81,28 @@
                     href="{{ route('templates.show', $template) }}"
                     class="block overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-amber-400/60"
                 >
-                    @if ($template->kind === 'landing')
-                        {{-- معاينة حقيقية 100% (2026-09-21) — iframe بيرندر نفس شِل الموقع
-                        الحقيقي (templates.preview) بمحتوى القالب الافتراضي. المحاولة الأولى
-                        بـCSS بحت (container query units + loading="lazy" الأصلي) طلعت
-                        الكروت فاضية عند فؤاد حياً — على الأرجح تفاعل الـtransform مع الـlazy
-                        الأصلي للمتصفح. بدّلتها بـJS صريح (IntersectionObserver بيحمّل
-                        data-src بس لما الكارت يقرب من الشاشة فعلاً، وResizeObserver بيحسب
-                        نسبة التصغير من عرض الكارت الفعلي) — أبطأ شوية بس قابل للتشخيص
-                        ومضمون شغله في كل المتصفحات. --}}
-                        <div class="template-preview-frame relative h-56 overflow-hidden bg-slate-950">
-                            <iframe
-                                data-src="{{ route('templates.preview', $template) }}"
-                                tabindex="-1"
-                                title="معاينة {{ $template->name }}"
-                                style="position: absolute; top: 0; left: 0; width: 1280px; height: 800px; transform-origin: top left; border: 0; pointer-events: none;"
-                            ></iframe>
-                        </div>
-                    @else
-                        {{-- قوالب ووردبريس مالهاش رندر لاندنج بيدج حقيقي نعرضه هنا — نفس
-                        المعاينة التقريبية (صورة/لون) القديمة. --}}
-                        <div
-                            class="flex h-56 items-center justify-center bg-cover bg-center"
-                            style="{{ $fallbackStyle }}"
-                        >
-                            @unless ($heroImage || $colors)
-                                <span class="text-3xl opacity-30">🖼️</span>
-                            @endunless
-                        </div>
+                    {{-- رجعنا للمعاينة الخفيفة (صورة الفئة + تدرّج ألوان القالب، بدون أي
+                    نداء سيرفر إضافي — 2026-09-21). كنا جرّبنا معاينة حقيقية 100% بـiframe
+                    (templates.preview) لكل قالب، لكن فؤاد شاف السيرفر بيتقل واضح لحظة فتح
+                    الصفحة — 300 قالب حتى مع lazy-loading يعني عشرات الـiframes بتتحمّل مرة
+                    واحدة على pool صغير (max_children=2) وسيرفر 4 أنوية بس. مش نمط مناسب
+                    للحجم ده، بغض النظر عن أي تحسين إضافي في الطريقة. الصورة/اللون بيدوا
+                    إحساس حقيقي بمزاج القالب (نفس صور الفئة الحقيقية اللي اترفعت) من غير أي
+                    تكلفة على السيرفر — واسم التصميم (badge) بيدي تلميح إضافي عن الشكل. --}}
+                    <div
+                        class="relative flex h-56 items-end bg-cover bg-center"
+                        style="{{ $fallbackStyle }}"
+                    >
+                        @unless ($heroImage || $colors)
+                            <span class="mx-auto mb-auto mt-auto text-3xl opacity-30">🖼️</span>
+                        @endunless
+
+                        @if ($template->kind === 'landing')
+                            <span class="m-2 rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-200 backdrop-blur">
+                                {{ \App\Models\Template::layoutLabel($template->layout) }}
+                            </span>
+                        @endif
+                    </div>
                     @endif
 
                     <div class="p-5">
@@ -139,48 +133,3 @@
         </div>
     @endif
 @endsection
-
-@push('scripts')
-    <script>
-        // معاينات القوالب المصغّرة (2026-09-21) — تحميل + تصغير بـJS صريح بدل CSS بحت
-        // (container queries + loading="lazy" الأصلي طلعوا فاضيين حياً). IntersectionObserver
-        // بيحمّل الـiframe (يحط src من data-src) بس لما الكارت يقرب من الشاشة (rootMargin
-        // 400px مسبق)، وResizeObserver بيحسب نسبة التصغير الفعلية من عرض الكارت الحقيقي في
-        // كل مرة يتغيّر (فتح/قفل نافذة، تغيير حجم الشاشة) بدل قيمة CSS ثابتة مبنية على افتراض.
-        (function () {
-            var frames = document.querySelectorAll('.template-preview-frame');
-            if (!frames.length) return;
-
-            function applyScale(wrapper) {
-                var iframe = wrapper.querySelector('iframe');
-                if (!iframe) return;
-                var scale = wrapper.clientWidth / 1280;
-                iframe.style.transform = 'scale(' + scale + ')';
-            }
-
-            var resizeObserver = new ResizeObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    applyScale(entry.target);
-                });
-            });
-
-            var loadObserver = new IntersectionObserver(function (entries, obs) {
-                entries.forEach(function (entry) {
-                    if (!entry.isIntersecting) return;
-                    var wrapper = entry.target;
-                    var iframe = wrapper.querySelector('iframe');
-                    if (iframe && !iframe.src) {
-                        iframe.src = iframe.dataset.src;
-                        applyScale(wrapper);
-                    }
-                    obs.unobserve(wrapper);
-                });
-            }, {rootMargin: '400px 0px'});
-
-            frames.forEach(function (wrapper) {
-                resizeObserver.observe(wrapper);
-                loadObserver.observe(wrapper);
-            });
-        })();
-    </script>
-@endpush
