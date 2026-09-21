@@ -69,6 +69,12 @@
                 @php
                     $colors = $template->defaultVariant()?->colors_json;
                     $heroImage = $template->slots->firstWhere('key', 'hero_image')?->default_value;
+
+                    $previewStyle = match (true) {
+                        (bool) $heroImage => "background-image: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,.55)), url('{$heroImage}');",
+                        (bool) $colors => "background-image: linear-gradient(135deg, {$colors['primary']}, {$colors['background']});",
+                        default => '',
+                    };
                 @endphp
 
                 <a
@@ -79,7 +85,7 @@
                     القالب نفسها — الهدف إن الكارت يديك إحساس بشكل القالب مش بس اسمه. --}}
                     <div
                         class="flex h-28 items-center justify-center bg-cover bg-center"
-                        style="{{ $heroImage ? \"background-image: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,.55)), url('{$heroImage}');\" : ($colors ? \"background-image: linear-gradient(135deg, {$colors['primary']}, {$colors['background']});\" : '') }}"
+                        style="{{ $previewStyle }}"
                     >
                         @unless ($heroImage || $colors)
                             <span class="text-3xl opacity-30">🖼️</span>
