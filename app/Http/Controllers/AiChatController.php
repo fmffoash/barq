@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Template;
-use App\Models\TemplateVariant;
 use App\Services\AiProjectAssistantService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +33,6 @@ class AiChatController extends Controller
         return view('ai-chat.create', [
             'categories' => $categories,
             'templates' => $templates,
-            'fonts' => TemplateVariant::FONTS,
         ]);
     }
 

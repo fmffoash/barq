@@ -88,15 +88,9 @@
                     </div>
                 </div>
 
-                <div>
-                    <label for="font-select" class="mb-1.5 block text-sm font-medium text-slate-300">شكل الخط (اختياري)</label>
-                    <select id="font-select" name="font" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400">
-                        <option value="">— خط القالب الافتراضي —</option>
-                        @foreach ($fonts as $key => $label)
-                            <option value="{{ $key }}" style="font-family: var(--font-{{ $key }});">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                {{-- منتقي الخط المشترك (custom dropdown بيعرض شكل كل خط فعلياً — شوف
+                templates/partials/font-select.blade.php لسبب استبدال <select> العادي). --}}
+                @include('templates.partials.font-select', ['font' => null, 'fieldName' => 'font', 'withInherit' => true])
             </div>
         </details>
 

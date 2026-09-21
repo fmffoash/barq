@@ -198,6 +198,21 @@ class GeneratedSiteController extends Controller
         $fontOverride = (string) $request->input('font_override');
         $fontOverride = ($fontOverride !== '' && array_key_exists($fontOverride, TemplateVariant::FONTS)) ? $fontOverride : null;
 
+        // تخين/مَيَلان/حجم الخط العام (Phase 16، 2026-09-21) — نفس مبدأ font_override بالحرف:
+        // قيمة فاضية أو غير صالحة = null (يعني ورّث من القالب). أوزان محدودة عمداً (مش أي
+        // رقم عشوائي) عشان تفضل متوافقة مع أوزان @fontsource المتحمّلة فعلياً لكل خط —
+        // المتصفح بيختار أقرب وزن متاح لو المطلوب مش موجود بالظبط (سلوك عادي، صفر خطأ).
+        $fontWeightOverride = (string) $request->input('font_weight_override');
+        $fontWeightOverride = in_array($fontWeightOverride, ['400', '500', '600', '700', '800'], true) ? $fontWeightOverride : null;
+
+        $fontStyleOverride = (string) $request->input('font_style_override');
+        $fontStyleOverride = in_array($fontStyleOverride, ['normal', 'italic'], true) ? $fontStyleOverride : null;
+
+        $fontSizeScaleOverride = $request->input('font_size_scale_override');
+        $fontSizeScaleOverride = is_numeric($fontSizeScaleOverride) && $fontSizeScaleOverride >= 0.7 && $fontSizeScaleOverride <= 1.5
+            ? round((float) $fontSizeScaleOverride, 2)
+            : null;
+
         $sectionsOverride = null;
         if ($request->boolean('use_custom_sections')) {
             $raw = json_decode((string) $request->input('sections_override'), true);
@@ -213,6 +228,9 @@ class GeneratedSiteController extends Controller
         return [
             'colors_override_json' => $colorsOverride,
             'font_override' => $fontOverride,
+            'font_weight_override' => $fontWeightOverride,
+            'font_style_override' => $fontStyleOverride,
+            'font_size_scale_override' => $fontSizeScaleOverride,
             'sections_override_json' => $sectionsOverride,
         ];
     }

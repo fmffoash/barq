@@ -81,6 +81,42 @@
             ])
         </div>
 
+        {{-- تخين/مَيَلان/حجم الخط العام (Phase 16، 2026-09-21) — نفس مبدأ font_override:
+        قيمة فاضية = "زي القالب". تخين الخط ده بيأثر بس على النصوص اللي مالهاش وزن خط ثابت
+        من التصميم نفسه (زي العناوين الكبيرة اللي أصلاً bold/black بتصميمها) — العناوين
+        هتفضل بارزة عمداً حتى لو اخترت "عادي" هنا، عشان التباين البصري بين العنوان والنص
+        العادي جزء من هوية كل تصميم. --}}
+        <div class="bq-drawer-section">
+            <label style="display:block; margin-bottom:6px; font-size:14px; font-weight:500; color:#cbd5e1;">تخين الخط (للنص العادي)</label>
+            <select name="font_weight_override" style="width:100%; border-radius:8px; border:1px solid #334155; background:#020617; padding:10px 14px; font-size:14px; color:#f1f5f9;">
+                <option value="">— زي القالب —</option>
+                <option value="400" @selected($site->font_weight_override === '400')>عادي</option>
+                <option value="500" @selected($site->font_weight_override === '500')>متوسط</option>
+                <option value="600" @selected($site->font_weight_override === '600')>نص سميك</option>
+                <option value="700" @selected($site->font_weight_override === '700')>سميك</option>
+                <option value="800" @selected($site->font_weight_override === '800')>سميك جداً</option>
+            </select>
+        </div>
+
+        <div class="bq-drawer-section">
+            <label class="bq-checkbox-label">
+                <input type="checkbox" name="font_style_override" value="italic" @checked($site->font_style_override === 'italic')>
+                خط مائل (Italic) لكل النصوص
+            </label>
+            <p class="bq-hint">مش كل خط عنده تصميم مايل حقيقي — لو مفيش، المتصفح بيميّل النص صناعياً (شكل مقبول بس مش نفس دقة خط مايل أصلي).</p>
+        </div>
+
+        <div class="bq-drawer-section">
+            <label style="display:block; margin-bottom:6px; font-size:14px; font-weight:500; color:#cbd5e1;">حجم النصوص</label>
+            <select name="font_size_scale_override" style="width:100%; border-radius:8px; border:1px solid #334155; background:#020617; padding:10px 14px; font-size:14px; color:#f1f5f9;">
+                <option value="">— زي القالب —</option>
+                <option value="0.85" @selected((float) ($site->font_size_scale_override ?? 0) === 0.85)>صغير</option>
+                <option value="1" @selected((float) ($site->font_size_scale_override ?? 0) === 1.0)>عادي</option>
+                <option value="1.15" @selected((float) ($site->font_size_scale_override ?? 0) === 1.15)>كبير</option>
+                <option value="1.3" @selected((float) ($site->font_size_scale_override ?? 0) === 1.3)>كبير جداً</option>
+            </select>
+        </div>
+
         <div class="bq-drawer-section">
             <label class="bq-checkbox-label">
                 <input type="checkbox" name="use_custom_sections" value="1" @checked($site->sections_override_json)>

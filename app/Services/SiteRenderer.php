@@ -79,6 +79,12 @@ class SiteRenderer
             'sections' => $sections,
             'colors' => $colors,
             'font' => $site->font_override ?: ($variant?->font ?: 'cairo'),
+            // تخين/مَيَلان/حجم الخط العام (Phase 16، 2026-09-21) — نفس منطق font_override
+            // بالظبط (تخصيص الموقع ده بس بيغلب، وإلا قيمة افتراضية محايدة). fontSizeScale
+            // بيتطبّق كـfont-size على <html> نفسه (شوف تعليق المايجريشن للتفصيل).
+            'fontWeight' => $site->font_weight_override ?: '400',
+            'fontStyle' => $site->font_style_override ?: 'normal',
+            'fontSizeScale' => $site->font_size_scale_override ? (float) $site->font_size_scale_override : 1.0,
             'layout' => $template->layout ?: 'classic',
         ];
     }

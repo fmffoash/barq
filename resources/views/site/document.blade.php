@@ -26,7 +26,10 @@
     $editable = $editable ?? false;
 @endphp
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+{{-- حجم الخط العام (Phase 16) بيتحط هنا على <html> نفسه مش <body> — كل كلاسات Tailwind
+الحجمية (text-sm/text-3xl/...) بتستخدم rem، ونسبي لـ<html> بالتحديد، فتكبير/تصغير حجم خط
+<html> بيكبّر/يصغّر كل نصوص الموقع نسبياً من غير أي تعديل في أي من الـ16 layout. --}}
+<html lang="ar" dir="rtl" style="font-size: {{ $fontSizeScale * 100 }}%;">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -66,6 +69,8 @@
         background-color: var(--site-background);
         color: var(--site-text);
         font-family: var(--font-{{ $font ?: 'cairo' }});
+        font-weight: {{ $fontWeight }};
+        font-style: {{ $fontStyle }};
     "
 >
     @include('site.layouts.'.($layout ?: 'classic'))

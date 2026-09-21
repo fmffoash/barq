@@ -98,6 +98,45 @@
                         'withInherit' => true,
                     ])
 
+                    {{-- تخين/مَيَلان/حجم الخط العام (Phase 16، 2026-09-21). التخين بيأثر بس
+                    على النصوص اللي مالهاش وزن ثابت من التصميم نفسه — العناوين الكبيرة هتفضل
+                    بارزة زي ما التصميم عامل حتى لو اخترت "عادي" هنا. --}}
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="font_weight_override" class="mb-1.5 block text-sm font-medium text-slate-300">تخين الخط (للنص العادي)</label>
+                            <select id="font_weight_override" name="font_weight_override" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 outline-none focus:border-amber-400">
+                                <option value="">— زي القالب —</option>
+                                <option value="400" @selected($site?->font_weight_override === '400')>عادي</option>
+                                <option value="500" @selected($site?->font_weight_override === '500')>متوسط</option>
+                                <option value="600" @selected($site?->font_weight_override === '600')>نص سميك</option>
+                                <option value="700" @selected($site?->font_weight_override === '700')>سميك</option>
+                                <option value="800" @selected($site?->font_weight_override === '800')>سميك جداً</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="font_size_scale_override" class="mb-1.5 block text-sm font-medium text-slate-300">حجم النصوص</label>
+                            <select id="font_size_scale_override" name="font_size_scale_override" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 outline-none focus:border-amber-400">
+                                <option value="">— زي القالب —</option>
+                                <option value="0.85" @selected((float) ($site?->font_size_scale_override ?? 0) === 0.85)>صغير</option>
+                                <option value="1" @selected((float) ($site?->font_size_scale_override ?? 0) === 1.0)>عادي</option>
+                                <option value="1.15" @selected((float) ($site?->font_size_scale_override ?? 0) === 1.15)>كبير</option>
+                                <option value="1.3" @selected((float) ($site?->font_size_scale_override ?? 0) === 1.3)>كبير جداً</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-sm text-slate-300">
+                        <input
+                            type="checkbox"
+                            name="font_style_override"
+                            value="italic"
+                            @checked($site?->font_style_override === 'italic')
+                            class="h-4 w-4 rounded border-slate-700 bg-slate-950 text-amber-400 focus:ring-amber-400"
+                        >
+                        خط مائل (Italic) لكل النصوص
+                    </label>
+
                     <div>
                         <label class="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <input
