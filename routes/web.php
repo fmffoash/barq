@@ -55,6 +55,11 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.edit');
     Route::put('projects/{project}/site', [GeneratedSiteController::class, 'update'])
         ->name('projects.site.update');
+    // محرر بصري مباشر (WYSIWYG click-to-edit) — لازم يفضل جوّه مجموعة auth دي بالظبط،
+    // صفر إضافة أي query parameter على `routes/site.php` العام لتفعيل نفس الميزة دي
+    // (راجع "قيد أمان إجباري" في docs/wysiwyg-editor-plan.md).
+    Route::get('projects/{project}/site/live-edit', [GeneratedSiteController::class, 'liveEdit'])
+        ->name('projects.site.live-edit');
     Route::post('projects/{project}/site/suggest', [GeneratedSiteController::class, 'suggest'])
         ->name('projects.site.suggest');
     Route::post('projects/{project}/site/publish', [GeneratedSiteController::class, 'publish'])

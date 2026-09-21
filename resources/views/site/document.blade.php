@@ -18,6 +18,12 @@
             }
         }
     }
+
+    // وضع التعديل المباشر (WYSIWYG، docs/wysiwyg-editor-plan.md) — $editable بيتحط true
+    // بس من site.live-edit (route محمي بـ auth). المسار العام (site.show/site.export)
+    // مبيبعتهاش خالص فبترجع false افتراضياً — ده اللي بيمنع أي أثر لوضع التعديل على
+    // الموقع العام (صفر سكريبت/CSS تعديل بيتحمّل هناك).
+    $editable = $editable ?? false;
 @endphp
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -29,6 +35,10 @@
         <link rel="stylesheet" href="assets/app.css">
     @else
         @vite(['resources/css/app.css'])
+    @endif
+    @if ($editable)
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="stylesheet" href="{{ asset('css/live-editor.css') }}">
     @endif
     @if ($slotStyles->isNotEmpty())
         <style>
@@ -46,7 +56,7 @@
     @endif
 </head>
 <body
-    class="min-h-screen"
+    class="min-h-screen{{ $editable ? ' bq-live-editable' : '' }}"
     style="
         --site-primary: {{ $colors['primary'] }};
         --site-background: {{ $colors['background'] }};
@@ -59,5 +69,20 @@
     "
 >
     @include('site.layouts.'.($layout ?: 'classic'))
+
+    @if ($editable)
+        @include('site.partials.live-editor', [
+            'project' => $project,
+            'sections' => $sections,
+            'colors' => $colors,
+            'font' => $font,
+            'site' => $site,
+            'variant' => $variant,
+            'slotsBySection' => $slotsBySection,
+        ])
+        <script src="{{ asset('js/live-editor.js') }}" defer></script>
+    @endif
+
+    @stack('scripts')
 </body>
 </html>

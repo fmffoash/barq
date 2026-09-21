@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\TemplateVariant;
 use App\Services\OllamaService;
 use App\Services\SiteExportService;
+use App\Services\SiteRenderer;
 use App\Services\WordPressService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,26 @@ class GeneratedSiteController extends Controller
             'site' => $project->site,
             'slotsBySection' => $slotsBySection,
         ]);
+    }
+
+    // محرر بصري مباشر (WYSIWYG click-to-edit، شوف docs/wysiwyg-editor-plan.md) — بيرندر
+    // نفس الموقع الحقيقي بالظبط (نفس SiteRenderer::render() المستخدمة في site.show) لكن
+    // جوّه route محمي بـ auth، وبيحقن سكريبت/CSS وضع التعديل عن طريق $editable=true بس.
+    // المسار العام (`/site/{slug}`) صفر تأثير عليه خالص — مفيش query parameter بيفعّل تعديل،
+    // ده route منفصل تماماً (راجع "قيد أمان إجباري" في ملف الخطة).
+    public function liveEdit(Project $project, SiteRenderer $renderer): View
+    {
+        $project->loadMissing(['template.slots', 'site', 'variant']);
+        $site = $project->site()->firstOrFail();
+
+        return view('site.live-edit', array_merge(
+            $renderer->render($site),
+            [
+                'site' => $site,
+                'variant' => $project->variant,
+                'slotsBySection' => $project->template->slots->groupBy('section_key'),
+            ]
+        ));
     }
 
     public function update(Request $request, Project $project): RedirectResponse
@@ -54,7 +75,17 @@ class GeneratedSiteController extends Controller
             // (`color: {value} !important;` و`var(--font-{value})`) في site/document.blade.php،
             // فلازم نتحقق من شكلهم هنا قبل التخزين — مش بس تنظيف شكلي، ده اللي بيمنع أي قيمة
             // غريبة (مسافة/فاصلة منقوطة/قوس) تكسر الـ CSS block أو تحقن قواعد تانية جواه.
-            if (in_array($slot->slot_type, ['text', 'textarea', 'list'], true)) {
+            //
+            // ⚠️ partial-safe إجباري (المحرر البصري المباشر، docs/wysiwyg-editor-plan.md):
+            // الفورم القديم (site-edit.blade.php) بيبعت style.{key}.font لكل خانة نص دايماً
+            // (الـ <select> مش disabled أبداً)، فمكانش فارق قبل كده. لكن حفظ AJAX تدريجي
+            // (خانة واحدة بس في كل نداء) لازم يقدر يسيب باقي الخانات زي ما هي — من غير
+            // `has()` هنا، أي نداء بيبعت style لخانة واحدة كان هيمسح تخصيص كل الخانات التانية
+            // بالغلط (لأن style.{key}.font بتاعهم كان هيتقرا فاضي ويتفسّر "امسح التخصيص").
+            if (
+                in_array($slot->slot_type, ['text', 'textarea', 'list'], true)
+                && ($request->has("style.{$key}.color") || $request->has("style.{$key}.font"))
+            ) {
                 $color = trim((string) $request->input("style.{$key}.color"));
                 if ($color !== '' && ! preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
                     $color = '';
