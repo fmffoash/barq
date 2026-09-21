@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Console\Commands\SeedTemplateLibrary;
 use App\Models\AiChatMessage;
 use App\Models\GeneratedSite;
 use App\Models\Project;
@@ -256,9 +257,20 @@ class AiProjectAssistantService
     }
 
     /**
-     * بتدوّر على قالب داخل فئة معيّنة، بأولوية لاسم فيه كلمة الطابع المطلوب (style hint) لو
-     * موجودة، وإلا بترجع أول قالب في الفئة. $exceptId بيستبعد القالب الحالي (لما المستخدم
-     * يطلب "غيّر القالب" — الرد لازم يكون قالب مختلف فعلاً مش نفسه).
+     * بتدوّر على قالب داخل فئة معيّنة، بـ3 مستويات أولوية: (1) اسم القالب نفسه فيه كلمة
+     * الطابع المطلوب حرفياً (زي "فاخر" جوه "مطعم فاخر")، (2) طابع القالب (layout) شخصيته
+     * قريبة من الكلمة المطلوبة (بنستخدم نفس LAYOUT_KEYWORDS بتاعة SeedTemplateLibrary —
+     * بيغطي حالة إن النموذج رجّع كلمة زي "راقي" مش موجودة حرفياً في اسم القالب بس فعلاً
+     * بتوصف تصميم glass/framed/signature)، (3) عشوائي تماماً.
+     *
+     * ⚠️ (اتصلح 2026-09-21) المستوى الأخير **لازم يفضل عشوائي مش "أول قالب أبجدياً"** —
+     * كان قبل كده `$templates->first()` بعد استبعاد القالب الحالي بس، فلو تصنيف الطابع فشل
+     * (بيحصل مع نموذج صغير زي qwen3:8b)، "غيّر القالب" كان بيدور بين نفس القالبين بس كل
+     * مرة (الأول أبجدياً، وبعد استبعاده القالب اللي قبله يرجع الأول تاني) بدل ما يجرّب حاجة
+     * فعلاً مختلفة — لوحظ حياً: طلب "قالب فاخر" مرتين ورجع بينهم على نفس القالب الأصلي.
+     *
+     * $exceptId بيستبعد القالب الحالي (لما المستخدم يطلب "غيّر القالب" — الرد لازم يكون
+     * قالب مختلف فعلاً مش نفسه).
      */
     private function pickTemplateInCategory(string $category, string $styleHint, ?int $exceptId = null): ?Template
     {
@@ -268,7 +280,7 @@ class AiProjectAssistantService
             $query->where('id', '!=', $exceptId);
         }
 
-        $templates = $query->with('variants')->orderBy('name')->get();
+        $templates = $query->with('variants')->get();
 
         if ($templates->isEmpty()) {
             return null;
@@ -279,9 +291,23 @@ class AiProjectAssistantService
             if ($match) {
                 return $match;
             }
+
+            $byLayout = $templates->first(function (Template $t) use ($styleHint) {
+                foreach (SeedTemplateLibrary::LAYOUT_KEYWORDS[$t->layout] ?? [] as $keyword) {
+                    if (str_contains($keyword, $styleHint) || str_contains($styleHint, $keyword)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+
+            if ($byLayout) {
+                return $byLayout;
+            }
         }
 
-        return $templates->first();
+        return $templates->random();
     }
 
     /**

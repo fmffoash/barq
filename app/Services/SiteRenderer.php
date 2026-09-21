@@ -31,7 +31,13 @@ class SiteRenderer
                     ->sortBy('sort_order')
                     ->map(fn ($slot) => [
                         'slot' => $slot,
-                        'value' => $site->content($slot->key),
+                        // لو الخانة لسه فاضية في content_json، بترجع لقيمة القالب الافتراضية
+                        // (default_value) بدل ما تفضل فاضية — أهم حالة عملية: خانات الصور
+                        // (hero_image/gallery_image_*) لما مشروع بيتعمل بالذكاء الاصطناعي،
+                        // لأن الذكاء الاصطناعي بيملّي النصوص بس ومش بيقدر يولّد صورة حقيقية،
+                        // فمن غيرها كل مشروع AI كان بيطلع بمعرض صور فاضي تماماً حتى لو القالب
+                        // نفسه معاه صور افتراضية جاهزة (2026-09-21).
+                        'value' => $site->content($slot->key, $slot->default_value),
                         // تخصيص لون/خط الخانة دي بس (Phase 8) — ['color' => ?, 'font' => ?]،
                         // فاضي (null/null) لو الخانة من غير أي تخصيص، فبترجع للعام تلقائي.
                         'style' => $site->styleFor($slot->key),
