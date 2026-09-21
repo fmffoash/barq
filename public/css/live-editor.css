@@ -1,0 +1,264 @@
+/* واجهة المحرر البصري المباشر (WYSIWYG click-to-edit) — CSS عادي، صفر اعتماد على
+   Tailwind/build خطوة عشان يشتغل صح فوراً بعد أي تعديل (راجع site/partials/live-editor.blade.php).
+   كل الكلاسات هنا مبدوءة بـ bq- عشان صفر تعارض مع كلاسات التصميم المنشور نفسه. */
+
+.bq-live-editable {
+    padding-top: 44px;
+}
+
+.bq-bar {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 44px;
+    padding: 0 16px;
+    background: #111827;
+    color: #f1f5f9;
+    font-family: Cairo, sans-serif;
+    font-size: 13px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.bq-bar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bq-bar-back {
+    flex-shrink: 0;
+    color: #fbbf24;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.bq-bar-back:hover {
+    text-decoration: underline;
+}
+
+/* أي خانة قابلة للتعديل (نص/فقرة بس دلوقتي) بتتعلّم بـ data-bq-editable من الـ JS وقت
+   التحميل — الـ hover هنا CSS خالص، صفر حاجة إضافية في كل layout. */
+[data-bq-editable="1"] {
+    cursor: pointer;
+    transition: outline-color 0.15s ease;
+    outline: 2px dashed transparent;
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+[data-bq-editable="1"]:hover {
+    outline-color: #fbbf24;
+}
+
+[data-bq-editable="1"].bq-editing {
+    outline: 2px solid #fbbf24;
+    outline-offset: 3px;
+    cursor: text;
+}
+
+.bq-toolbar {
+    position: fixed;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #111827;
+    color: #f1f5f9;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    font-family: Cairo, sans-serif;
+    font-size: 12px;
+}
+
+.bq-toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.bq-toolbar input[type="color"] {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+}
+
+.bq-toolbar select {
+    background: #1f2937;
+    color: #f1f5f9;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-size: 12px;
+}
+
+.bq-toolbar button {
+    border: 0;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.bq-toolbar-done {
+    background: #fbbf24;
+    color: #111827;
+}
+
+.bq-toolbar-reset {
+    background: transparent;
+    color: #f87171;
+}
+
+.bq-toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+}
+
+.bq-toast {
+    background: #111827;
+    color: #f1f5f9;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-family: Cairo, sans-serif;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bq-toast.bq-toast-show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bq-toast.bq-toast-error {
+    background: #7f1d1d;
+}
+
+.bq-fab {
+    position: fixed;
+    bottom: 20px;
+    inset-inline-start: 20px;
+    z-index: 2147483000;
+    background: #fbbf24;
+    color: #111827;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-family: Cairo, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.bq-drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    inset-inline-end: 0;
+    width: min(360px, 100vw);
+    background: #0f172a;
+    color: #e2e8f0;
+    z-index: 2147483001;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    font-family: Cairo, sans-serif;
+}
+
+html[dir="rtl"] .bq-drawer {
+    transform: translateX(-100%);
+}
+
+.bq-drawer[data-open="1"],
+html[dir="rtl"] .bq-drawer[data-open="1"] {
+    transform: translateX(0);
+}
+
+.bq-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.bq-drawer-close {
+    background: transparent;
+    border: 0;
+    color: #94a3b8;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.bq-drawer-body {
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.bq-drawer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bq-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+.bq-hint {
+    font-size: 11px;
+    color: #64748b;
+    margin: 0;
+}
+
+.bq-drawer-save {
+    margin-top: 4px;
+    background: #fbbf24;
+    color: #111827;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+@media (max-width: 640px) {
+    .bq-bar-label {
+        font-size: 11px;
+    }
+}

@@ -117,6 +117,15 @@
                         تعبئة المحتوى
                     </a>
 
+                    @if ($project->template->kind === 'landing')
+                        <a
+                            href="{{ route('projects.site.live-edit', $project) }}"
+                            class="rounded-lg border border-amber-400/60 px-4 py-1.5 text-sm font-semibold text-amber-400 transition hover:bg-amber-400/10"
+                        >
+                            🖊️ عدّل الموقع بصرياً
+                        </a>
+                    @endif
+
                     @if ($project->site->status === 'published')
                         <form method="POST" action="{{ route('projects.site.unpublish', $project) }}">
                             @csrf
