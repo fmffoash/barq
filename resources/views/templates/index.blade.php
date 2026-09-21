@@ -60,32 +60,54 @@
             @endif
         </div>
     @else
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {{-- شبكة مرنة حقيقية (auto-fill) بدل عدد أعمدة ثابت — عدد الكروت جنب بعض بيتحدد
+        بعرض الشاشة الفعلي (كل كارت 240px على الأقل)، والباقي بينزل صف تحت تلقائي. كانت قبل
+        كده sm:grid-cols-2 lg:grid-cols-3 (تتوقف عند 3 أعمدة مهما اتسعت الشاشة أكتر) —
+        فؤاد لاحظ إن الصفحة بتفضل بنفس الشكل ومساحة فاضية على الشاشات الواسعة (2026-09-21). --}}
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
             @foreach ($templates as $template)
+                @php
+                    $colors = $template->defaultVariant()?->colors_json;
+                    $heroImage = $template->slots->firstWhere('key', 'hero_image')?->default_value;
+                @endphp
+
                 <a
                     href="{{ route('templates.show', $template) }}"
-                    class="block rounded-2xl border border-slate-800 bg-slate-900/60 p-5 transition hover:border-amber-400/60"
+                    class="block overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-amber-400/60"
                 >
-                    <div class="mb-3 flex items-start justify-between gap-2">
-                        <h2 class="font-semibold text-slate-100">{{ $template->name }}</h2>
-
-                        @if (! $template->is_active)
-                            <span class="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">معطّل</span>
-                        @endif
+                    {{-- معاينة بصرية سريعة: صورة غلاف القالب لو موجودة، وإلا تدرّج بألوان
+                    القالب نفسها — الهدف إن الكارت يديك إحساس بشكل القالب مش بس اسمه. --}}
+                    <div
+                        class="flex h-28 items-center justify-center bg-cover bg-center"
+                        style="{{ $heroImage ? \"background-image: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,.55)), url('{$heroImage}');\" : ($colors ? \"background-image: linear-gradient(135deg, {$colors['primary']}, {$colors['background']});\" : '') }}"
+                    >
+                        @unless ($heroImage || $colors)
+                            <span class="text-3xl opacity-30">🖼️</span>
+                        @endunless
                     </div>
 
-                    <p class="mb-4 text-sm text-slate-500">
-                        {{ $template->category ?: 'بدون تصنيف' }} &middot;
-                        {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
-                        @if ($template->kind === 'landing')
-                            &middot;
-                            {{ \App\Models\Template::layoutLabel($template->layout) }}
-                        @endif
-                    </p>
+                    <div class="p-5">
+                        <div class="mb-3 flex items-start justify-between gap-2">
+                            <h2 class="font-semibold text-slate-100">{{ $template->name }}</h2>
 
-                    <div class="flex gap-4 text-xs text-slate-500">
-                        <span>{{ $template->variants_count }} نسخة</span>
-                        <span>{{ $template->slots_count }} خانة محتوى</span>
+                            @if (! $template->is_active)
+                                <span class="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">معطّل</span>
+                            @endif
+                        </div>
+
+                        <p class="mb-4 text-sm text-slate-500">
+                            {{ $template->category ?: 'بدون تصنيف' }} &middot;
+                            {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
+                            @if ($template->kind === 'landing')
+                                &middot;
+                                {{ \App\Models\Template::layoutLabel($template->layout) }}
+                            @endif
+                        </p>
+
+                        <div class="flex gap-4 text-xs text-slate-500">
+                            <span>{{ $template->variants_count }} نسخة</span>
+                            <span>{{ $template->slots_count }} خانة محتوى</span>
+                        </div>
                     </div>
                 </a>
             @endforeach

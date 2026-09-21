@@ -27,7 +27,11 @@ class TemplateController extends Controller
             ->orderBy('category')
             ->pluck('category');
 
+        // with('variants') + خانة hero_image بس (مش كل الخانات) عشان كارت كل قالب في الفيو
+        // يعرض معاينة سريعة (ألوانه + صورة الغلاف لو موجودة) من غير استعلام إضافي لكل قالب
+        // (defaultVariant() بتقرا من الـ collection المحمّلة — 2026-09-21).
         $templates = Template::withCount(['variants', 'slots'])
+            ->with(['variants', 'slots' => fn ($query) => $query->where('key', 'hero_image')])
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
             ->orderBy('name')
