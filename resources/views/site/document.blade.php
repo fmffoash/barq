@@ -41,7 +41,12 @@
     @endif
     @if ($editable)
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="stylesheet" href="{{ asset('css/live-editor.css') }}">
+        {{-- ?v={{ filemtime }} (2026-09-21) — الملفين دول static بدون اسم مبني على hash
+        زي أصول Vite، فـCloudflare كان بيكاش نسخة قديمة منهم لحد ما فؤاد يفضل شايف كود
+        قديم حتى بعد ما نديبلوي التعديل على السيرفر (اكتشفناها لما إصلاح select القديم مكانش
+        باين رغم إن الملف على السيرفر كان صح فعلاً). query string بقيمة وقت آخر تعديل فعلي
+        للملف بيغيّر الـURL تلقائي كل مرة نعدّل فيها، فـCloudflare بيعتبره طلب جديد. --}}
+        <link rel="stylesheet" href="{{ asset('css/live-editor.css') }}?v={{ filemtime(public_path('css/live-editor.css')) }}">
     @endif
     @if ($slotStyles->isNotEmpty())
         <style>
@@ -86,7 +91,7 @@
             'slotsBySection' => $slotsBySection,
             'sameCategoryTemplates' => $sameCategoryTemplates,
         ])
-        <script src="{{ asset('js/live-editor.js') }}" defer></script>
+        <script src="{{ asset('js/live-editor.js') }}?v={{ filemtime(public_path('js/live-editor.js')) }}" defer></script>
     @endif
 
     @stack('scripts')
