@@ -29,6 +29,9 @@
         $listItems = $section['items']->where('slot.slot_type', 'list');
         $imageItems = $section['items']->where('slot.slot_type', 'image');
         $linkItems = $section['items']->where('slot.slot_type', 'link');
+
+        $heading = $textItems->firstWhere('slot.slot_type', 'text');
+        $supportingItems = $textItems->reject(fn ($item) => $heading && $item['slot']->key === $heading['slot']->key);
     @endphp
 
     <section id="{{ $section['key'] }}" class="px-6 py-10 sm:px-14">
@@ -40,12 +43,11 @@
 
             <div class="flex flex-col gap-5 {{ in_array($section['kind'], ['hero', 'cta']) ? 'items-center text-center' : '' }}">
                 @if ($section['kind'] === 'hero')
-                    @foreach ($textItems as $item)
-                        @if ($item['slot']->slot_type === 'text')
-                            <h1 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold tracking-wide sm:text-5xl">{{ $item['value'] }}</h1>
-                        @else
-                            <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-base" style="color: var(--site-muted);">{{ $item['value'] }}</p>
-                        @endif
+                    @if ($heading)
+                        <h1 data-slot="{{ $heading['slot']->key }}" class="text-3xl font-bold tracking-wide sm:text-5xl">{{ $heading['value'] }}</h1>
+                    @endif
+                    @foreach ($supportingItems as $item)
+                        <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-base" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                     @endforeach
                     <span class="h-px w-20" style="background-color: var(--site-primary);"></span>
                     @foreach ($linkItems as $item)
@@ -55,8 +57,11 @@
                         <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="mt-2 aspect-video w-full object-cover" loading="lazy">
                     @endif
                 @elseif ($section['kind'] === 'gallery')
-                    @foreach ($textItems as $item)
-                        @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-bold tracking-wide">{{ $item['value'] }}</h2>@else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                    @if ($heading)
+                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-2xl font-bold tracking-wide">{{ $heading['value'] }}</h2>
+                    @endif
+                    @foreach ($supportingItems as $item)
+                        <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                     @endforeach
                     <div class="grid gap-3 sm:grid-cols-3">
                         @foreach ($imageItems as $item)
@@ -64,8 +69,11 @@
                         @endforeach
                     </div>
                 @elseif ($section['kind'] === 'list')
-                    @foreach ($textItems as $item)
-                        @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-bold tracking-wide">{{ $item['value'] }}</h2>@else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                    @if ($heading)
+                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-2xl font-bold tracking-wide">{{ $heading['value'] }}</h2>
+                    @endif
+                    @foreach ($supportingItems as $item)
+                        <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                     @endforeach
                     @foreach ($listItems as $item)
                         <ul class="grid gap-x-8 gap-y-4 sm:grid-cols-2">
@@ -78,15 +86,18 @@
                         </ul>
                     @endforeach
                 @elseif ($section['kind'] === 'cta')
-                    @foreach ($textItems as $item)
-                        @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold tracking-wide">{{ $item['value'] }}</h2>@else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                    @if ($heading)
+                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-3xl font-bold tracking-wide">{{ $heading['value'] }}</h2>
+                    @endif
+                    @foreach ($supportingItems as $item)
+                        <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                     @endforeach
                     @foreach ($linkItems as $item)
                         <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-xs font-bold uppercase tracking-widest transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                     @endforeach
                 @else
                     @foreach ($section['items'] as $item)
-                        @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-bold tracking-wide">{{ $item['value'] }}</h2>
+                        @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-bold tracking-wide">{{ $item['value'] }}</h2>
                         @elseif ($item['slot']->slot_type === 'link')<a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto border px-8 py-3 text-xs font-bold uppercase tracking-widest" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                         @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
                     @endforeach

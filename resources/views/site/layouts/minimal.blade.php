@@ -29,17 +29,19 @@
         $listItems = $section['items']->where('slot.slot_type', 'list');
         $imageItems = $section['items']->where('slot.slot_type', 'image');
         $linkItems = $section['items']->where('slot.slot_type', 'link');
+
+        $heading = $textItems->firstWhere('slot.slot_type', 'text');
+        $supportingItems = $textItems->reject(fn ($item) => $heading && $item['slot']->key === $heading['slot']->key);
     @endphp
 
     <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-16">
         <div class="mx-auto flex max-w-3xl flex-col gap-6 {{ $section['kind'] === 'hero' || $section['kind'] === 'cta' ? 'items-center text-center' : '' }}">
             @if ($section['kind'] === 'hero')
-                @foreach ($textItems as $item)
-                    @if ($item['slot']->slot_type === 'text')
-                        <h1 data-slot="{{ $item['slot']->key }}" class="text-4xl font-light leading-tight sm:text-6xl">{{ $item['value'] }}</h1>
-                    @else
-                        <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-lg" style="color: var(--site-muted);">{{ $item['value'] }}</p>
-                    @endif
+                @if ($heading)
+                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-light leading-tight sm:text-6xl">{{ $heading['value'] }}</h1>
+                @endif
+                @foreach ($supportingItems as $item)
+                    <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-lg" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                 @endforeach
                 <span class="h-px w-16" style="background-color: var(--site-primary);"></span>
                 @foreach ($linkItems as $item)
@@ -49,8 +51,11 @@
                     <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="mt-6 aspect-video w-full object-cover" loading="lazy">
                 @endif
             @elseif ($section['kind'] === 'gallery')
-                @foreach ($textItems as $item)
-                    @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-light">{{ $item['value'] }}</h2>@else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                @if ($heading)
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-2xl font-light">{{ $heading['value'] }}</h2>
+                @endif
+                @foreach ($supportingItems as $item)
+                    <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                 @endforeach
                 <div class="grid w-full gap-3 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
@@ -58,8 +63,11 @@
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')
-                @foreach ($textItems as $item)
-                    @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-light">{{ $item['value'] }}</h2>@else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                @if ($heading)
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-2xl font-light">{{ $heading['value'] }}</h2>
+                @endif
+                @foreach ($supportingItems as $item)
+                    <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                 @endforeach
                 @foreach ($listItems as $item)
                     <ul class="w-full divide-y" style="border-color: color-mix(in srgb, var(--site-text) 12%, transparent);">
@@ -72,15 +80,18 @@
                     </ul>
                 @endforeach
             @elseif ($section['kind'] === 'cta')
-                @foreach ($textItems as $item)
-                    @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-light">{{ $item['value'] }}</h2>@else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                @if ($heading)
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-3xl font-light">{{ $heading['value'] }}</h2>
+                @endif
+                @foreach ($supportingItems as $item)
+                    <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
                     <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-sm font-medium transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                 @endforeach
             @else
                 @foreach ($section['items'] as $item)
-                    @if ($item['slot']->slot_type === 'text')<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-light">{{ $item['value'] }}</h2>
+                    @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-light">{{ $item['value'] }}</h2>
                     @elseif ($item['slot']->slot_type === 'link')<a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-sm font-medium transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                     @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
                 @endforeach

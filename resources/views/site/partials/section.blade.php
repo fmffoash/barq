@@ -10,6 +10,11 @@
     $linkItems = $section['items']->where('slot.slot_type', 'link');
     $isHero = $section['kind'] === 'hero';
     $isCta = $section['kind'] === 'cta';
+
+    // لو القسم فيه أكتر من خانة "text" (زي "تواصل معنا": عنوان + ملاحظة قصيرة)، أول خانة
+    // بس بتاخد شكل العنوان الكبير (h2)، والباقي بيترندر كنص مساند أصغر بدل عنوانين ضخمين
+    // فوق بعض.
+    $heading = $textItems->firstWhere('slot.slot_type', 'text');
 @endphp
 
 <section id="{{ $section['key'] }}" class="px-4 py-10 sm:px-8">
@@ -79,16 +84,27 @@
                     </p>
                     @break
 
-                @default
-                    <h2
-                        data-slot="{{ $slot->key }}"
-                        @class([
-                            'text-3xl font-bold sm:text-4xl',
-                            'text-white' => $isHero || $isCta,
-                        ])
-                    >
-                        {{ $value }}
-                    </h2>
+                @case('text')
+                    @if ($heading && $slot->key === $heading['slot']->key)
+                        <h2
+                            data-slot="{{ $slot->key }}"
+                            @class([
+                                'text-3xl font-bold sm:text-4xl',
+                                'text-white' => $isHero || $isCta,
+                            ])
+                        >
+                            {{ $value }}
+                        </h2>
+                    @else
+                        <p
+                            data-slot="{{ $slot->key }}"
+                            class="whitespace-pre-line text-lg leading-loose"
+                            style="color: {{ $isHero || $isCta ? 'rgba(255,255,255,.85)' : 'var(--site-muted)' }};"
+                        >
+                            {{ $value }}
+                        </p>
+                    @endif
+                    @break
             @endswitch
         @endforeach
     </div>
