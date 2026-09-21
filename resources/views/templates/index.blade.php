@@ -103,7 +103,6 @@
                             </span>
                         @endif
                     </div>
-                    @endif
 
                     <div class="p-5">
                         <div class="mb-3 flex items-start justify-between gap-2">
