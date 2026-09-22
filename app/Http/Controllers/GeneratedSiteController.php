@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Template;
 use App\Models\TemplateVariant;
 use App\Services\OllamaService;
+use App\Services\RichTextSanitizer;
 use App\Services\SiteExportService;
 use App\Services\SiteRenderer;
 use App\Services\WordPressService;
@@ -164,7 +165,14 @@ class GeneratedSiteController extends Controller
                 continue;
             }
 
-            $content[$key] = $value;
+            // تنسيق نص جزئي (Bold/Italic/تلوين وسط الجملة — المرحلة 1، Word-style) بيبعت
+            // innerHTML بدل نص عادي من المحرر البصري. خانات text/textarea بس (list/image/link
+            // متلمسش، مالهمش معنى تنسيق جزئي أصلاً). ده الاستثناء الوحيد المتعمّد من قاعدة
+            // "صفر {!! !!}" في CLAUDE.md الجذر — القيمة المطهّرة هنا بس هي اللي بترندر بـ
+            // {!! !!} في الـ16 layout (راجع RichTextSanitizer للتفاصيل).
+            $content[$key] = in_array($slot->slot_type, ['text', 'textarea'], true)
+                ? RichTextSanitizer::clean((string) $value)
+                : $value;
         }
 
         $site->update([
@@ -266,6 +274,8 @@ class GeneratedSiteController extends Controller
                 continue;
             }
 
+            // $value مطهّر بالفعل لخانات text/textarea (OllamaService::filterToKnownKeys بقى
+            // بينادي RichTextSanitizer::clean() مركزياً — المرحلة 1).
             $content[$key] = $value;
             $filledCount++;
         }

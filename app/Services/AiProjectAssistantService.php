@@ -236,7 +236,12 @@ class AiProjectAssistantService
                     ? array_values(array_filter(array_map('trim', array_map('strval', $value))))
                     : array_values(array_filter(array_map('trim', explode("\n", (string) $value))));
             } else {
-                $content[$key] = trim(is_array($value) ? implode(' ', $value) : (string) $value);
+                $trimmed = trim(is_array($value) ? implode(' ', $value) : (string) $value);
+                // خانات text/textarea بترندر بـ {!! !!} دلوقتي (المرحلة 1، RichTextSanitizer) —
+                // link مالوش معنى "تنسيق نص" فبيفضل URL خام زي ما هو.
+                $content[$key] = in_array($slot->slot_type, ['text', 'textarea'], true)
+                    ? RichTextSanitizer::clean($trimmed)
+                    : $trimmed;
             }
 
             $updatedLabels[] = $slot->label();
@@ -421,7 +426,13 @@ PROMPT;
                 continue;
             }
 
-            $filtered[$key] = trim(is_array($value) ? implode(' ', array_map('strval', $value)) : (string) $value);
+            $value = trim(is_array($value) ? implode(' ', array_map('strval', $value)) : (string) $value);
+
+            // خانات text/textarea بترندر بـ {!! !!} دلوقتي (المرحلة 1، RichTextSanitizer) —
+            // link مالوش معنى "تنسيق نص" فبيفضل URL خام زي ما هو.
+            $filtered[$key] = in_array($slot->slot_type, ['text', 'textarea'], true)
+                ? RichTextSanitizer::clean($value)
+                : $value;
         }
 
         return $filtered;

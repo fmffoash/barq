@@ -48,10 +48,10 @@
             @endif
             <div class="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5">
                 @if ($heading)
-                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black uppercase leading-[0.95] sm:text-7xl" style="color: var(--site-background);">{{ $heading['value'] }}</h1>
+                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black uppercase leading-[0.95] sm:text-7xl" style="color: var(--site-background);">{!! $heading['value'] !!}</h1>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="text-lg font-medium" style="color: color-mix(in srgb, var(--site-background) 90%, transparent);">{{ $item['value'] }}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="text-lg font-medium" style="color: color-mix(in srgb, var(--site-background) 90%, transparent);">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
                     <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-black transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
@@ -64,10 +64,10 @@
                 @if ($textItems->isNotEmpty())
                     <div class="mb-8 text-center">
                         @if ($heading)
-                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase">{{ $heading['value'] }}</h2>
+                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase">{!! $heading['value'] !!}</h2>
                         @endif
                         @foreach ($supportingItems as $item)
-                            <p data-slot="{{ $item['slot']->key }}" class="mt-2" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                            <p data-slot="{{ $item['slot']->key }}" class="mt-2" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                         @endforeach
                     </div>
                 @endif
@@ -87,10 +87,10 @@
                 @if ($textItems->isNotEmpty())
                     <div class="mb-10">
                         @if ($heading)
-                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase">{{ $heading['value'] }}</h2>
+                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase">{!! $heading['value'] !!}</h2>
                         @endif
                         @foreach ($supportingItems as $item)
-                            <p data-slot="{{ $item['slot']->key }}" class="mt-2" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                            <p data-slot="{{ $item['slot']->key }}" class="mt-2" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                         @endforeach
                     </div>
                 @endif
@@ -107,10 +107,10 @@
         <section id="{{ $section['key'] }}" class="px-6 py-20 text-center sm:px-10" style="background-color: var(--site-primary);">
             <div class="mx-auto flex max-w-2xl flex-col items-center gap-4">
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase" style="color: var(--site-background);">{{ $heading['value'] }}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase" style="color: var(--site-background);">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" style="color: color-mix(in srgb, var(--site-background) 85%, transparent);">{{ $item['value'] }}</p>
+                    <p data-slot="{{ $item['slot']->key }}" style="color: color-mix(in srgb, var(--site-background) 85%, transparent);">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
                     <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-black transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
@@ -121,9 +121,9 @@
         <section id="{{ $section['key'] }}" class="px-6 py-16 text-center sm:px-10">
             <div class="mx-auto flex max-w-2xl flex-col gap-4">
                 @foreach ($section['items'] as $item)
-                    @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-black uppercase">{{ $item['value'] }}</h2>
+                    @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-black uppercase">{!! $item['value'] !!}</h2>
                     @elseif ($item['slot']->slot_type === 'link')<a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto inline-block px-8 py-3 text-base font-black" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
-                    @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{{ $item['value'] }}</p>@endif
+                    @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{!! $item['value'] !!}</p>@endif
                 @endforeach
             </div>
         </section>

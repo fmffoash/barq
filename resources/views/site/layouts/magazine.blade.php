@@ -49,10 +49,10 @@
             @if ($section['kind'] === 'hero')
                 <div class="flex flex-col items-center gap-6 py-10 text-center">
                     @if ($heading)
-                        <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-extrabold uppercase leading-[1.05] tracking-tight sm:text-7xl">{{ $heading['value'] }}</h1>
+                        <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-extrabold uppercase leading-[1.05] tracking-tight sm:text-7xl">{!! $heading['value'] !!}</h1>
                     @endif
                     @foreach ($supportingItems as $item)
-                        <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-lg" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                        <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-lg" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                     @endforeach
                     <span class="h-1 w-24 rounded-full" style="background-color: var(--site-primary);"></span>
                     @foreach ($linkItems as $item)
@@ -64,10 +64,10 @@
                 </div>
             @elseif ($section['kind'] === 'gallery')
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="mb-6 text-3xl font-extrabold uppercase tracking-tight">{{ $heading['value'] }}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="mb-6 text-3xl font-extrabold uppercase tracking-tight">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="mb-6 max-w-2xl" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="mb-6 max-w-2xl" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                 @endforeach
                 <div class="grid gap-1 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
@@ -76,10 +76,10 @@
                 </div>
             @elseif ($section['kind'] === 'list')
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="mb-8 text-3xl font-extrabold uppercase tracking-tight">{{ $heading['value'] }}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="mb-8 text-3xl font-extrabold uppercase tracking-tight">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="mb-8 max-w-2xl" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="mb-8 max-w-2xl" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($listItems as $item)
                     <div class="grid gap-x-10 gap-y-6 sm:grid-cols-2">
@@ -94,10 +94,10 @@
             @elseif ($section['kind'] === 'cta')
                 <div class="border-y py-12 text-center" style="border-color: var(--site-primary);">
                     @if ($heading)
-                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-extrabold uppercase tracking-tight">{{ $heading['value'] }}</h2>
+                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-extrabold uppercase tracking-tight">{!! $heading['value'] !!}</h2>
                     @endif
                     @foreach ($supportingItems as $item)
-                        <p data-slot="{{ $item['slot']->key }}" class="mt-3" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                        <p data-slot="{{ $item['slot']->key }}" class="mt-3" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                     @endforeach
                     @foreach ($linkItems as $item)
                         <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-5 inline-block px-10 py-4 text-sm font-bold uppercase tracking-widest transition hover:opacity-90" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
@@ -107,9 +107,9 @@
                 <div class="text-center italic">
                     @foreach ($textItems as $item)
                         @if ($item['slot']->slot_type === 'text')
-                            <p data-slot="{{ $item['slot']->key }}" class="text-4xl leading-snug" style="color: var(--site-primary);">"{{ $item['value'] }}"</p>
+                            <p data-slot="{{ $item['slot']->key }}" class="text-4xl leading-snug" style="color: var(--site-primary);">"{!! $item['value'] !!}"</p>
                         @else
-                            <p data-slot="{{ $item['slot']->key }}" class="mt-4 not-italic" style="color: var(--site-muted);">{{ $item['value'] }}</p>
+                            <p data-slot="{{ $item['slot']->key }}" class="mt-4 not-italic" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                         @endif
                     @endforeach
                 </div>

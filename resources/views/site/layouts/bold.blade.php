@@ -46,17 +46,17 @@
         <div class="mx-auto flex max-w-5xl flex-col gap-6 {{ $section['kind'] === 'hero' || $section['kind'] === 'cta' ? 'items-center text-center' : '' }}">
             @if ($section['kind'] === 'hero')
                 @if ($heading)
-                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black leading-[0.95] sm:text-8xl">{{ $heading['value'] }}</h1>
+                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black leading-[0.95] sm:text-8xl">{!! $heading['value'] !!}</h1>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-xl font-medium opacity-80">{{ $item['value'] }}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-xl font-medium opacity-80">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
                     <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-lg font-black transition hover:opacity-80" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                 @endforeach
             @elseif ($section['kind'] === 'gallery')
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black">{{ $heading['value'] }}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black">{!! $heading['value'] !!}</h2>
                 @endif
                 <div class="grid w-full gap-2 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
@@ -65,7 +65,7 @@
                 </div>
             @elseif ($section['kind'] === 'list')
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black">{{ $heading['value'] }}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($listItems as $item)
                     <div class="grid w-full gap-4 sm:grid-cols-2">
@@ -76,19 +76,19 @@
                 @endforeach
             @elseif ($section['kind'] === 'cta')
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black">{{ $heading['value'] }}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="text-lg opacity-80">{{ $item['value'] }}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="text-lg opacity-80">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
                     <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-lg font-black transition hover:opacity-80" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                 @endforeach
             @else
                 @foreach ($section['items'] as $item)
-                    @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-4xl font-black">{{ $item['value'] }}</h2>
+                    @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-4xl font-black">{!! $item['value'] !!}</h2>
                     @elseif ($item['slot']->slot_type === 'link')<a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="inline-block px-8 py-3 text-base font-black" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
-                    @else<p data-slot="{{ $item['slot']->key }}" class="text-lg opacity-80">{{ $item['value'] }}</p>@endif
+                    @else<p data-slot="{{ $item['slot']->key }}" class="text-lg opacity-80">{!! $item['value'] !!}</p>@endif
                 @endforeach
             @endif
         </div>

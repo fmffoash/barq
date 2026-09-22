@@ -65,15 +65,56 @@
     position: fixed;
     z-index: 2147483000;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
+    max-width: min(560px, calc(100vw - 16px));
     background: #111827;
     color: #f1f5f9;
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     font-family: Cairo, sans-serif;
     font-size: 12px;
+}
+
+/* تنسيق الجزء المحدد من النص (Word-style، المرحلة 1) — زراير B/I/U. */
+.bq-toolbar-format-btn {
+    min-width: 26px;
+    height: 26px;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    background: #1f2937;
+    color: #f1f5f9;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bq-toolbar-format-btn-italic {
+    font-style: italic;
+}
+
+.bq-toolbar-format-btn-underline {
+    text-decoration: underline;
+}
+
+.bq-toolbar-format-btn:hover {
+    background: #374151;
+}
+
+.bq-toolbar-format-active {
+    background: #fbbf24;
+    color: #111827;
+    border-color: #fbbf24;
+}
+
+.bq-toolbar-divider {
+    width: 1px;
+    align-self: stretch;
+    background: #374151;
+    margin: 0 2px;
 }
 
 .bq-toolbar label {
