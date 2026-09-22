@@ -141,6 +141,32 @@ class GeneratedSiteController extends Controller
             }
 
             if ($slot->slot_type === 'image') {
+                // تكبير/تصغير/تحريك الصورة جوّه إطارها الثابت (المرحلة 2، Word-style مش موجود
+                // هنا — ده منتقي زوم+سحب منفصل في المحرر البصري) — بنفس مبدأ partial-safe
+                // فوق (has() قبل اللمس، حقل فاضي = مسح التخصيص). rejectبدل "تنضيف" لأي قيمة
+                // مش مطابقة تماماً للـregex، نفس فلسفة فحص الألوان فوق.
+                if ($request->has("style.{$key}.zoom") || $request->has("style.{$key}.position")) {
+                    $zoomRaw = $request->input("style.{$key}.zoom");
+                    $zoom = is_numeric($zoomRaw) && (float) $zoomRaw >= 1.0 && (float) $zoomRaw <= 3.0
+                        ? round((float) $zoomRaw, 2)
+                        : null;
+
+                    $positionRaw = trim((string) $request->input("style.{$key}.position"));
+                    $position = null;
+                    if (preg_match('/^(\d{1,3})% (\d{1,3})%$/', $positionRaw, $m) && (int) $m[1] <= 100 && (int) $m[2] <= 100) {
+                        $position = $positionRaw;
+                    }
+
+                    if ($zoom !== null || $position !== null) {
+                        $styleOverrides[$key] = array_filter([
+                            'zoom' => $zoom,
+                            'position' => $position,
+                        ]);
+                    } else {
+                        unset($styleOverrides[$key]);
+                    }
+                }
+
                 if ($request->hasFile("content_files.{$key}")) {
                     $path = $request->file("content_files.{$key}")->store('site-images', 'public');
                     $content[$key] = '/storage/'.$path;

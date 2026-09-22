@@ -39,22 +39,28 @@
         <section id="{{ $section['key'] }}" class="relative overflow-hidden px-6 py-24 text-center sm:px-10">
             @if ($heroImage)
                 <div class="absolute inset-0">
-                    <img src="{{ $heroImage['value'] }}" alt="" class="h-full w-full object-cover grayscale contrast-125" aria-hidden="true">
-                    <div class="absolute inset-0 mix-blend-multiply" style="background-color: var(--site-primary);"></div>
-                    <div class="absolute inset-0" style="background-color: color-mix(in srgb, var(--site-background) 35%, transparent);"></div>
+                    <img data-slot="{{ $heroImage['slot']->key }}" src="{{ $heroImage['value'] }}" alt="" class="h-full w-full object-cover grayscale contrast-125" aria-hidden="true">
+                    {{-- pointer-events-none إجباري (المرحلة 2) — من غيرها الطبقتين الزخرفيتين
+                    دول بيقفوا فوق الصورة في الترتيب ويمنعوا أي دوس عليها خالص. --}}
+                    <div class="pointer-events-none absolute inset-0 mix-blend-multiply" style="background-color: var(--site-primary);"></div>
+                    <div class="pointer-events-none absolute inset-0" style="background-color: color-mix(in srgb, var(--site-background) 35%, transparent);"></div>
                 </div>
             @else
                 <div class="absolute inset-0" style="background-color: var(--site-primary);"></div>
             @endif
-            <div class="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5">
+            {{-- pointer-events-none على الحاوية + pointer-events-auto على كل عنصر قابل
+            للتعديل فعلياً (المرحلة 2) — من غيرها مساحات الفراغ/الـgap جوّه الحاوية دي (اللي
+            بتظهر فيها صورة الهيرو تحتها) بتمنع الدوس على الصورة نفسها لأن الحاوية طالعة
+            فوقها بـz-10. --}}
+            <div class="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5" style="pointer-events: none;">
                 @if ($heading)
-                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black uppercase leading-[0.95] sm:text-7xl" style="color: var(--site-background);">{!! $heading['value'] !!}</h1>
+                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black uppercase leading-[0.95] sm:text-7xl" style="color: var(--site-background); pointer-events: auto;">{!! $heading['value'] !!}</h1>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="text-lg font-medium" style="color: color-mix(in srgb, var(--site-background) 90%, transparent);">{!! $item['value'] !!}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="text-lg font-medium" style="color: color-mix(in srgb, var(--site-background) 90%, transparent); pointer-events: auto;">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
-                    <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-black transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
+                    <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-black transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary); pointer-events: auto;">{{ $item['slot']->label() }}</a>
                 @endforeach
             </div>
         </section>
@@ -74,8 +80,8 @@
                 <div class="grid gap-1 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
                         <div class="relative aspect-square overflow-hidden">
-                            <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover grayscale contrast-125" loading="lazy">
-                            <div class="absolute inset-0 mix-blend-multiply transition group-hover:opacity-0" style="background-color: var(--site-primary); opacity: .55;"></div>
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover grayscale contrast-125" loading="lazy">
+                            <div class="pointer-events-none absolute inset-0 mix-blend-multiply transition group-hover:opacity-0" style="background-color: var(--site-primary); opacity: .55;"></div>
                         </div>
                     @endforeach
                 </div>

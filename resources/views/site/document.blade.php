@@ -13,7 +13,10 @@
     foreach ($sections as $section) {
         foreach ($section['items'] as $item) {
             $style = $item['style'] ?? [];
-            if (filled($style['color'] ?? null) || filled($style['font'] ?? null)) {
+            if (
+                filled($style['color'] ?? null) || filled($style['font'] ?? null)
+                || filled($style['zoom'] ?? null) || filled($style['position'] ?? null)
+            ) {
                 $slotStyles->put($item['slot']->key, $style);
             }
         }
@@ -57,6 +60,16 @@
                     @endif
                     @if (filled($style['font'] ?? null))
                         font-family: var(--font-{{ $style['font'] }}) !important;
+                    @endif
+                    {{-- تكبير/تحريك الصورة جوّه إطارها الثابت (المرحلة 2) — object-position
+                    بيشتغل بس لو الصورة object-fit:cover (كل <img> خانة صورة عندها object-cover
+                    فعلاً، شوف الخطة)، وtransform:scale() محتاج overflow-hidden على حاوية
+                    الصورة عشان مايكسرش أي إطار مدوّر الحواف (اتأكد من كل الـ16 layout). --}}
+                    @if (filled($style['position'] ?? null))
+                        object-position: {{ $style['position'] }} !important;
+                    @endif
+                    @if (filled($style['zoom'] ?? null))
+                        transform: scale({{ $style['zoom'] }});
                     @endif
                 }
             @endforeach

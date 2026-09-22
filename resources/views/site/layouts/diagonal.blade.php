@@ -31,7 +31,9 @@
         </section>
         @if ($imageItems->isNotEmpty())
             <div class="-mt-16 px-6 sm:px-10">
-                <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="relative z-10 mx-auto aspect-[16/9] max-w-4xl w-full rounded-[1.75rem] object-cover shadow-2xl" loading="lazy">
+                <div class="relative z-10 mx-auto aspect-[16/9] max-w-4xl w-full overflow-hidden rounded-[1.75rem] shadow-2xl">
+                    <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                </div>
             </div>
         @endif
     @elseif ($section['kind'] === 'gallery')
@@ -49,7 +51,9 @@
                 @endif
                 <div class="grid gap-4 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full object-cover shadow-md" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%);" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden shadow-md">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%);" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             </div>

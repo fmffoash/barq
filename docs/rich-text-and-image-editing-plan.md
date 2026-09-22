@@ -150,20 +150,30 @@
 
 ### تعريف "المرحلة خلصت" (Definition of Done)
 
-- [ ] `RichTextSanitizer` مكتوب + مختبر (يونيت تست) ضد كل الـ payloads الخبيثة المذكورة فوق.
-- [ ] `GeneratedSiteController::update()` بيستخدمه لخانات text/textarea بس.
-- [ ] كل الـ16 layout (+ الـ partials المشتركة) بترندر `{!! !!}` للخانات دي بس، مع تعليق قصير
+**ملحوظة تنفيذ (2026-09-22):** الجلسة اللي نفّذت المرحلتين اشتغلت على الفرع اللي حدده الـ
+harness للمهمة (`claude/serene-planck-bvmlbw`)، مش `feature/rich-text-formatting`/
+`feature/image-zoom-reposition` المذكورين هنا أصلاً — فؤاد طلب صراحة إن الجلسة تكمّل
+المرحلتين مع بعض من غير توقف واستنى تأكيد دمج بينهم، فالقيد ده اتلغى بموافقته. باقي كل
+القيود التانية (تسلسل التنفيذ، الأمان، الاختبار الحقيقي في متصفح) اتاحترمت بالكامل.
+
+- [x] `RichTextSanitizer` مكتوب + مختبر (يونيت تست) ضد كل الـ payloads الخبيثة المذكورة فوق
+      + payloads إضافية اكتشفناها فعلياً وقت اختبار متصفح حقيقي (rgb()، font-weight/style/
+      text-decoration من execCommand).
+- [x] `GeneratedSiteController::update()` بيستخدمه لخانات text/textarea بس (وكل مسارات كتابة
+      content_json التانية كمان: اقتراح الذكاء الاصطناعي `OllamaService`، شات إنشاء/تعديل
+      المشروع `AiProjectAssistantService`، وdefault_value القالب وقت الرندر في
+      `SiteRenderer` — عشان صفر مسار وصول لـ`{!! !!}` من غير تطهير).
+- [x] كل الـ16 layout (+ الـ partials المشتركة) بترندر `{!! !!}` للخانات دي بس، مع تعليق قصير
       لكل واحدة.
-- [ ] التولبار في `live-editor.js` فيه B/I/U/لون/تظليل/خط/حجم، بيشتغلوا على Selection جزئي
-      فعلاً (اختبره يدوي: علّم كلمة وسط جملة، خلّيها تخين، اتأكد باقي الجملة متأثرتش).
-      **متعرفش تتأكد من ده غير باختبار يدوي حقيقي في متصفح — الاختبارات الآلية مش هتغطي شكل
-      الـ Selection نفسه.**
-- [ ] الحفظ بيبعت `innerHTML` ويعمل `reload()` بعد النجاح.
-- [ ] `npm run build` ناجح من غير أخطاء.
-- [ ] `php artisan test` كامل، صفر ريجريشن.
-- [ ] Push على `feature/rich-text-formatting`، PR لـ `main` (أو push للـ branch بس لو مفيش
-      صلاحية فتح PR — اللي يراجع هيقرر).
-- [ ] **استنى هنا. متبدأش المرحلة 2 إلا بعد تأكيد إن المرحلة دي اتدمجت.**
+- [x] التولبار في `live-editor.js` فيه B/I/U/لون/تظليل/خط/حجم، بيشتغلوا على Selection جزئي
+      فعلاً — اتأكد فعلياً بـPlaywright/Chromium حقيقي (مش يدوي بس): تخين/لون/تظليل/خط/حجم
+      كلهم اتطبّقوا على جزء من جملة وباقيها فضل زي ما هو، وده كشف باجات حقيقية (execCommand
+      بيولّد `<font>`/rgb()/font-weight مش الأشكال المتوقعة) اتصلحت في RichTextSanitizer
+      + normalizeLegacyFontTags (شوف CLAUDE.md Phase 17 للتفاصيل).
+- [x] الحفظ بيبعت `innerHTML` ويعمل `reload()` بعد النجاح.
+- [x] `npm run build` ناجح من غير أخطاء.
+- [x] `php artisan test` كامل، صفر ريجريشن.
+- [x] Push على فرع الجلسة (`claude/serene-planck-bvmlbw`) — شوف الملحوظة فوق.
 
 ---
 
@@ -265,13 +275,22 @@ layout مع بعض. مش صورة واحدة بس (زي الهيرو) ومش ن�
 
 ### تعريف "المرحلة خلصت"
 
-- [ ] `style_overrides_json` بيقبل `zoom`/`position` لخانات `image` بس، بعد validation صارم.
-- [ ] CSS بيترندر صح في `document.blade.php` عن طريق نفس آلية `$slotStyles` الموجودة.
-- [ ] واجهة overlay التحكم في الصورة شغالة (زوم + سحب + حفظ + إعادة ضبط) في `live-editor.js`.
-- [ ] اختبار يدوي حقيقي: كبّر/صغّر/حرّك صورة هيرو حقيقية، احفظ، اعمل reload، اتأكد الشكل
-      محفوظ صح ومفيش كسر في الإطار المدوّر أو الـ layout حواليها.
-- [ ] `npm run build` ناجح، `php artisan test` كامل بصفر ريجريشن.
-- [ ] Push على `feature/image-zoom-reposition`.
+- [x] `style_overrides_json` بيقبل `zoom`/`position` لخانات `image` بس، بعد validation صارم.
+- [x] CSS بيترندر صح في `document.blade.php` عن طريق نفس آلية `$slotStyles` الموجودة.
+- [x] واجهة overlay التحكم في الصورة شغالة (زوم + سحب + حفظ + إعادة ضبط) في `live-editor.js`.
+- [x] اختبار حي حقيقي (Playwright + Chromium حقيقي، مش يدوي بس) على 6 تصميمات مختلفة
+      (classic/gallery/duotone/stack/neon/signature): كبّرنا/صغّرنا/حرّكنا صورة هيرو حقيقية،
+      حفظنا، عملنا reload، تأكدنا بسكرين شوت فعلي إن الشكل محفوظ صح ومفيش كسر في الإطار
+      المدوّر أو الـ layout حواليها — ده كشف 3 باجات حقيقية اتصلحت (شوف CLAUDE.md Phase 17):
+      حاوية بتنهار لـheight:0، نص متراكب فوق صورة الهيرو بيمنع الدوس عليها، وشريط أدوات
+      الصورة بيترندر برّه الشاشة مع الزوم العالي.
+      **مهم:** كل خانة `<img>` احتاجت `data-slot` جديد (مكانش موجود قبل كده خالص لخانات
+      الصور، بس للنص) + حاوية `overflow-hidden` مخصصة — وهيرو تصميمَي gallery/signature
+      اتحولوا من `background-image: url()` مباشر على الـsection لـ`<img data-slot>` حقيقي،
+      عشان الزوم/التحريك يشتغل عليهم زي باقي التصاميم (نطاق "كل خانة صورة من غير استثناء").
+- [x] `npm run build` ناجح، `php artisan test` كامل بصفر ريجريشن.
+- [x] Push على فرع الجلسة (`claude/serene-planck-bvmlbw`) — شوف الملحوظة في تعريف "خلصت"
+      بتاع المرحلة 1 فوق.
 
 ---
 

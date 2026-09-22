@@ -60,7 +60,9 @@
                 @endif
                 <div class="grid w-full gap-2 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full object-cover" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')

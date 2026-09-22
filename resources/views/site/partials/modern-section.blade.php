@@ -41,12 +41,15 @@
                     @if ($heroImage)
                         <div class="relative order-1 lg:order-2">
                             <div class="absolute -inset-8 rounded-full opacity-30 blur-3xl" style="background-color: var(--site-background);"></div>
-                            <img
-                                src="{{ $heroImage['value'] }}"
-                                alt="{{ $heroImage['slot']->label() }}"
-                                class="relative aspect-square w-full rounded-[2rem] object-cover shadow-2xl ring-4 ring-white/20"
-                                loading="lazy"
-                            >
+                            <div class="relative aspect-square w-full overflow-hidden rounded-[2rem] shadow-2xl ring-4 ring-white/20">
+                                <img
+                                    data-slot="{{ $heroImage['slot']->key }}"
+                                    src="{{ $heroImage['value'] }}"
+                                    alt="{{ $heroImage['slot']->label() }}"
+                                    class="h-full w-full object-cover"
+                                    loading="lazy"
+                                >
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -70,16 +73,21 @@
 
                 <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img
-                            src="{{ $item['value'] }}"
-                            alt="{{ $item['slot']->label() }}"
+                        <div
                             @class([
-                                'w-full rounded-[1.75rem] object-cover shadow-xl',
+                                'w-full overflow-hidden rounded-[1.75rem] shadow-xl',
                                 'col-span-2 row-span-2 aspect-square' => $loop->first,
                                 'aspect-square' => ! $loop->first,
                             ])
-                            loading="lazy"
                         >
+                            <img
+                                data-slot="{{ $item['slot']->key }}"
+                                src="{{ $item['value'] }}"
+                                alt="{{ $item['slot']->label() }}"
+                                class="h-full w-full object-cover"
+                                loading="lazy"
+                            >
+                        </div>
                     @endforeach
                 </div>
             </div>

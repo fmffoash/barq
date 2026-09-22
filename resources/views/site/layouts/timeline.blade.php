@@ -29,7 +29,9 @@
                         <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-1 inline-block rounded-full px-8 py-3.5 text-base font-bold shadow-md transition hover:opacity-90" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
                     @endforeach
                     @if ($imageItems->isNotEmpty())
-                        <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="mt-3 aspect-video w-full rounded-[1.5rem] object-cover shadow-lg" loading="lazy">
+                        <div class="mt-3 aspect-video w-full overflow-hidden rounded-[1.5rem] shadow-lg">
+                            <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endif
                 </div>
             @elseif ($section['kind'] === 'list')
@@ -66,7 +68,9 @@
                 @endif
                 <div class="flex gap-4 overflow-x-auto pb-2">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square h-56 shrink-0 rounded-[1.5rem] object-cover shadow-md" loading="lazy">
+                        <div class="aspect-square h-56 shrink-0 overflow-hidden rounded-[1.5rem] shadow-md">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'cta')

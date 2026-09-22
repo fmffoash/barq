@@ -83,7 +83,11 @@ class SiteLayoutTest extends TestCase
         $response->assertSee('id="contact"', false);
     }
 
-    public function test_gallery_layout_renders_hero_background_image_and_zigzag_sections(): void
+    // اسم التست القديم كان "renders_hero_background_image" — اتحوّل هيرو gallery من
+    // background-image: url(...) على الـsection لـ<img data-slot> حقيقي (المرحلة 2، تكبير/
+    // تحريك الصورة، docs/rich-text-and-image-editing-plan.md)، فبقى بيترندر بـsrc= زي أي
+    // صورة تانية بدل url() CSS.
+    public function test_gallery_layout_renders_hero_image_and_zigzag_sections(): void
     {
         $site = $this->buildSite($this->buildTemplate('gallery'));
 
@@ -91,7 +95,7 @@ class SiteLayoutTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('أهلاً بيكم في مطعمنا');
-        $response->assertSee("url('/storage/hero.jpg')");
+        $response->assertSee('data-slot="hero_image" src="/storage/hero.jpg"', false);
         $response->assertSee('src="/storage/demo.jpg"', false);
         $response->assertSee('فطار');
     }
@@ -199,7 +203,7 @@ class SiteLayoutTest extends TestCase
         ]);
 
         $site->refresh();
-        $this->assertSame(['color' => '#00ff00', 'font' => 'inter'], $site->styleFor('hero_title'));
+        $this->assertSame(['color' => '#00ff00', 'font' => 'inter', 'zoom' => null, 'position' => null], $site->styleFor('hero_title'));
 
         $this->actingAs($user)->put(route('projects.site.update', $project), [
             'content' => ['hero_title' => 'أهلاً'],
@@ -207,7 +211,7 @@ class SiteLayoutTest extends TestCase
         ]);
 
         $site->refresh();
-        $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
+        $this->assertSame(['color' => null, 'font' => null, 'zoom' => null, 'position' => null], $site->styleFor('hero_title'));
     }
 
     public function test_a_malformed_style_override_color_or_font_is_silently_ignored(): void
@@ -228,7 +232,7 @@ class SiteLayoutTest extends TestCase
         ]);
 
         $site->refresh();
-        $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
+        $this->assertSame(['color' => null, 'font' => null, 'zoom' => null, 'position' => null], $site->styleFor('hero_title'));
     }
 
     public function test_an_invalid_layout_value_is_rejected_when_updating_a_template(): void

@@ -52,7 +52,11 @@
                     >{{ $item['slot']->label() }}</a>
                 @endforeach
                 @if ($imageItems->isNotEmpty())
-                    <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="mt-4 aspect-video w-full rounded-2xl border-2 object-cover" style="border-color: var(--site-primary); box-shadow: 0 0 30px color-mix(in srgb, var(--site-primary) 35%, transparent);" loading="lazy">
+                    {{-- الإطار (rounded/border/shadow) على الحاوية، overflow-hidden عشان تكبير/
+                    تحريك الصورة (المرحلة 2، transform:scale على [data-slot]) ميكسرش الحواف. --}}
+                    <div class="mt-4 aspect-video w-full overflow-hidden rounded-2xl border-2" style="border-color: var(--site-primary); box-shadow: 0 0 30px color-mix(in srgb, var(--site-primary) 35%, transparent);">
+                        <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                    </div>
                 @endif
             @elseif ($section['kind'] === 'gallery')
                 @if ($textItems->isNotEmpty())
@@ -67,7 +71,9 @@
                 @endif
                 <div class="grid gap-4 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full rounded-xl border object-cover" style="border-color: color-mix(in srgb, var(--site-primary) 45%, transparent); box-shadow: 0 0 16px color-mix(in srgb, var(--site-primary) 25%, transparent);" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden rounded-xl border" style="border-color: color-mix(in srgb, var(--site-primary) 45%, transparent); box-shadow: 0 0 16px color-mix(in srgb, var(--site-primary) 25%, transparent);">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')

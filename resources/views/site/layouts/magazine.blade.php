@@ -59,7 +59,11 @@
                         <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="text-sm font-bold uppercase tracking-widest underline decoration-2 underline-offset-4" style="color: var(--site-primary);">{{ $item['slot']->label() }} ←</a>
                     @endforeach
                     @if ($imageItems->isNotEmpty())
-                        <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="mt-4 aspect-[16/9] w-full object-cover" loading="lazy">
+                        {{-- overflow-hidden على الحاوية عشان تكبير/تحريك الصورة (المرحلة 2)
+                        ميكسرش برّه إطارها. --}}
+                        <div class="mt-4 aspect-[16/9] w-full overflow-hidden">
+                            <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endif
                 </div>
             @elseif ($section['kind'] === 'gallery')
@@ -71,7 +75,9 @@
                 @endforeach
                 <div class="grid gap-1 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full object-cover grayscale transition hover:grayscale-0" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover grayscale transition hover:grayscale-0" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')

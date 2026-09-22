@@ -134,6 +134,32 @@ CSS/خطوط/Cloudflare كلهم صح 100%) طلع السبب الحقيقي ف�
 مباشرة والتأكد إن الملف المنشور فيه الإصلاح (`window.location.reload` × 2) عبر الرابط
 المضاد للكاش.
 
+**✨ تنسيق نص زي وورد + تكبير/تحريك الصور (Phase 17، 2026-09-22)** — خطة كاملة في
+`docs/rich-text-and-image-editing-plan.md`. **المرحلة 1 (تنسيق جزئي):** تولبار المحرر
+البصري بقى فيه تخين/مايل/تحته خط/لون النص/تظليل/خط/حجم، كل واحد بيطبّق بس على الجزء
+المُحدّد من النص (`document.execCommand` على الـSelection، مش الخانة كلها) — بالظبط زي
+Word. اتأكد عملياً في متصفح حقيقي (مش بس بالقراءة) إن `execCommand` بيولّد `<font>`/
+`<span style="font-weight:...">`/ألوان `rgb()` مش الأشكال المتوقعة نظرياً، فـ
+`RichTextSanitizer` (كلاس جديد، `app/Services/RichTextSanitizer.php`، DOMDocument+
+whitelist صارم: `b/strong/i/em/u/span/br` بس) اتوسّع يقبلهم، ودالة `normalizeLegacyFontTags`
+في `live-editor.js` بتحوّل أي `<font>` ناتج لـ`<span style="...">` يعدّي من المطهّر. كل
+الـ16 layout بقى يرندر خانات text/textarea بـ`{!! !!}` بعد التطهير وقت الحفظ (استثناء ضيّق
+موثّق من قاعدة "صفر `{!! !!}`"). **المرحلة 2 (تكبير/تحريك الصور):** كل خانة صورة من غير
+استثناء (مش hero بس) بقى ليها زوم (1.0-3.0×) + تحريك (`object-position`) جوّه إطارها
+الثابت، عن طريق overlay في المحرر البصري (سلايدر + سحب). محتاج كل `<img>` تاخد `data-slot`
+(مكانتش موجودة قبل كده خالص لخانات الصور) وحاوية `overflow-hidden` منفصلة — 3 باجات حقيقية
+اتصلحوا بعد اختبار Playwright فعلي في متصفح (مش نظري): (1) حاوية بلا `aspect-ratio`/`height`
+صريحة مع `<img class="h-full">` بتنهار لـ`height:0` (تبعية دائرية)، الحل: الـ`max-h` يفضل
+على الصورة نفسها مش الحاوية. (2) هيرو بصورة خلفية كاملة (تصميمَي gallery/signature كانوا
+بيستخدموا `background-image: url()` مباشر على الـsection، اتحولوا لـ`<img data-slot>`
+حقيقي وراء طبقة تدرّج شفافة) — أي نص متراكب فوق الصورة (`z-10`) لازم `pointer-events:none`
+على حاويته + `pointer-events:auto` على العناصر القابلة للتعديل بس، وإلا الحاوية الفاضية
+بتمنع أي دوس على الصورة تحتها بالكامل. (3) شريط أدوات الصورة (زوم/سحب) لازم يتمركز بالنسبة
+لمستطيل الحاوية (`overflow-hidden`) مش الصورة نفسها بعد `transform:scale()` (المستطيل ده
+بيكبر آلاف البكسلات مع الزوم ويخرج الشريط برّه الشاشة تماماً). اتوتست حي (Playwright،
+Chromium حقيقي) على 6 تصميمات مختلفة (classic/gallery/duotone/stack/neon/signature) —
+زوم + سحب + حفظ + ريلود + تأكيد بصري بسكرين شوت كلهم شغالين صح.
+
 قوالب `wordpress` شغّالة فعلياً كمان — مشروع منها بيقدر يعمل site حقيقي على شبكة WordPress
 Multisite منفصلة (عن طريق `docs/wordpress-mu-plugin.php` اللي بينتقل يدوي لشبكة الـ
 WordPress) — دي مش متفعّلة فعلياً دلوقتي (مش محتاجة لاستخدام فؤاد الشخصي)، فزوّار أي سب
@@ -204,7 +230,8 @@ app/Http/Middleware/      — DetectSite.php (بيحدد الموقع من ال�
 app/Services/             — OllamaService (اقتراح محتوى بالذكاء الاصطناعي، Phase 2)،
                              SiteRenderer (بناء الأقسام/الألوان المشترك بين المعاينة والتصدير)،
                              SiteExportService (تصدير zip ثابت، Phase 4)،
-                             WordPressService (توفير site + دفع محتوى على شبكة Multisite، Phase 5)
+                             WordPressService (توفير site + دفع محتوى على شبكة Multisite، Phase 5)،
+                             RichTextSanitizer (تطهير HTML التنسيق الجزئي وقت الحفظ، Phase 17)
 app/Console/Commands/     — CreateAdminUser.php (عمل/تحديث حساب الأدمن)،
                              SeedTemplateLibrary.php (توليد/تحديث مكتبة القوالب الأصلية، Phase 7)
 routes/web.php            — مسارات لوحة التحكم (login + dashboard + templates + projects)

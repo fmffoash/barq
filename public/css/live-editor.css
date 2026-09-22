@@ -117,6 +117,42 @@
     margin: 0 2px;
 }
 
+/* أي خانة صورة (slot_type=image) بتاخد hover زي خانات النص، عشان يبان إنها قابلة للتعديل. */
+[data-bq-image-editable="1"] {
+    cursor: pointer;
+    transition: outline-color 0.15s ease;
+    outline: 2px dashed transparent;
+    outline-offset: -3px;
+}
+
+[data-bq-image-editable="1"]:hover {
+    outline-color: #fbbf24;
+}
+
+/* تكبير/تصغير/تحريك الصورة (المرحلة 2) — سطح سحب شفاف فوق الصورة بالظبط. */
+.bq-image-drag-bar {
+    position: fixed;
+    z-index: 2147482999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    background: rgba(17, 24, 39, 0.15);
+    outline: 2px solid #fbbf24;
+    outline-offset: -2px;
+    color: #fff;
+    font-family: Cairo, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    user-select: none;
+}
+
+.bq-image-zoom-range {
+    width: 120px;
+    accent-color: #fbbf24;
+}
+
 .bq-toolbar label {
     display: flex;
     align-items: center;

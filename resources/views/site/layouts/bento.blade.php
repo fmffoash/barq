@@ -35,7 +35,9 @@
                         @endforeach
                     </div>
                     @if ($imageItems->isNotEmpty())
-                        <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full min-h-[12rem] w-full rounded-[2rem] object-cover shadow-md" loading="lazy">
+                        <div class="h-full min-h-[12rem] w-full overflow-hidden rounded-[2rem] shadow-md">
+                            <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @else
                         <div class="flex min-h-[12rem] items-center justify-center rounded-[2rem] p-8 text-center text-sm shadow-md" style="background-color: color-mix(in srgb, var(--site-primary) 20%, transparent); color: var(--site-primary);">{{ $project->name }}</div>
                     @endif
@@ -53,7 +55,9 @@
                         </div>
                     @endif
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full rounded-[1.75rem] object-cover shadow-sm" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden rounded-[1.75rem] shadow-sm">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')

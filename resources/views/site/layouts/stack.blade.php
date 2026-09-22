@@ -34,7 +34,13 @@
                     @if ($imageItems->isNotEmpty())
                         <div class="relative mx-auto h-64 w-64 sm:h-80 sm:w-80">
                             <div class="absolute inset-0 -rotate-6 rounded-[2rem]" style="background-color: var(--site-surface);"></div>
-                            <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="relative h-full w-full rotate-3 rounded-[2rem] object-cover shadow-2xl" loading="lazy">
+                            {{-- حاوية overflow-hidden منفصلة عن الديكور الدوّار فوق (لو حطينا
+                            overflow-hidden على الحاوية الخارجية هيقطع الديكور البارز عمداً
+                            من وراها). ملحوظة: لو الصورة اتكبّرت (المرحلة 2)، دوران rotate-3
+                            بتاعها بيتلغي (transform واحد بس)، تعويض بصري بسيط ومقبول. --}}
+                            <div class="relative h-full w-full overflow-hidden rounded-[2rem] shadow-2xl">
+                                <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full rotate-3 object-cover" loading="lazy">
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -51,7 +57,9 @@
                 @endif
                 <div class="flex flex-wrap justify-center gap-x-2 gap-y-8 py-4">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-40 w-40 shrink-0 rounded-[1.5rem] object-cover shadow-xl ring-4 ring-white/10 transition hover:z-10 hover:rotate-0 hover:scale-105 {{ $tilts[$loop->index % count($tilts)] }}" loading="lazy">
+                        <div class="h-40 w-40 shrink-0 overflow-hidden rounded-[1.5rem] shadow-xl ring-4 ring-white/10 transition hover:z-10 hover:rotate-0 hover:scale-105 {{ $tilts[$loop->index % count($tilts)] }}">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')

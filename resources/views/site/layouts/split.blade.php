@@ -49,8 +49,8 @@
                 @endforeach
             </div>
             @if ($imageItems->isNotEmpty())
-                <div class="order-1 min-h-[40vh] lg:order-2">
-                    <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                <div class="order-1 min-h-[40vh] overflow-hidden lg:order-2">
+                    <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
                 </div>
             @endif
         </section>
@@ -67,7 +67,9 @@
             @if ($imageItems->isNotEmpty())
                 <div class="grid min-h-[24rem] {{ $imageItems->count() > 1 ? 'grid-cols-2' : '' }} {{ $imageStart ? 'order-1 lg:order-2' : 'order-1' }}">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        <div class="overflow-hidden">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @endif
