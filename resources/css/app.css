@@ -115,7 +115,14 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-@theme {
+/* @theme static (مش @theme عادي) — Tailwind v4 بيشيل أي متغيّر @theme من الـCSS النهائي
+   لو ملقاش أي كلاس utility حرفي بيستخدمه في الملفات (زي font-jomhuria) وقت الفحص الثابت.
+   خطوط الموقع كلها بتتستخدم فقط عن طريق var(--font-{{ $key }}) جوّه style= (تفسير PHP وقت
+   التشغيل، مش كلاس ثابت في الملف)، فـTailwind مايشوفهاش "مستخدمة" ويشيلها من الناتج —
+   ده كان السبب الحقيقي إن كل الخطوط غير كايرو/تجوال/بوبينز كانت بتختفي فعلياً من الـCSS
+   المبني رغم إن كل حاجة تانية (الاختيار في القايمة، الـ@font-face، التخزين) كانت صح 100%
+   (اتكشف 22 سبتمبر 2026). "static" بيجبر Tailwind يطلّع كل متغيّرات @theme زي ما هي دايماً. */
+@theme static {
     --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
