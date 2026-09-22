@@ -53,9 +53,11 @@
                     throw new Error('save failed: ' + res.status);
                 }
                 toast(successMessage || '✓ اتحفظ');
+                return true;
             })
             .catch(function () {
                 toast('حصل خطأ وقت الحفظ — حاول تاني', true);
+                return false;
             });
     }
 
@@ -252,6 +254,11 @@
         if (newText !== active.originalText.trim()) {
             entries.push(['content[' + active.key + ']', newText]);
         }
+        // تغيير لون/خط الخانة بيتخزن صح في السيرفر فوراً، بس شكله الفعلي (زي أي CSS تاني
+        // في الصفحة) بيتحدد وقت الـ render — من غير ريلود الصفحة هيفضل شكله زي ما كان
+        // قبل الحفظ حتى لو الحفظ نجح 100%. عشان كده لازم ريلود هنا تحديداً (مش للنص لوحده،
+        // ده بيبان فوراً من contenteditable نفسه من غير ما يحتاج ريلود).
+        var styleTouched = active.colorTouched || active.fontTouched;
         if (active.colorTouched) {
             entries.push(['style[' + active.key + '][color]', active.pendingColor]);
         }
@@ -265,7 +272,11 @@
             return;
         }
 
-        save(entries);
+        save(entries).then(function (ok) {
+            if (ok && styleTouched) {
+                window.location.reload();
+            }
+        });
     }
 
     document.addEventListener('click', function (event) {
@@ -352,7 +363,18 @@
             new FormData(designForm).forEach(function (value, key) {
                 entries.push([key, value]);
             });
-            save(entries, '✓ اتحفظ التصميم').then(closeDrawer);
+            // نفس سبب الريلود في commitActive: الخط العام/تخينه/ميله/حجمه وتبديل القالب
+            // كلهم بيتحسموا وقت render السيرفر بس — من غير ريلود التعديل بيتخزن صح في
+            // الداتا بيز بس شكله على الشاشة مش بيتغيّر خالص (ده كان سبب شكوى "أي تعديل
+            // بعمله مبيتعدلش"، 22 سبتمبر 2026).
+            save(entries, '✓ اتحفظ التصميم').then(function (ok) {
+                closeDrawer();
+                if (ok) {
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 400);
+                }
+            });
         });
     }
 })();
