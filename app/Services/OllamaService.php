@@ -148,7 +148,15 @@ class OllamaService
                 $value = implode(' ', array_map('strval', $value));
             }
 
-            $filtered[$key] = trim((string) $value);
+            $value = trim((string) $value);
+
+            // خانات text/textarea بترندر بـ {!! !!} دلوقتي (RichTextSanitizer، المرحلة 1 —
+            // شوف docs/rich-text-and-image-editing-plan.md). محتوى الذكاء الاصطناعي نص عادي
+            // من غير HTML أصلاً، بس لازم يعدّي من نفس المطهّر برضه عشان يفضل صفر مسار غير
+            // مطهّر بيوصل لـ{!! !!} — link مالوش معنى "تنسيق نص"، فبيفضل زي ما هو (URL خام).
+            $filtered[$key] = in_array($slot->slot_type, ['text', 'textarea'], true)
+                ? RichTextSanitizer::clean($value)
+                : $value;
         }
 
         return $filtered;

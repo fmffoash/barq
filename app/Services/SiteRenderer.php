@@ -37,7 +37,17 @@ class SiteRenderer
                         // لأن الذكاء الاصطناعي بيملّي النصوص بس ومش بيقدر يولّد صورة حقيقية،
                         // فمن غيرها كل مشروع AI كان بيطلع بمعرض صور فاضي تماماً حتى لو القالب
                         // نفسه معاه صور افتراضية جاهزة (2026-09-21).
-                        'value' => $site->content($slot->key, $slot->default_value),
+                        //
+                        // خانات text/textarea بترندر بـ{!! !!} دلوقتي (المرحلة 1، تنسيق نص
+                        // جزئي — RichTextSanitizer). قيم content_json المحفوظة من
+                        // GeneratedSiteController::update() معدّاة على المطهّر بالفعل وقت
+                        // الحفظ (تمريرها هنا تاني idempotent، صفر تأثير)، لكن default_value
+                        // القالب نص عادي مؤلّف من الأدمن (نماذج القوالب/مكتبة القوالب المولّدة)
+                        // ومعداش على أي تطهير قبل كده — تمريره هنا كمان بيضمن صفر مسار وصول
+                        // لـ{!! !!} من غير تطهير، حتى لو فيه `<`/`&` عرضي جوّه نص افتراضي قديم.
+                        'value' => in_array($slot->slot_type, ['text', 'textarea'], true)
+                            ? RichTextSanitizer::clean((string) $site->content($slot->key, $slot->default_value))
+                            : $site->content($slot->key, $slot->default_value),
                         // تخصيص لون/خط الخانة دي بس (Phase 8) — ['color' => ?, 'font' => ?]،
                         // فاضي (null/null) لو الخانة من غير أي تخصيص، فبترجع للعام تلقائي.
                         'style' => $site->styleFor($slot->key),

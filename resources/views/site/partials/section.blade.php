@@ -80,7 +80,7 @@
                         class="whitespace-pre-line text-lg leading-loose"
                         style="color: {{ $isHero || $isCta ? 'rgba(255,255,255,.85)' : 'var(--site-muted)' }};"
                     >
-                        {{ $value }}
+                        {!! $value !!}
                     </p>
                     @break
 
@@ -93,7 +93,7 @@
                                 'text-white' => $isHero || $isCta,
                             ])
                         >
-                            {{ $value }}
+                            {!! $value !!}
                         </h2>
                     @else
                         <p
@@ -101,7 +101,7 @@
                             class="whitespace-pre-line text-lg leading-loose"
                             style="color: {{ $isHero || $isCta ? 'rgba(255,255,255,.85)' : 'var(--site-muted)' }};"
                         >
-                            {{ $value }}
+                            {!! $value !!}
                         </p>
                     @endif
                     @break
