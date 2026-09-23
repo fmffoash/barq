@@ -89,6 +89,27 @@
                         width: {{ $style['width'] }}% !important;
                     @endif
                 }
+                {{-- بعض التصميمات (gallery/duotone/diagonal) فيها حاوية ضيّقة (عمود نص/صورة
+                محدود العرض جوّه الهيرو، مش الـsection كله) بـposition:relative قبل الخانة —
+                دي offsetParent الخانة فعلياً، مش الـsection، فالترتيب الحر (فوق) كان بيتحسب
+                نسبة لعرض/ارتفاع الحاوية الضيقة دي بس (فؤاد اشتكى منها حياً 2026-09-24:
+                "بيتحرك في مساحة كام سم مش حر في الصفحة"). الحاويات دي متعلّمة بكلاس
+                bq-free-position-boundary يدوي في كل layout (راجع gallery-section.blade.php
+                للتعليق الكامل). القاعدة هنا opt-in بس لما فيه ترتيب حر فعلاً شغال على خانة
+                جوّاها — صفر تأثير على أي مشروع تاني مبيستخدمش المرحلة 3 خالص. :has() مدعومة
+                في كل المتصفحات الحديثة (Chrome/Safari/Firefox من 2023 تقريباً). --}}
+                @if (filled($style['posX'] ?? null) || filled($style['posY'] ?? null) || filled($style['width'] ?? null))
+                    .bq-free-position-boundary:has([data-slot="{{ $slotKey }}"]) {
+                        position: absolute;
+                        inset: 0;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        max-width: none;
+                        margin: 0;
+                    }
+                @endif
             @endforeach
         </style>
     @endif

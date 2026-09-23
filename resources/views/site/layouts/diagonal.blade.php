@@ -17,7 +17,9 @@
 
     @if ($section['kind'] === 'hero')
         <section id="{{ $section['key'] }}" class="relative overflow-hidden px-6 pb-24 pt-14 text-center sm:px-10" style="background-color: var(--site-primary); clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);">
-            <div class="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5">
+            {{-- bq-free-position-boundary (المرحلة 3، 2026-09-24) — راجع نفس التعليق في
+            gallery-section.blade.php: الحاوية الضيقة دي offsetParent أي خانة جواها. --}}
+            <div class="bq-free-position-boundary relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5">
                 @if ($heading)
                     <h1 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-extrabold sm:text-6xl" style="color: var(--site-background);">{!! $heading['value'] !!}</h1>
                 @endif
@@ -30,8 +32,13 @@
             </div>
         </section>
         @if ($imageItems->isNotEmpty())
-            <div class="-mt-16 px-6 sm:px-10">
-                <div class="relative z-10 mx-auto aspect-[16/9] max-w-4xl w-full overflow-hidden rounded-[1.75rem] shadow-2xl">
+            {{-- position:relative هنا إجباري (بلا أي أثر بصري بنفسه) — الصورة تحت مش جوّه
+            <section> خالص (تصميم "دياجونال" بيطلّعها في <div> منفصل بعد الـsection عشان
+            الـclip-path)، فلازم أقرب سلف بـposition موجود عشان bq-free-position-boundary
+            (تحت) ما تهربش لحد فوق كتير وقت الترتيب الحر (المرحلة 3، 2026-09-24). --}}
+            <div class="relative -mt-16 px-6 sm:px-10">
+                {{-- bq-free-position-boundary — راجع نفس التعليق في gallery-section.blade.php. --}}
+                <div class="bq-free-position-boundary relative z-10 mx-auto aspect-[16/9] max-w-4xl w-full overflow-hidden rounded-[1.75rem] shadow-2xl">
                     <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
                 </div>
             </div>

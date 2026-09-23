@@ -1335,6 +1335,23 @@
         });
     }
 
+    // حاويات ضيّقة (عمود نص/صورة محدود العرض جوّه هيرو، مش الـsection كله) بـposition:relative
+    // قبل خانة قابلة للترتيب الحر — معلّمة بكلاس bq-free-position-boundary في الـlayout نفسه
+    // (راجع gallery-section.blade.php). document.blade.php بيوسّعها بـCSS تلقائي **بس لو فيه
+    // ترتيب حر محفوظ بالفعل** على خانة جواها — من غيرها أول سحب على خانة جديدة (لسه مفيهاش
+    // تخصيص محفوظ) هيفضل يحس إنه "محصور في مساحة صغيرة" لحد أول حفظ+ريلود. الدالة دي بتوسّع
+    // كل الحاويات دي فوراً وقت فتح وضع الترتيب الحر (مش بس اللي عندها تخصيص محفوظ خلاص)،
+    // فالسحب بيحس صح من أول مرة، مش بعد الحفظ بس (فؤاد اشتكى منها حياً 2026-09-24).
+    function setFreePositionBoundaryExpanded(el, expanded) {
+        var props = ['position', 'inset', 'display', 'flexDirection', 'alignItems', 'justifyContent', 'maxWidth', 'margin'];
+        var values = expanded
+            ? ['absolute', '0', 'flex', 'column', 'center', 'center', 'none', '0']
+            : ['', '', '', '', '', '', '', ''];
+        props.forEach(function (prop, i) {
+            el.style[prop] = values[i];
+        });
+    }
+
     function enterFreePositionMode() {
         freePositionMode = true;
         document.body.classList.add('bq-free-position-mode');
@@ -1348,6 +1365,9 @@
         freePositionSlots().forEach(function (el) {
             el.addEventListener('mousedown', onFreeSlotMouseDown);
             el.addEventListener('mouseenter', onFreeSlotMouseEnter);
+        });
+        document.querySelectorAll('.bq-free-position-boundary').forEach(function (el) {
+            setFreePositionBoundaryExpanded(el, true);
         });
     }
 
@@ -1363,6 +1383,12 @@
         freePositionSlots().forEach(function (el) {
             el.removeEventListener('mousedown', onFreeSlotMouseDown);
             el.removeEventListener('mouseenter', onFreeSlotMouseEnter);
+        });
+        // بنشيل التوسيع اللي عملناه بالـJS بس — لو فيه تخصيص محفوظ فعلاً على خانة جوّه
+        // حاوية معيّنة، الـCSS المركزي (document.blade.php) هيفضل موسّعها زي ما هي، مستقل
+        // تماماً عن الـinline style هنا.
+        document.querySelectorAll('.bq-free-position-boundary').forEach(function (el) {
+            setFreePositionBoundaryExpanded(el, false);
         });
     }
 

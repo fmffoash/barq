@@ -51,8 +51,11 @@
             {{-- pointer-events-none على الحاوية + pointer-events-auto على كل عنصر قابل
             للتعديل فعلياً (المرحلة 2) — من غيرها مساحات الفراغ/الـgap جوّه الحاوية دي (اللي
             بتظهر فيها صورة الهيرو تحتها) بتمنع الدوس على الصورة نفسها لأن الحاوية طالعة
-            فوقها بـz-10. --}}
-            <div class="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5" style="pointer-events: none;">
+            فوقها بـz-10.
+            bq-free-position-boundary (المرحلة 3، 2026-09-24) — راجع نفس التعليق في
+            gallery-section.blade.php: الحاوية الضيقة دي offsetParent أي خانة جواها، فبتحصر
+            الترتيب الحر في مساحتها بس مش الـsection كله. --}}
+            <div class="bq-free-position-boundary relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5" style="pointer-events: none;">
                 @if ($heading)
                     <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black uppercase leading-[0.95] sm:text-7xl" style="color: var(--site-background); pointer-events: auto;">{!! $heading['value'] !!}</h1>
                 @endif

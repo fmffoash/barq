@@ -28,8 +28,13 @@
             @endif
             {{-- pointer-events-none على الحاوية + pointer-events-auto على كل عنصر قابل
             للتعديل فعلياً (المرحلة 2) — من غيرها مساحات الفراغ حوالين النص بتمنع الدوس على
-            صورة الهيرو تحتها لأن الحاوية طالعة فوقها بـz-10. --}}
-            <div class="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-5" style="pointer-events: none;">
+            صورة الهيرو تحتها لأن الحاوية طالعة فوقها بـz-10.
+            bq-free-position-boundary (المرحلة 3، 2026-09-24) — الحاوية الضيقة دي (max-w-3xl)
+            هي offsetParent أي خانة نص جواها، فالترتيب الحر كان بيتحسب نسبة لعرضها هي بس مش
+            عرض الـsection كله (فؤاد اشتكى منها حياً: "بيتحرك في مساحة كام سم مش حر"). الكلاس
+            ده بس marker — الفعلي (position:absolute+inset:0 opt-in لما فيه ترتيب حر شغال
+            فعلاً على خانة جواها) في document.blade.php المركزي، شوف التعليق هناك. --}}
+            <div class="bq-free-position-boundary relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-5" style="pointer-events: none;">
                 @if ($heading)
                     <h1 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-extrabold drop-shadow-sm sm:text-5xl" style="pointer-events: auto;">{!! $heading['value'] !!}</h1>
                 @endif
