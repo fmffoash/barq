@@ -88,6 +88,42 @@ body.bq-free-position-mode [data-slot].bq-free-dragging {
     opacity: 0.85;
 }
 
+/* عناصر القايمة (li) مستبعدة عمداً من الترتيب الحر (شوف التعليق في live-editor.js) — outline
+   منقط باهت + مؤشر عادي (مش move) عشان يبان واضح إنها مش قابلة للسحب، مش باج صامت. فؤاد
+   سأل حياً "فيه مربعات مش بتتحرك اصلا" 2026-09-23 — ده كان السبب الأكيد وقتها. */
+body.bq-free-position-mode li[data-slot] {
+    cursor: not-allowed;
+    outline: 1px dashed rgba(148, 163, 184, 0.35);
+    outline-offset: 2px;
+}
+
+/* شريط حالة "الترتيب الحر" (تعديل 2026-09-24) — ثابت تحت الشاشة، مش عائم جنب عنصر، عشان
+   يفضل واضح ومتاح طول الوقت من غير ما يتحرك أو يغطي حاجة. */
+.bq-free-status-bar {
+    position: fixed;
+    inset-inline: 16px;
+    bottom: 16px;
+    top: auto;
+    left: auto;
+    right: auto;
+    max-width: 640px;
+    margin-inline: auto;
+    z-index: 2147483002;
+    justify-content: space-between;
+}
+
+.bq-free-status-text {
+    font-size: 13px;
+    color: #cbd5e1;
+    flex: 1;
+    min-width: 140px;
+}
+
+.bq-toolbar button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 .bq-resize-handle {
     position: fixed;
     z-index: 2147483001;

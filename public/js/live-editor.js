@@ -246,17 +246,34 @@
         return '#' + toHex(match[1]) + toHex(match[2]) + toHex(match[3]);
     }
 
+    // بيحط أي صندوق عائم (تولبار/شريط أدوات) جنب مستطيل هدف من غير ما يتراكب معاه خالص —
+    // بيقيس حجم الصندوق الحقيقي (مش رقم ثابت مفترض زي 46px، ده كان سبب تغطية التولبار
+    // للنص نفسه لما التولبار كبر بزراير المرحلة 1 — فؤاد اشتكى منها حياً 2026-09-23).
+    // بيفضّل يحطه تحت الهدف؛ لو مفيش مساحة تحت، فوقه؛ ولو مفيش فوق ولا تحت (هدف طويل بارتفاع
+    // الشاشة كلها)، يثبّته جوّه حدود الشاشة عمودياً. أفقياً بيتقص جوّه عرض الشاشة برضو.
+    function positionElementNear(floatingEl, targetRect) {
+        var margin = 8;
+        var floatingRect = floatingEl.getBoundingClientRect();
+        var height = floatingRect.height || 40;
+        var width = floatingRect.width || 200;
+
+        var top = targetRect.bottom + margin;
+        if (top + height > window.innerHeight - margin) {
+            var above = targetRect.top - height - margin;
+            top = above >= margin ? above : Math.max(margin, window.innerHeight - height - margin);
+        }
+
+        var left = Math.max(margin, Math.min(targetRect.left, window.innerWidth - width - margin));
+
+        floatingEl.style.top = Math.max(margin, top) + 'px';
+        floatingEl.style.left = left + 'px';
+    }
+
     function positionToolbar() {
         if (!active || !toolbarEl) {
             return;
         }
-        var rect = active.el.getBoundingClientRect();
-        var top = rect.top - 46;
-        if (top < 48) {
-            top = rect.bottom + 8;
-        }
-        toolbarEl.style.top = Math.max(0, top) + 'px';
-        toolbarEl.style.left = Math.max(8, rect.left) + 'px';
+        positionElementNear(toolbarEl, active.el.getBoundingClientRect());
     }
 
     // زراير تخين/مايل/تحته خط — toggle بسيط، بيطبّق بس على الـSelection الحالي (Word-style).
@@ -628,16 +645,7 @@
             activeImage.dragBar.style.height = rect.height + 'px';
         }
         if (activeImage.controlsBar) {
-            // زي positionToolbar بالظبط (تنسيق النص) — لو تحت الصورة برّه الشاشة (صورة
-            // بارتفاع كبير قريب من ارتفاع الشاشة كله)، جرّب فوقها؛ ولو فوقها كمان برّه
-            // الشاشة (صورة بتاخد الشاشة كلها تقريباً)، ثبّته جوّه حدود الشاشة أياً كان.
-            var top = rect.bottom + 8;
-            if (top > window.innerHeight - 60) {
-                top = rect.top - 46;
-            }
-            top = Math.max(4, Math.min(top, window.innerHeight - 52));
-            activeImage.controlsBar.style.top = top + 'px';
-            activeImage.controlsBar.style.left = Math.max(8, rect.left) + 'px';
+            positionElementNear(activeImage.controlsBar, rect);
         }
     }
 
@@ -933,17 +941,30 @@
     // في الشريط العلوي بيبدّل وضع كامل: جوّاه، أي خانة (غير القوائم — شوف السبب تحت) بتتحرك
     // بالسحب المباشر بدل الدوس لتعديل النص/فتح محرر الصورة، ومعاها مقبض تكبير/تصغير عرض في
     // ركنها. برّه الوضع ده، كل حاجة بترجع تشتغل زي ما كانت بالظبط.
+    //
+    // ⚠️ إعادة تصميم (2026-09-24) بعد فيدباك فؤاد الحي على المرحلة 3: (1) مفيش حفظ تلقائي
+    // لكل حركة لوحدها — كل تعديلات جلسة "الترتيب الحر" بتتجمّع محلياً بس (freePositionPending)
+    // وبتتحفظ دفعة واحدة لما تدوس "💾 احفظ"، أو تتلغي بالكامل بـ"↺ تراجع عن كل حاجة" (بترجع
+    // كل عنصر اتحرك لمكانه/حجمه الأصلي من غير ما تلمس السيرفر خالص — مفيش حاجة اتحفظت أصلاً).
+    // (2) Escape وسط سحب/تكبير شغال بيلغي الحركة دي بس وترجع الحته لمكانها قبلها على طول.
+    // (3) لما عنصرين فوق بعض، تقدر توصل للي تحت بالدوس تاني في نفس المكان بالظبط (مش لازم
+    // تسحبه فوراً، أول دوسة بتختار اللي فوق زي العادي وبعدين بتلف على الباقي).
     // ---------------------------------------------------------------------
     var freePositionMode = false;
     var freePositionBtn = document.getElementById('bq-free-position-toggle');
-    var freeDrag = null; // { el, key, sectionRect, startClientX, startClientY, startLeftPercent, startTopPercent }
-    var freeResize = null; // { el, key, sectionRect, startClientX, startWidthPercent }
+    var freeDrag = null; // { el, key, offsetX, offsetY, widthPercent, startStyle }
+    var freeResize = null; // { el, key, startClientX, startWidthPx, startStyle }
     var resizeHandleEl = null;
-    var freePositionTouched = {}; // { [slotKey]: true } — أي خانة اتحركت/اتغيّر حجمها وقت الجلسة دي
+    var freePositionStatusBar = null;
+    var freePositionOriginal = {}; // { [slotKey]: {posX, posY, width} } — قيمة الخانة وقت فتح وضع الترتيب الحر
+    var freePositionPending = {}; // { [slotKey]: {posX?, posY?, width?} } — تعديلات الجلسة دي لسه مش محفوظة
+    var freeClickCycle = { x: null, y: null, time: 0, index: -1 }; // لتدوير الاختيار بين عناصر متراكبة فوق بعض
 
     // خانات list بس مستبعدة — كل عناصر الـ<li>/<div> بتاعتها بيشاركوا نفس data-slot (مفتاح
     // واحد في style_overrides_json)، فأي موضع نحفظه هيتطبّق على كل عناصر القايمة مع بعض
     // ويرصّهم فوق بعض بالظبط — مفيش معنى "ترتيب حر" لعنصر بيتكرر مرات كتير بنفس المفتاح.
+    // بتبقى معلّمة بصرياً (CSS) وقت وضع الترتيب الحر عشان يبقى واضح إنها مستبعدة عمداً، مش
+    // باج (فؤاد سأل "فيه مربعات مش بتتحرك اصلا" — دي كانت السبب الأكيد لقوائم على الأقل).
     function isFreePositionEligible(el) {
         var key = el.dataset.slot;
         if (!key) {
@@ -986,27 +1007,47 @@
         }
     }
 
+    // عكس applyFreePositionPreview بالظبط — بيرجّع العنصر لوضعه الطبيعي جوّه الترتيب العادي
+    // (مفيش أي override خالص)، مش بس يمسح قيمة معيّنة.
+    function clearFreePositionPreview(el) {
+        el.style.position = '';
+        el.style.left = '';
+        el.style.top = '';
+        el.style.width = '';
+    }
+
+    // نسخة "الأصل" بتتاخد مرة واحدة بس لحظة ما وضع الترتيب الحر بيفتح — مرجع نرجعله لو
+    // المستخدم دوس "تراجع عن كل حاجة"، بغض النظر عن كام حركة عملها وهو شغال.
+    function snapshotFreePositionOriginals() {
+        freePositionOriginal = {};
+        freePositionSlots().forEach(function (el) {
+            var key = el.dataset.slot;
+            var override = config.styleOverrides[key] || {};
+            freePositionOriginal[key] = {
+                posX: override.posX != null ? override.posX : null,
+                posY: override.posY != null ? override.posY : null,
+                width: override.width != null ? override.width : null,
+            };
+        });
+    }
+
+    // بيسجّل التعديل محلياً بس — مفيش نداء save() هنا خالص دلوقتي (كان بيحفظ كل حركة لوحدها
+    // فوراً قبل كده، وده اللي خلّى فؤاد يحس إنه "مفيش رجوع للخلف": أي حركة غلط كانت بتتخزن
+    // على طول). الحفظ الفعلي بيحصل مرة واحدة بس لما يدوس "💾 احفظ" (saveFreePositionChanges).
     function commitFreePosition(el, leftPercent, topPercent, widthPercent) {
         var key = el.dataset.slot;
-        var entries = [];
+        var pending = freePositionPending[key] || {};
         if (leftPercent !== null) {
-            entries.push(['style[' + key + '][posX]', String(Math.round(leftPercent * 100) / 100)]);
+            pending.posX = Math.round(leftPercent * 100) / 100;
         }
         if (topPercent !== null) {
-            entries.push(['style[' + key + '][posY]', String(Math.round(topPercent * 100) / 100)]);
+            pending.posY = Math.round(topPercent * 100) / 100;
         }
         if (widthPercent !== null) {
-            entries.push(['style[' + key + '][width]', String(Math.round(widthPercent * 100) / 100)]);
+            pending.width = Math.round(widthPercent * 100) / 100;
         }
-        if (entries.length === 0) {
-            return;
-        }
-        freePositionTouched[key] = true;
-        // من غير reload فوري هنا عمداً — المعاينة المباشرة (inline style فوق) بتطابق نفس
-        // CSS اللي السيرفر هيولّده بالظبط (نفس النسب المئوية)، فمفيش داعي نقطع تجربة
-        // السحب/التحريك المتكرر بريلود بعد كل حركة. الريلود بيحصل مرة واحدة بس لما المستخدم
-        // يقفل وضع "الترتيب الحر" (تحت)، عشان يتأكد الشكل النهائي مطابق فعلاً.
-        save(entries);
+        freePositionPending[key] = pending;
+        updateFreePositionStatusBar();
     }
 
     function positionResizeHandle(el) {
@@ -1035,9 +1076,9 @@
                 freeResize = {
                     el: target,
                     key: target.dataset.slot,
-                    sectionRect: sectionRectFor(target),
                     startClientX: event.clientX,
                     startWidthPx: rect.width,
+                    startStyle: { position: target.style.position, width: target.style.width },
                 };
             });
             document.body.appendChild(resizeHandleEl);
@@ -1060,21 +1101,47 @@
         showResizeHandleFor(event.currentTarget);
     }
 
+    // بيحدّد أي عنصر فعلياً هنسحبه — مش بالضرورة event.currentTarget (ده دايماً أعلى عنصر
+    // في نقطة الدوس بس، لأن المتصفح مابيبعتش mousedown غير للعنصر الظاهر فوق فعلاً). بنستخدم
+    // elementsFromPoint نجيب كل العناصر المتراكبة في نفس النقطة دي، ولو المستخدم دوس تاني
+    // في نفس المكان بالظبط (خلال ثانية ونص)، بنلف للعنصر اللي بعده في الترتيب (اللي تحت شوية).
+    function pickFreePositionTarget(event) {
+        var stack = document.elementsFromPoint(event.clientX, event.clientY).filter(function (node) {
+            return node.hasAttribute && node.hasAttribute('data-slot') && isFreePositionEligible(node);
+        });
+
+        if (stack.length <= 1) {
+            freeClickCycle = { x: event.clientX, y: event.clientY, time: Date.now(), index: 0 };
+            return stack[0] || event.currentTarget;
+        }
+
+        var samePoint = freeClickCycle.x !== null
+            && Math.abs(event.clientX - freeClickCycle.x) < 6
+            && Math.abs(event.clientY - freeClickCycle.y) < 6
+            && (Date.now() - freeClickCycle.time) < 1500;
+
+        var index = samePoint ? (freeClickCycle.index + 1) % stack.length : 0;
+        freeClickCycle = { x: event.clientX, y: event.clientY, time: Date.now(), index: index };
+
+        toast('عنصر ' + (index + 1) + ' من ' + stack.length + ' متراكبين هنا — دوس تاني بنفس المكان عشان تلف على الباقي');
+
+        return stack[index];
+    }
+
     function onFreeSlotMouseDown(event) {
         if (!freePositionMode) {
             return;
         }
         // مقبض التكبير بتاعه مسك الحدث لوحده (mousedown مع stopPropagation فوق) — لو
-        // وصلنا هنا يبقى دوس عادي على الخانة نفسها، يعني نقل مش تكبير.
+        // وصلنا هنا يبقى دوس عادي على خانة، يعني نقل مش تكبير.
         event.preventDefault();
-        var el = event.currentTarget;
+        var el = pickFreePositionTarget(event);
         var rect = el.getBoundingClientRect();
         var sectionRect = sectionRectFor(el);
         el.classList.add('bq-free-dragging');
         freeDrag = {
             el: el,
             key: el.dataset.slot,
-            sectionRect: sectionRect,
             offsetX: event.clientX - rect.left,
             offsetY: event.clientY - rect.top,
             // العرض الحالي (قبل ما نحط position:absolute) — أي خانة أصلها من التصميم العادي
@@ -1082,7 +1149,26 @@
             // القسم كله بالظبط زي ما كانت (100%)، مش عرضها الحقيقي وقت السحب. تثبيت العرض
             // ده مع كل نقلة (مش بس أول مرة) بيمنع المشكلة دي، ومعندهوش أي ضرر لو اتكرر.
             widthPercent: clamp((rect.width / sectionRect.width) * 100, 5, 100),
+            // حالة العنصر قبل السحب ده بالظبط — لو المستخدم دوس Escape وسط السحب، بنرجّعها
+            // زي ما هي حرفياً من غير ما نلمس السيرفر خالص.
+            startStyle: {
+                position: el.style.position,
+                left: el.style.left,
+                top: el.style.top,
+                width: el.style.width,
+            },
         };
+    }
+
+    function restoreStyleFrom(el, startStyle) {
+        el.style.position = startStyle.position || '';
+        if ('left' in startStyle) {
+            el.style.left = startStyle.left || '';
+        }
+        if ('top' in startStyle) {
+            el.style.top = startStyle.top || '';
+        }
+        el.style.width = startStyle.width || '';
     }
 
     document.addEventListener('mousemove', function (event) {
@@ -1133,6 +1219,153 @@
         }
     });
 
+    // Escape وسط سحب/تكبير شغال بيلغي الحركة دي بس، من غير ما يقفل وضع الترتيب الحر كله —
+    // العنصر يرجع لمكانه قبل السحب ده بالظبط (مش الأصل من أول الجلسة، مجرد آخر خطوة).
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') {
+            return;
+        }
+        if (freeDrag) {
+            restoreStyleFrom(freeDrag.el, freeDrag.startStyle);
+            freeDrag.el.classList.remove('bq-free-dragging');
+            freeDrag = null;
+        }
+        if (freeResize) {
+            restoreStyleFrom(freeResize.el, freeResize.startStyle);
+            freeResize = null;
+        }
+        hideResizeHandle();
+    });
+
+    function buildFreePositionStatusBar() {
+        var bar = document.createElement('div');
+        bar.className = 'bq-toolbar bq-free-status-bar';
+
+        var text = document.createElement('span');
+        text.className = 'bq-free-status-text';
+        bar.appendChild(text);
+
+        var revertBtn = document.createElement('button');
+        revertBtn.type = 'button';
+        revertBtn.className = 'bq-toolbar-reset';
+        revertBtn.textContent = '↺ تراجع عن كل حاجة';
+        revertBtn.addEventListener('click', function () {
+            revertAllFreePositionChanges();
+        });
+        bar.appendChild(revertBtn);
+
+        var saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'bq-toolbar-done';
+        saveBtn.textContent = '💾 احفظ التعديلات';
+        saveBtn.addEventListener('click', function () {
+            saveFreePositionChanges();
+        });
+        bar.appendChild(saveBtn);
+
+        document.body.appendChild(bar);
+        freePositionStatusBar = bar;
+        updateFreePositionStatusBar();
+    }
+
+    function updateFreePositionStatusBar() {
+        if (!freePositionStatusBar) {
+            return;
+        }
+        var count = Object.keys(freePositionPending).length;
+        freePositionStatusBar.querySelector('.bq-free-status-text').textContent = count === 0
+            ? 'اسحب أي عنصر أو كبّره — هيتحفظ لما تدوس "احفظ" بس، تقدر تراجع أي وقت قبلها'
+            : ('عندك ' + count + ' ' + (count === 1 ? 'تعديل' : 'تعديلات') + ' لسه مش محفوظ');
+        var saveBtn = freePositionStatusBar.querySelector('.bq-toolbar-done');
+        var revertBtn = freePositionStatusBar.querySelector('.bq-toolbar-reset');
+        saveBtn.disabled = count === 0;
+        revertBtn.disabled = count === 0;
+    }
+
+    function removeFreePositionStatusBar() {
+        if (freePositionStatusBar) {
+            freePositionStatusBar.remove();
+            freePositionStatusBar = null;
+        }
+    }
+
+    // بيرجّع كل خانة اتحركت/اتغيّر حجمها وقت الجلسة دي لحالتها الأصلية (قبل أي حركة) — مفيش
+    // أي نداء سيرفر هنا خالص، لأن مفيش حاجة اتحفظت أصلاً (commitFreePosition بقى محلي بس).
+    function revertAllFreePositionChanges() {
+        Object.keys(freePositionPending).forEach(function (key) {
+            var el = document.querySelector('[data-slot="' + key + '"]');
+            if (!el) {
+                return;
+            }
+            var original = freePositionOriginal[key] || { posX: null, posY: null, width: null };
+            if (original.posX === null && original.posY === null && original.width === null) {
+                clearFreePositionPreview(el);
+            } else {
+                applyFreePositionPreview(el, original.posX, original.posY, original.width);
+            }
+        });
+        freePositionPending = {};
+        updateFreePositionStatusBar();
+        toast('✓ اتلغت كل التعديلات اللي لسه مش محفوظة');
+    }
+
+    function saveFreePositionChanges() {
+        var entries = [];
+        Object.keys(freePositionPending).forEach(function (key) {
+            var change = freePositionPending[key];
+            if ('posX' in change) {
+                entries.push(['style[' + key + '][posX]', String(change.posX)]);
+            }
+            if ('posY' in change) {
+                entries.push(['style[' + key + '][posY]', String(change.posY)]);
+            }
+            if ('width' in change) {
+                entries.push(['style[' + key + '][width]', String(change.width)]);
+            }
+        });
+        if (entries.length === 0) {
+            return;
+        }
+        // ريلود بعد الحفظ (نفس منطق باقي التعديلات الشكلية في الملف ده) — الشكل النهائي
+        // بيترندر من السيرفر (document.blade.php)، فمهم نتأكد إنه مطابق فعلاً للمعاينة.
+        save(entries, '✓ اتحفظ الترتيب الحر').then(function (ok) {
+            if (ok) {
+                window.location.reload();
+            }
+        });
+    }
+
+    function enterFreePositionMode() {
+        freePositionMode = true;
+        document.body.classList.add('bq-free-position-mode');
+        if (freePositionBtn) {
+            freePositionBtn.textContent = '✓ ترتيب حر شغال';
+            freePositionBtn.classList.add('bq-active');
+        }
+        snapshotFreePositionOriginals();
+        freePositionPending = {};
+        buildFreePositionStatusBar();
+        freePositionSlots().forEach(function (el) {
+            el.addEventListener('mousedown', onFreeSlotMouseDown);
+            el.addEventListener('mouseenter', onFreeSlotMouseEnter);
+        });
+    }
+
+    function exitFreePositionMode() {
+        freePositionMode = false;
+        document.body.classList.remove('bq-free-position-mode');
+        if (freePositionBtn) {
+            freePositionBtn.textContent = '📐 ترتيب حر';
+            freePositionBtn.classList.remove('bq-active');
+        }
+        hideResizeHandle();
+        removeFreePositionStatusBar();
+        freePositionSlots().forEach(function (el) {
+            el.removeEventListener('mousedown', onFreeSlotMouseDown);
+            el.removeEventListener('mouseenter', onFreeSlotMouseEnter);
+        });
+    }
+
     function toggleFreePositionMode() {
         // اقفل أي تعديل نص/صورة شغال الأول — منع تعارض بين وضعين تفاعل مختلفين تماماً.
         if (active) {
@@ -1142,33 +1375,24 @@
             commitImageEditor();
         }
 
-        freePositionMode = !freePositionMode;
-        document.body.classList.toggle('bq-free-position-mode', freePositionMode);
-        if (freePositionBtn) {
-            freePositionBtn.textContent = freePositionMode ? '✓ ترتيب حر شغال' : '📐 ترتيب حر';
-            freePositionBtn.classList.toggle('bq-active', freePositionMode);
-        }
-
-        var slots = freePositionSlots();
-        slots.forEach(function (el) {
-            if (freePositionMode) {
-                el.addEventListener('mousedown', onFreeSlotMouseDown);
-                el.addEventListener('mouseenter', onFreeSlotMouseEnter);
-            } else {
-                el.removeEventListener('mousedown', onFreeSlotMouseDown);
-                el.removeEventListener('mouseenter', onFreeSlotMouseEnter);
-            }
-        });
-
         if (!freePositionMode) {
-            hideResizeHandle();
-            // ريلود واحد بس هنا (لو فيه تعديل فعلي حصل) — نفس فلسفة باقي التعديلات
-            // الشكلية، عشان نتأكد الشكل النهائي مطابق فعلاً للي السيرفر هيرندره.
-            if (Object.keys(freePositionTouched).length > 0) {
-                freePositionTouched = {};
-                window.location.reload();
-            }
+            enterFreePositionMode();
+            return;
         }
+
+        var pendingCount = Object.keys(freePositionPending).length;
+        if (pendingCount > 0) {
+            var wantsSave = window.confirm(
+                'عندك ' + pendingCount + ' تعديل لسه مش محفوظ في الترتيب الحر.\n\n'
+                + '"موافق" = احفظ التعديلات دي.\n"إلغاء" = اتجاهلها وارجع للشكل الأصلي.'
+            );
+            if (wantsSave) {
+                saveFreePositionChanges();
+                return; // الريلود بعد الحفظ هيتولى قفل الوضع لوحده
+            }
+            revertAllFreePositionChanges();
+        }
+        exitFreePositionMode();
     }
 
     if (freePositionBtn) {
