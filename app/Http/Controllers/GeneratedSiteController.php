@@ -103,6 +103,12 @@ class GeneratedSiteController extends Controller
         foreach ($project->template->slots as $slot) {
             $key = $slot->key;
 
+            // تجميع أي تحديثات style للخانة دي في المتغير ده، وندمجها كلها مرة واحدة في
+            // الآخر (array_merge مع القديم من style_overrides_json) — مش array_filter مباشر
+            // بيكتب فوق الخانة كلها زي ما كان قبل المرحلة 3. لازم دمج مش استبدال دلوقتي لأن
+            // خانة واحدة ممكن يبقى ليها كذا نوع تخصيص مستقل مع بعض (لون/خط + ترتيب حر مثلاً).
+            $styleUpdates = [];
+
             // تخصيص لون/خط الخانة دي بس (Phase 8) — بيتقرا لنص/فقرة/قايمة بس (صفر لون/خط
             // لصورة أو زرار رابط، مالهمش معنى "شكل كتابة"). حقل فاضي بيمسح التخصيص القديم
             // بدل ما يسيب قيمة فاضية عالقة في الـ JSON. القيمتين بيتحطوا مباشرة جوّه CSS
@@ -130,20 +136,39 @@ class GeneratedSiteController extends Controller
                     $font = '';
                 }
 
-                if ($color !== '' || ($font !== '' && $font !== 'default')) {
-                    $styleOverrides[$key] = array_filter([
-                        'color' => $color !== '' ? $color : null,
-                        'font' => ($font !== '' && $font !== 'default') ? $font : null,
-                    ]);
-                } else {
-                    unset($styleOverrides[$key]);
-                }
+                $styleUpdates['color'] = $color !== '' ? $color : null;
+                $styleUpdates['font'] = ($font !== '' && $font !== 'default') ? $font : null;
+            }
+
+            // ترتيب حر (نقل/تكبير أي عنصر في الصفحة — المرحلة 3، زي Canva/Wix) — بنفس مبدأ
+            // partial-safe فوق، بس مش مقصور على slot_type معيّن خالص (فؤاد أكّد صراحة: أي
+            // عنصر، نص وأقسام كمان، مش الصور بس — شوف docs/rich-text-and-image-editing-plan.md).
+            // posX/posY نسبة مئوية من حاوية القسم (0-100)، width نسبة مئوية اختيارية للعرض.
+            if ($request->has("style.{$key}.posX") || $request->has("style.{$key}.posY") || $request->has("style.{$key}.width")) {
+                $posXRaw = $request->input("style.{$key}.posX");
+                $posX = is_numeric($posXRaw) && (float) $posXRaw >= 0 && (float) $posXRaw <= 100
+                    ? round((float) $posXRaw, 2)
+                    : null;
+
+                $posYRaw = $request->input("style.{$key}.posY");
+                $posY = is_numeric($posYRaw) && (float) $posYRaw >= 0 && (float) $posYRaw <= 100
+                    ? round((float) $posYRaw, 2)
+                    : null;
+
+                $widthRaw = $request->input("style.{$key}.width");
+                $width = is_numeric($widthRaw) && (float) $widthRaw >= 5 && (float) $widthRaw <= 100
+                    ? round((float) $widthRaw, 2)
+                    : null;
+
+                $styleUpdates['posX'] = $posX;
+                $styleUpdates['posY'] = $posY;
+                $styleUpdates['width'] = $width;
             }
 
             if ($slot->slot_type === 'image') {
                 // تكبير/تصغير/تحريك الصورة جوّه إطارها الثابت (المرحلة 2، Word-style مش موجود
                 // هنا — ده منتقي زوم+سحب منفصل في المحرر البصري) — بنفس مبدأ partial-safe
-                // فوق (has() قبل اللمس، حقل فاضي = مسح التخصيص). rejectبدل "تنضيف" لأي قيمة
+                // فوق (has() قبل اللمس، حقل فاضي = مسح التخصيص). رفض بدل "تنضيف" لأي قيمة
                 // مش مطابقة تماماً للـregex، نفس فلسفة فحص الألوان فوق.
                 if ($request->has("style.{$key}.zoom") || $request->has("style.{$key}.position")) {
                     $zoomRaw = $request->input("style.{$key}.zoom");
@@ -157,16 +182,27 @@ class GeneratedSiteController extends Controller
                         $position = $positionRaw;
                     }
 
-                    if ($zoom !== null || $position !== null) {
-                        $styleOverrides[$key] = array_filter([
-                            'zoom' => $zoom,
-                            'position' => $position,
-                        ]);
-                    } else {
-                        unset($styleOverrides[$key]);
-                    }
+                    $styleUpdates['zoom'] = $zoom;
+                    $styleUpdates['position'] = $position;
                 }
+            }
 
+            if ($styleUpdates !== []) {
+                // array_filter العادي (من غير callback) بيشيل أي قيمة falsy زي 0 — ده غلط
+                // هنا لأن posX/posY/width ممكن تبقى 0.0 بالظبط (حافة القسم) وده قيمة صحيحة
+                // ومقصودة، مش "مفيش تخصيص". null بس هو معنى "امسح التخصيص".
+                $merged = array_filter(
+                    array_merge($styleOverrides[$key] ?? [], $styleUpdates),
+                    fn ($value) => $value !== null
+                );
+                if ($merged === []) {
+                    unset($styleOverrides[$key]);
+                } else {
+                    $styleOverrides[$key] = $merged;
+                }
+            }
+
+            if ($slot->slot_type === 'image') {
                 if ($request->hasFile("content_files.{$key}")) {
                     $path = $request->file("content_files.{$key}")->store('site-images', 'public');
                     $content[$key] = '/storage/'.$path;

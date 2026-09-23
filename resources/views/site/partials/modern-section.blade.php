@@ -11,7 +11,7 @@
 @switch($section['kind'])
     @case('hero')
         @php $heroImage = $imageItems->first(); @endphp
-        <section id="{{ $section['key'] }}" class="px-4 pb-10 pt-8 sm:px-8 sm:pt-14">
+        <section id="{{ $section['key'] }}" class="relative px-4 pb-10 pt-8 sm:px-8 sm:pt-14">
             <div
                 class="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] shadow-2xl"
                 style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
@@ -27,6 +27,7 @@
 
                         @foreach ($linkItems as $item)
                             <a
+                                data-slot="{{ $item['slot']->key }}"
                                 href="{{ $item['value'] }}"
                                 target="_blank"
                                 rel="noopener"
@@ -58,7 +59,7 @@
         @break
 
     @case('gallery')
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div class="mx-auto flex max-w-6xl flex-col gap-10">
                 @if ($textItems->isNotEmpty())
                     <div class="mx-auto max-w-2xl text-center">
@@ -95,7 +96,7 @@
         @break
 
     @case('list')
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div class="mx-auto flex max-w-6xl flex-col gap-10">
                 @if ($textItems->isNotEmpty())
                     <div class="mx-auto max-w-2xl text-center">
@@ -132,7 +133,7 @@
         @break
 
     @case('cta')
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div
                 class="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl"
                 style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
@@ -146,6 +147,7 @@
 
                 @foreach ($linkItems as $item)
                     <a
+                        data-slot="{{ $item['slot']->key }}"
                         href="{{ $item['value'] }}"
                         target="_blank"
                         rel="noopener"
@@ -160,7 +162,7 @@
         @break
 
     @default
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div
                 class="mx-auto flex max-w-3xl flex-col gap-4 rounded-[2rem] p-10 text-center shadow-md"
                 style="background-color: var(--site-surface);"
@@ -170,6 +172,7 @@
                         <h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold">{!! $item['value'] !!}</h2>
                     @elseif ($item['slot']->slot_type === 'link')
                         <a
+                            data-slot="{{ $item['slot']->key }}"
                             href="{{ $item['value'] }}"
                             target="_blank"
                             rel="noopener"

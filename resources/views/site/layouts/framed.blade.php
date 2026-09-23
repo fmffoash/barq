@@ -34,7 +34,7 @@
         $supportingItems = $textItems->reject(fn ($item) => $heading && $item['slot']->key === $heading['slot']->key);
     @endphp
 
-    <section id="{{ $section['key'] }}" class="px-6 py-10 sm:px-14">
+    <section id="{{ $section['key'] }}" class="relative px-6 py-10 sm:px-14">
         <div class="relative mx-auto max-w-4xl border p-8 sm:p-14" style="border-color: color-mix(in srgb, var(--site-primary) 45%, transparent);">
             <span class="absolute -right-px -top-px h-6 w-6 border-r-2 border-t-2" style="border-color: var(--site-primary);"></span>
             <span class="absolute -left-px -top-px h-6 w-6 border-l-2 border-t-2" style="border-color: var(--site-primary);"></span>
@@ -51,7 +51,7 @@
                     @endforeach
                     <span class="h-px w-20" style="background-color: var(--site-primary);"></span>
                     @foreach ($linkItems as $item)
-                        <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-xs font-bold uppercase tracking-widest transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
+                        <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-xs font-bold uppercase tracking-widest transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                     @endforeach
                     @if ($imageItems->isNotEmpty())
                         <div class="mt-2 aspect-video w-full overflow-hidden">
@@ -97,12 +97,12 @@
                         <p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                     @endforeach
                     @foreach ($linkItems as $item)
-                        <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-xs font-bold uppercase tracking-widest transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
+                        <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="border px-8 py-3 text-xs font-bold uppercase tracking-widest transition hover:opacity-70" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                     @endforeach
                 @else
                     @foreach ($section['items'] as $item)
                         @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-2xl font-bold tracking-wide">{!! $item['value'] !!}</h2>
-                        @elseif ($item['slot']->slot_type === 'link')<a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto border px-8 py-3 text-xs font-bold uppercase tracking-widest" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
+                        @elseif ($item['slot']->slot_type === 'link')<a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto border px-8 py-3 text-xs font-bold uppercase tracking-widest" style="border-color: var(--site-primary); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                         @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{!! $item['value'] !!}</p>@endif
                     @endforeach
                 @endif

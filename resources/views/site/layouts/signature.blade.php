@@ -98,12 +98,12 @@
                     <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-lg" style="color: var(--site-muted); pointer-events: auto;">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
-                    <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-2 border-2 px-10 py-4 text-base font-bold uppercase tracking-widest transition hover:opacity-80" style="border-color: var(--site-primary); color: var(--site-primary); pointer-events: auto;">{{ $item['slot']->label() }}</a>
+                    <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-2 border-2 px-10 py-4 text-base font-bold uppercase tracking-widest transition hover:opacity-80" style="border-color: var(--site-primary); color: var(--site-primary); pointer-events: auto;">{{ $item['slot']->label() }}</a>
                 @endforeach
             </div>
         </section>
     @elseif ($section['kind'] === 'gallery')
-        <section id="{{ $section['key'] }}" class="px-6 py-24 sm:px-12">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-24 sm:px-12">
             <div class="mx-auto max-w-6xl">
                 @if ($textItems->isNotEmpty())
                     <div class="mb-14 flex flex-col items-center gap-4 text-center">
@@ -127,7 +127,7 @@
         </section>
     @elseif ($section['kind'] === 'list')
         @php $isTestimonials = str_contains($section['key'], 'testimonial'); @endphp
-        <section id="{{ $section['key'] }}" class="px-6 py-24 sm:px-12" style="background-color: color-mix(in srgb, var(--site-surface) 55%, transparent);">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-24 sm:px-12" style="background-color: color-mix(in srgb, var(--site-surface) 55%, transparent);">
             <div class="mx-auto max-w-5xl">
                 @if ($textItems->isNotEmpty())
                     <div class="mb-14 flex flex-col items-center gap-4 text-center">
@@ -169,7 +169,7 @@
             </div>
         </section>
     @elseif ($section['kind'] === 'cta')
-        <section id="{{ $section['key'] }}" class="border-y px-6 py-20 text-center sm:px-12" style="border-color: color-mix(in srgb, var(--site-primary) 40%, transparent); background-color: color-mix(in srgb, var(--site-primary) 8%, transparent);">
+        <section id="{{ $section['key'] }}" class="relative border-y px-6 py-20 text-center sm:px-12" style="border-color: color-mix(in srgb, var(--site-primary) 40%, transparent); background-color: color-mix(in srgb, var(--site-primary) 8%, transparent);">
             <div class="mx-auto flex max-w-2xl flex-col items-center gap-5">
                 @if ($heading)
                     <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black">{!! $heading['value'] !!}</h2>
@@ -178,12 +178,12 @@
                     <p data-slot="{{ $item['slot']->key }}" class="text-lg" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
-                    <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-bold uppercase tracking-widest transition hover:opacity-90" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
+                    <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-bold uppercase tracking-widest transition hover:opacity-90" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
                 @endforeach
             </div>
         </section>
     @else
-        <section id="{{ $section['key'] }}" class="px-6 py-24 sm:px-12">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-24 sm:px-12">
             <div class="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[0.8fr_1.2fr] sm:items-start">
                 <div class="flex flex-col gap-4">
                     <span class="h-px w-16" style="background-color: var(--site-primary);"></span>
@@ -196,7 +196,7 @@
                         <p data-slot="{{ $item['slot']->key }}" class="signature-dropcap text-lg leading-relaxed" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                     @endforeach
                     @foreach ($linkItems as $item)
-                        <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="inline-block w-fit px-8 py-3 text-sm font-bold uppercase tracking-widest" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
+                        <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="inline-block w-fit px-8 py-3 text-sm font-bold uppercase tracking-widest" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
                     @endforeach
                 </div>
             </div>

@@ -17,7 +17,7 @@
     $heading = $textItems->firstWhere('slot.slot_type', 'text');
 @endphp
 
-<section id="{{ $section['key'] }}" class="px-4 py-10 sm:px-8">
+<section id="{{ $section['key'] }}" class="relative px-4 py-10 sm:px-8">
     <div
         @class([
             'mx-auto flex max-w-3xl flex-col items-center gap-5 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl' => $isHero || $isCta,
@@ -60,6 +60,7 @@
 
                 @case('link')
                     <a
+                        data-slot="{{ $slot->key }}"
                         href="{{ $value }}"
                         target="_blank"
                         rel="noopener"

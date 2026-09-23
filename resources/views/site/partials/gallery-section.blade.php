@@ -39,6 +39,7 @@
 
                 @foreach ($linkItems as $item)
                     <a
+                        data-slot="{{ $item['slot']->key }}"
                         href="{{ $item['value'] }}"
                         target="_blank"
                         rel="noopener"
@@ -54,7 +55,7 @@
 
     @case('gallery')
         @php $mainImage = $imageItems->first(); $restImages = $imageItems->skip(1); @endphp
-        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
             <div class="mx-auto flex max-w-5xl flex-col items-center gap-10 lg:flex-row {{ $imageOnRight ? '' : 'lg:flex-row-reverse' }}">
                 @if ($mainImage)
                     <div class="aspect-[4/3] w-full flex-1 overflow-hidden rounded-[1.75rem] shadow-2xl lg:w-1/2">
@@ -97,7 +98,7 @@
         @break
 
     @case('list')
-        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
             <div class="mx-auto flex max-w-4xl flex-col gap-8">
                 @if ($textItems->isNotEmpty())
                     <div class="text-center">
@@ -129,7 +130,7 @@
         @break
 
     @case('cta')
-        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
             <div
                 class="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl"
                 style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
@@ -143,6 +144,7 @@
 
                 @foreach ($linkItems as $item)
                     <a
+                        data-slot="{{ $item['slot']->key }}"
                         href="{{ $item['value'] }}"
                         target="_blank"
                         rel="noopener"
@@ -157,13 +159,14 @@
         @break
 
     @default
-        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
             <div class="mx-auto flex max-w-2xl flex-col gap-4 text-center">
                 @foreach ($section['items'] as $item)
                     @if ($heading && $item['slot']->key === $heading['slot']->key)
                         <h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold">{!! $item['value'] !!}</h2>
                     @elseif ($item['slot']->slot_type === 'link')
                         <a
+                            data-slot="{{ $item['slot']->key }}"
                             href="{{ $item['value'] }}"
                             target="_blank"
                             rel="noopener"
