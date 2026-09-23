@@ -66,8 +66,13 @@ class GeneratedSite extends Model
         return data_get($this->content_json, $key, $default);
     }
 
-    // تخصيص لون/خط خانة واحدة بس (بدل الألوان/الخط العامة بتاعة الموقع كله، Phase 8) — بيرجع
-    // ['color' => ?string, 'font' => ?string]، والاتنين null لو الخانة دي من غير أي تخصيص.
+    // تخصيص خانة واحدة بس (بدل الألوان/الخط العامة بتاعة الموقع كله، Phase 8) — بيرجع
+    // ['color' => ?string, 'font' => ?string, 'zoom' => ?float, 'position' => ?string,
+    // 'posX' => ?float, 'posY' => ?float, 'width' => ?float]، كل مفتاح null لو الخانة دي من
+    // غير التخصيص ده. color/font لخانات text/textarea/list، zoom/position لخانات image بس
+    // (المرحلة 2)، posX/posY/width لأي خانة (المرحلة 3 — ترتيب حر زي Canva/Wix، شوف
+    // docs/rich-text-and-image-editing-plan.md) — نفس المفتاح style_overrides_json[slotKey]
+    // بيحمل كل الأنواع مع بعض، مفيش تعارض لأن كل خانة بتستخدم اللي يخصها بس.
     public function styleFor(string $slotKey): array
     {
         $override = data_get($this->style_overrides_json, $slotKey, []);
@@ -75,6 +80,11 @@ class GeneratedSite extends Model
         return [
             'color' => $override['color'] ?? null,
             'font' => $override['font'] ?? null,
+            'zoom' => $override['zoom'] ?? null,
+            'position' => $override['position'] ?? null,
+            'posX' => $override['posX'] ?? null,
+            'posY' => $override['posY'] ?? null,
+            'width' => $override['width'] ?? null,
         ];
     }
 

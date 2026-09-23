@@ -577,7 +577,243 @@
         });
     }
 
+    // ---------- تكبير/تصغير/تحريك الصورة جوّه إطارها الثابت (المرحلة 2) ----------
+    // docs/rich-text-and-image-editing-plan.md — منفصل تماماً عن startEditing/buildToolbar
+    // (مخصصة للنص)، الفرق في التفاعل (سحب حر + سلايدر، مش contenteditable) كبير كفاية إنه
+    // يستاهل مسار واضح لوحده. كل خانة صورة (slot_type=image) في أي قالب — مش مقصور على
+    // مفتاح بعينه زي hero_image، شوف توضيح النطاق في ملف الخطة.
+    var imageEditableSlots = Object.keys(config.slotTypes).filter(function (key) {
+        return config.slotTypes[key] === 'image';
+    });
+
+    document.querySelectorAll('[data-slot]').forEach(function (el) {
+        if (el.tagName === 'IMG' && imageEditableSlots.indexOf(el.dataset.slot) !== -1) {
+            el.setAttribute('data-bq-image-editable', '1');
+        }
+    });
+
+    var activeImage = null; // { el, key, zoom, position, originalTransform, originalObjectPosition, dragBar, controlsBar }
+    var imageDragging = false;
+
+    function parsePosition(position) {
+        var m = /^(\d{1,3})% (\d{1,3})%$/.exec(position || '');
+
+        return m ? { x: Number(m[1]), y: Number(m[2]) } : { x: 50, y: 50 };
+    }
+
+    function applyImagePreview() {
+        if (!activeImage) {
+            return;
+        }
+        // معاينة فورية على العنصر الحقيقي مباشرة (نفس روح المعاينة الفورية لألوان التصميم) —
+        // نفس CSS بالظبط اللي هيتولّد سيرفر-سايد بعد الحفظ (site/document.blade.php).
+        activeImage.el.style.transform = 'scale(' + activeImage.zoom + ')';
+        activeImage.el.style.objectPosition = activeImage.position.x + '% ' + activeImage.position.y + '%';
+    }
+
+    function positionImageControls() {
+        if (!activeImage) {
+            return;
+        }
+        // بنستخدم مستطيل الحاوية (parentElement) مش الصورة نفسها — الصورة بعد transform:
+        // scale() (المرحلة 2) بيرجّع getBoundingClientRect بتاعها المساحة البصرية الموسّعة
+        // بعد التكبير (ممكن تبقى أضعاف حجم الشاشة)، وده بيخلي شريط الأدوات يترندر برّه الشاشة
+        // خالص. الحاوية (overflow-hidden) دايماً بتفضل بنفس حجمها المرئي الثابت بغض النظر عن
+        // قيمة الزوم.
+        var rect = activeImage.el.parentElement.getBoundingClientRect();
+        if (activeImage.dragBar) {
+            activeImage.dragBar.style.top = rect.top + 'px';
+            activeImage.dragBar.style.left = rect.left + 'px';
+            activeImage.dragBar.style.width = rect.width + 'px';
+            activeImage.dragBar.style.height = rect.height + 'px';
+        }
+        if (activeImage.controlsBar) {
+            // زي positionToolbar بالظبط (تنسيق النص) — لو تحت الصورة برّه الشاشة (صورة
+            // بارتفاع كبير قريب من ارتفاع الشاشة كله)، جرّب فوقها؛ ولو فوقها كمان برّه
+            // الشاشة (صورة بتاخد الشاشة كلها تقريباً)، ثبّته جوّه حدود الشاشة أياً كان.
+            var top = rect.bottom + 8;
+            if (top > window.innerHeight - 60) {
+                top = rect.top - 46;
+            }
+            top = Math.max(4, Math.min(top, window.innerHeight - 52));
+            activeImage.controlsBar.style.top = top + 'px';
+            activeImage.controlsBar.style.left = Math.max(8, rect.left) + 'px';
+        }
+    }
+
+    function closeImageEditor(keepAppliedStyle) {
+        if (!activeImage) {
+            return;
+        }
+        if (!keepAppliedStyle) {
+            activeImage.el.style.transform = activeImage.originalTransform;
+            activeImage.el.style.objectPosition = activeImage.originalObjectPosition;
+        }
+        if (activeImage.dragBar) {
+            activeImage.dragBar.remove();
+        }
+        if (activeImage.controlsBar) {
+            activeImage.controlsBar.remove();
+        }
+        document.removeEventListener('scroll', positionImageControls, true);
+        window.removeEventListener('resize', positionImageControls);
+        activeImage = null;
+    }
+
+    function commitImageEditor() {
+        if (!activeImage) {
+            return;
+        }
+        var key = activeImage.key;
+        var entries = [
+            ['style[' + key + '][zoom]', String(activeImage.zoom)],
+            ['style[' + key + '][position]', activeImage.position.x + '% ' + activeImage.position.y + '%'],
+        ];
+        closeImageEditor(true);
+        // نفس سبب الريلود بتاع تنسيق النص/الخط: الـzoom/position النهائي بيتحسم في CSS
+        // السيرفر (site/document.blade.php)، مش المعاينة اللحظية هنا.
+        save(entries, '✓ اتحفظت الصورة').then(function (ok) {
+            if (ok) {
+                window.location.reload();
+            }
+        });
+    }
+
+    function resetImageEditor() {
+        if (!activeImage) {
+            return;
+        }
+        var key = activeImage.key;
+        var entries = [
+            ['style[' + key + '][zoom]', ''],
+            ['style[' + key + '][position]', ''],
+        ];
+        closeImageEditor(false);
+        save(entries, '✓ اتشالت تخصيصات الصورة').then(function (ok) {
+            if (ok) {
+                window.location.reload();
+            }
+        });
+    }
+
+    function openImageEditor(el) {
+        if (active) {
+            commitActive();
+        }
+        if (activeImage) {
+            if (activeImage.el === el) {
+                return;
+            }
+            commitImageEditor();
+        }
+
+        var key = el.dataset.slot;
+        var override = config.styleOverrides[key] || {};
+        var zoom = Number(override.zoom) || 1;
+
+        activeImage = {
+            el: el,
+            key: key,
+            zoom: zoom,
+            position: parsePosition(override.position),
+            originalTransform: el.style.transform,
+            originalObjectPosition: el.style.objectPosition,
+            dragBar: null,
+            controlsBar: null,
+        };
+
+        applyImagePreview();
+
+        // سطح السحب — عنصر شفاف فوق الصورة بالظبط (نفس مكانها/حجمها)، بيمسك mousedown
+        // للتحريك (object-position) بس، منفصل عن شريط الأدوات (السلايدر/الزراير) عشان
+        // مايحصلش تعارض بين "دوس عشان تسحب" و"دوس على زرار".
+        var dragBar = document.createElement('div');
+        dragBar.className = 'bq-image-drag-bar';
+        dragBar.textContent = '🖐 اسحب لتحريك الصورة';
+        dragBar.addEventListener('mousedown', function (event) {
+            event.preventDefault();
+            imageDragging = true;
+            updateImagePositionFromEvent(event);
+        });
+        document.body.appendChild(dragBar);
+        activeImage.dragBar = dragBar;
+
+        var controlsBar = document.createElement('div');
+        controlsBar.className = 'bq-toolbar';
+
+        var zoomLabel = document.createElement('label');
+        zoomLabel.textContent = 'زوم';
+        var zoomInput = document.createElement('input');
+        zoomInput.type = 'range';
+        zoomInput.min = '1';
+        zoomInput.max = '3';
+        zoomInput.step = '0.1';
+        zoomInput.value = String(zoom);
+        zoomInput.className = 'bq-image-zoom-range';
+        zoomInput.addEventListener('input', function () {
+            activeImage.zoom = Number(zoomInput.value);
+            applyImagePreview();
+        });
+        zoomLabel.appendChild(zoomInput);
+
+        var resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'bq-toolbar-reset';
+        resetBtn.textContent = '✕ إعادة الضبط';
+        resetBtn.addEventListener('click', resetImageEditor);
+
+        var doneBtn = document.createElement('button');
+        doneBtn.type = 'button';
+        doneBtn.className = 'bq-toolbar-done';
+        doneBtn.textContent = 'تم';
+        doneBtn.addEventListener('click', commitImageEditor);
+
+        controlsBar.appendChild(zoomLabel);
+        controlsBar.appendChild(resetBtn);
+        controlsBar.appendChild(doneBtn);
+        document.body.appendChild(controlsBar);
+        activeImage.controlsBar = controlsBar;
+
+        positionImageControls();
+        document.addEventListener('scroll', positionImageControls, true);
+        window.addEventListener('resize', positionImageControls);
+    }
+
+    function updateImagePositionFromEvent(event) {
+        if (!activeImage) {
+            return;
+        }
+        // نفس سبب استخدام مستطيل الحاوية في positionImageControls: الصورة المكبّرة
+        // transform بتاعها بيوسّع getBoundingClientRect بتاعها، فحساب نسبة السحب منها بيدّي
+        // حركة أبطأ من المتوقع (الماوس محتاج يتحرك مسافة أكبر بكتير من الفعلية). object-
+        // position أصلاً بيتحسب نسبة لمساحة العنصر الأصلية (قبل transform)، اللي هي نفس
+        // مساحة الحاوية بالظبط (الصورة h-full w-full).
+        var rect = activeImage.el.parentElement.getBoundingClientRect();
+        var x = Math.round(Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100)));
+        var y = Math.round(Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100)));
+        activeImage.position = { x: x, y: y };
+        applyImagePreview();
+    }
+
+    // مسجّلين مرة واحدة بس (مش جوّه openImageEditor) عشان مايتكررش تسجيل listeners في
+    // الـdocument كل مرة المستخدم يفتح صورة جديدة.
+    document.addEventListener('mousemove', function (event) {
+        if (imageDragging) {
+            updateImagePositionFromEvent(event);
+        }
+    });
+    document.addEventListener('mouseup', function () {
+        imageDragging = false;
+    });
+
     document.addEventListener('click', function (event) {
+        // وضع "ترتيب حر" (المرحلة 3) بيبدّل تفاعل الخانات بالكامل للسحب/التكبير — تعديل
+        // النص العادي وفتح محرر الصورة (الأسطر تحت) بيتعطّلوا مؤقتاً لحد ما المستخدم يقفل
+        // الوضع ده، وإلا كل دوس (حتى لو كان بداية سحب) هيفتح تعديل نص/صورة كمان بالغلط.
+        if (freePositionMode) {
+            return;
+        }
+
         var target = event.target.closest('[data-bq-editable="1"]');
         if (target) {
             if (active && active.el === target) {
@@ -588,13 +824,28 @@
             return;
         }
 
+        var imageTarget = event.target.closest('[data-bq-image-editable="1"]');
+        if (imageTarget) {
+            event.preventDefault();
+            openImageEditor(imageTarget);
+            return;
+        }
+
         // دوس بره الخانة النشطة وبره التولبار بتاعها → احفظ واقفل.
         if (active && !event.target.closest('.bq-toolbar')) {
             commitActive();
         }
+
+        if (activeImage && !event.target.closest('.bq-image-drag-bar') && !event.target.closest('.bq-toolbar')) {
+            commitImageEditor();
+        }
     });
 
     document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && activeImage) {
+            closeImageEditor(false);
+        }
+
         if (!active) {
             return;
         }
@@ -675,4 +926,258 @@
             });
         });
     }
+
+    // ---------------------------------------------------------------------
+    // ترتيب حر لأي عنصر (نقل/تكبير زي Canva/Wix — المرحلة 3، فؤاد أكّد صراحة: نص وأقسام
+    // كمان، مش الصور بس — docs/rich-text-and-image-editing-plan.md). زرار "📐 ترتيب حر"
+    // في الشريط العلوي بيبدّل وضع كامل: جوّاه، أي خانة (غير القوائم — شوف السبب تحت) بتتحرك
+    // بالسحب المباشر بدل الدوس لتعديل النص/فتح محرر الصورة، ومعاها مقبض تكبير/تصغير عرض في
+    // ركنها. برّه الوضع ده، كل حاجة بترجع تشتغل زي ما كانت بالظبط.
+    // ---------------------------------------------------------------------
+    var freePositionMode = false;
+    var freePositionBtn = document.getElementById('bq-free-position-toggle');
+    var freeDrag = null; // { el, key, sectionRect, startClientX, startClientY, startLeftPercent, startTopPercent }
+    var freeResize = null; // { el, key, sectionRect, startClientX, startWidthPercent }
+    var resizeHandleEl = null;
+    var freePositionTouched = {}; // { [slotKey]: true } — أي خانة اتحركت/اتغيّر حجمها وقت الجلسة دي
+
+    // خانات list بس مستبعدة — كل عناصر الـ<li>/<div> بتاعتها بيشاركوا نفس data-slot (مفتاح
+    // واحد في style_overrides_json)، فأي موضع نحفظه هيتطبّق على كل عناصر القايمة مع بعض
+    // ويرصّهم فوق بعض بالظبط — مفيش معنى "ترتيب حر" لعنصر بيتكرر مرات كتير بنفس المفتاح.
+    function isFreePositionEligible(el) {
+        var key = el.dataset.slot;
+        if (!key) {
+            return false;
+        }
+        return config.slotTypes[key] !== 'list';
+    }
+
+    function freePositionSlots() {
+        return Array.prototype.filter.call(document.querySelectorAll('[data-slot]'), isFreePositionEligible);
+    }
+
+    // المرجع الحقيقي لحساب نسب posX/posY/width لازم يكون نفس "containing block" اللي CSS
+    // هيستخدمه فعلياً وقت الرندر (أقرب سلف بـposition غير static) — مش الـ<section> دايماً.
+    // بعض التصميمات (gallery/duotone/signature...) فيها حاوية داخلية بـposition:relative
+    // (لعمل z-index فوق صورة الهيرو) أضيق من الـsection نفسه؛ لو استخدمنا عرض/ارتفاع الـ
+    // section هنا هتختلف النسبة المحسوبة هنا عن النسبة اللي CSS بيطبّقها فعلياً بعد ما
+    // العنصر ياخد position:absolute، وهيبان اختلاف حقيقي بين مكان السحب ومكان العنصر بعد
+    // الحفظ/الريلود. offsetParent بيرجّع بالظبط نفس الحاوية دي (مستقل عن position الحالي
+    // بتاع العنصر نفسه)، فهو المرجع الصح دايماً.
+    function sectionRectFor(el) {
+        var container = el.offsetParent || el.closest('section') || el.parentElement;
+        return container.getBoundingClientRect();
+    }
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function applyFreePositionPreview(el, leftPercent, topPercent, widthPercent) {
+        el.style.position = 'absolute';
+        if (leftPercent !== null) {
+            el.style.left = leftPercent + '%';
+        }
+        if (topPercent !== null) {
+            el.style.top = topPercent + '%';
+        }
+        if (widthPercent !== null) {
+            el.style.width = widthPercent + '%';
+        }
+    }
+
+    function commitFreePosition(el, leftPercent, topPercent, widthPercent) {
+        var key = el.dataset.slot;
+        var entries = [];
+        if (leftPercent !== null) {
+            entries.push(['style[' + key + '][posX]', String(Math.round(leftPercent * 100) / 100)]);
+        }
+        if (topPercent !== null) {
+            entries.push(['style[' + key + '][posY]', String(Math.round(topPercent * 100) / 100)]);
+        }
+        if (widthPercent !== null) {
+            entries.push(['style[' + key + '][width]', String(Math.round(widthPercent * 100) / 100)]);
+        }
+        if (entries.length === 0) {
+            return;
+        }
+        freePositionTouched[key] = true;
+        // من غير reload فوري هنا عمداً — المعاينة المباشرة (inline style فوق) بتطابق نفس
+        // CSS اللي السيرفر هيولّده بالظبط (نفس النسب المئوية)، فمفيش داعي نقطع تجربة
+        // السحب/التحريك المتكرر بريلود بعد كل حركة. الريلود بيحصل مرة واحدة بس لما المستخدم
+        // يقفل وضع "الترتيب الحر" (تحت)، عشان يتأكد الشكل النهائي مطابق فعلاً.
+        save(entries);
+    }
+
+    function positionResizeHandle(el) {
+        if (!resizeHandleEl) {
+            return;
+        }
+        var rect = el.getBoundingClientRect();
+        resizeHandleEl.style.top = (rect.bottom - 7) + 'px';
+        resizeHandleEl.style.left = (rect.right - 7) + 'px';
+    }
+
+    function showResizeHandleFor(el) {
+        if (!resizeHandleEl) {
+            resizeHandleEl = document.createElement('div');
+            resizeHandleEl.className = 'bq-resize-handle';
+            resizeHandleEl.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                var target = resizeHandleEl.dataset.targetSlot
+                    ? document.querySelector('[data-slot="' + resizeHandleEl.dataset.targetSlot + '"]')
+                    : null;
+                if (!target) {
+                    return;
+                }
+                var rect = target.getBoundingClientRect();
+                freeResize = {
+                    el: target,
+                    key: target.dataset.slot,
+                    sectionRect: sectionRectFor(target),
+                    startClientX: event.clientX,
+                    startWidthPx: rect.width,
+                };
+            });
+            document.body.appendChild(resizeHandleEl);
+        }
+        resizeHandleEl.dataset.targetSlot = el.dataset.slot;
+        resizeHandleEl.style.display = 'block';
+        positionResizeHandle(el);
+    }
+
+    function hideResizeHandle() {
+        if (resizeHandleEl) {
+            resizeHandleEl.style.display = 'none';
+        }
+    }
+
+    function onFreeSlotMouseEnter(event) {
+        if (!freePositionMode || freeDrag || freeResize) {
+            return;
+        }
+        showResizeHandleFor(event.currentTarget);
+    }
+
+    function onFreeSlotMouseDown(event) {
+        if (!freePositionMode) {
+            return;
+        }
+        // مقبض التكبير بتاعه مسك الحدث لوحده (mousedown مع stopPropagation فوق) — لو
+        // وصلنا هنا يبقى دوس عادي على الخانة نفسها، يعني نقل مش تكبير.
+        event.preventDefault();
+        var el = event.currentTarget;
+        var rect = el.getBoundingClientRect();
+        var sectionRect = sectionRectFor(el);
+        el.classList.add('bq-free-dragging');
+        freeDrag = {
+            el: el,
+            key: el.dataset.slot,
+            sectionRect: sectionRect,
+            offsetX: event.clientX - rect.left,
+            offsetY: event.clientY - rect.top,
+            // العرض الحالي (قبل ما نحط position:absolute) — أي خانة أصلها من التصميم العادي
+            // (زي w-full على الهيرو) لو خدت position:absolute من غير عرض صريح هتمتد لعرض
+            // القسم كله بالظبط زي ما كانت (100%)، مش عرضها الحقيقي وقت السحب. تثبيت العرض
+            // ده مع كل نقلة (مش بس أول مرة) بيمنع المشكلة دي، ومعندهوش أي ضرر لو اتكرر.
+            widthPercent: clamp((rect.width / sectionRect.width) * 100, 5, 100),
+        };
+    }
+
+    document.addEventListener('mousemove', function (event) {
+        // بنعيد قياس حاوية الترتيب (offsetParent) في كل حركة فأر بدل ما نعتمد على القياس
+        // المحفوظ وقت mousedown — أول ما العنصر ياخد position:absolute (أول تحريك في نفس
+        // الجلسة) بيتشال من الـflow، وده ممكن يغيّر حجم حاويته لو كانت حاوية داخلية (زي
+        // wrapper "relative z-10" في gallery/duotone) مقاسها معتمد على محتواها هي نفسها —
+        // لو فضلنا نستخدم القياس القديم (قبل الشيل)، النسبة المئوية المحسوبة هتفضل بتنحرف عن
+        // مكان الماوس الفعلي.
+        if (freeDrag) {
+            var sr = sectionRectFor(freeDrag.el);
+            var leftPx = event.clientX - sr.left - freeDrag.offsetX;
+            var topPx = event.clientY - sr.top - freeDrag.offsetY;
+            var leftPercent = clamp((leftPx / sr.width) * 100, 0, 100);
+            var topPercent = clamp((topPx / sr.height) * 100, 0, 100);
+            applyFreePositionPreview(freeDrag.el, leftPercent, topPercent, null);
+            positionResizeHandle(freeDrag.el);
+        }
+        if (freeResize) {
+            var rsr = sectionRectFor(freeResize.el);
+            var deltaX = event.clientX - freeResize.startClientX;
+            var newWidthPx = Math.max(24, freeResize.startWidthPx + deltaX);
+            var widthPercent = clamp((newWidthPx / rsr.width) * 100, 5, 100);
+            applyFreePositionPreview(freeResize.el, null, null, widthPercent);
+            positionResizeHandle(freeResize.el);
+        }
+    });
+
+    document.addEventListener('mouseup', function () {
+        if (freeDrag) {
+            var el = freeDrag.el;
+            el.classList.remove('bq-free-dragging');
+            var rect = el.getBoundingClientRect();
+            var sr = sectionRectFor(el);
+            var leftPercent = clamp(((rect.left - sr.left) / sr.width) * 100, 0, 100);
+            var topPercent = clamp(((rect.top - sr.top) / sr.height) * 100, 0, 100);
+            applyFreePositionPreview(el, null, null, freeDrag.widthPercent);
+            commitFreePosition(el, leftPercent, topPercent, freeDrag.widthPercent);
+            freeDrag = null;
+        }
+        if (freeResize) {
+            var rEl = freeResize.el;
+            var rRect = rEl.getBoundingClientRect();
+            var rsr = sectionRectFor(rEl);
+            var widthPercent = clamp((rRect.width / rsr.width) * 100, 5, 100);
+            commitFreePosition(rEl, null, null, widthPercent);
+            freeResize = null;
+        }
+    });
+
+    function toggleFreePositionMode() {
+        // اقفل أي تعديل نص/صورة شغال الأول — منع تعارض بين وضعين تفاعل مختلفين تماماً.
+        if (active) {
+            commitActive();
+        }
+        if (activeImage) {
+            commitImageEditor();
+        }
+
+        freePositionMode = !freePositionMode;
+        document.body.classList.toggle('bq-free-position-mode', freePositionMode);
+        if (freePositionBtn) {
+            freePositionBtn.textContent = freePositionMode ? '✓ ترتيب حر شغال' : '📐 ترتيب حر';
+            freePositionBtn.classList.toggle('bq-active', freePositionMode);
+        }
+
+        var slots = freePositionSlots();
+        slots.forEach(function (el) {
+            if (freePositionMode) {
+                el.addEventListener('mousedown', onFreeSlotMouseDown);
+                el.addEventListener('mouseenter', onFreeSlotMouseEnter);
+            } else {
+                el.removeEventListener('mousedown', onFreeSlotMouseDown);
+                el.removeEventListener('mouseenter', onFreeSlotMouseEnter);
+            }
+        });
+
+        if (!freePositionMode) {
+            hideResizeHandle();
+            // ريلود واحد بس هنا (لو فيه تعديل فعلي حصل) — نفس فلسفة باقي التعديلات
+            // الشكلية، عشان نتأكد الشكل النهائي مطابق فعلاً للي السيرفر هيرندره.
+            if (Object.keys(freePositionTouched).length > 0) {
+                freePositionTouched = {};
+                window.location.reload();
+            }
+        }
+    }
+
+    if (freePositionBtn) {
+        freePositionBtn.addEventListener('click', toggleFreePositionMode);
+    }
+
+    window.addEventListener('resize', function () {
+        if (freePositionMode && (freeDrag || freeResize)) {
+            positionResizeHandle((freeDrag || freeResize).el);
+        }
+    });
 })();

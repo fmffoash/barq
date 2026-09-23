@@ -11,7 +11,7 @@
 @switch($section['kind'])
     @case('hero')
         @php $heroImage = $imageItems->first(); @endphp
-        <section id="{{ $section['key'] }}" class="px-4 pb-10 pt-8 sm:px-8 sm:pt-14">
+        <section id="{{ $section['key'] }}" class="relative px-4 pb-10 pt-8 sm:px-8 sm:pt-14">
             <div
                 class="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] shadow-2xl"
                 style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
@@ -27,6 +27,7 @@
 
                         @foreach ($linkItems as $item)
                             <a
+                                data-slot="{{ $item['slot']->key }}"
                                 href="{{ $item['value'] }}"
                                 target="_blank"
                                 rel="noopener"
@@ -41,12 +42,15 @@
                     @if ($heroImage)
                         <div class="relative order-1 lg:order-2">
                             <div class="absolute -inset-8 rounded-full opacity-30 blur-3xl" style="background-color: var(--site-background);"></div>
-                            <img
-                                src="{{ $heroImage['value'] }}"
-                                alt="{{ $heroImage['slot']->label() }}"
-                                class="relative aspect-square w-full rounded-[2rem] object-cover shadow-2xl ring-4 ring-white/20"
-                                loading="lazy"
-                            >
+                            <div class="relative aspect-square w-full overflow-hidden rounded-[2rem] shadow-2xl ring-4 ring-white/20">
+                                <img
+                                    data-slot="{{ $heroImage['slot']->key }}"
+                                    src="{{ $heroImage['value'] }}"
+                                    alt="{{ $heroImage['slot']->label() }}"
+                                    class="h-full w-full object-cover"
+                                    loading="lazy"
+                                >
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -55,7 +59,7 @@
         @break
 
     @case('gallery')
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div class="mx-auto flex max-w-6xl flex-col gap-10">
                 @if ($textItems->isNotEmpty())
                     <div class="mx-auto max-w-2xl text-center">
@@ -70,16 +74,21 @@
 
                 <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img
-                            src="{{ $item['value'] }}"
-                            alt="{{ $item['slot']->label() }}"
+                        <div
                             @class([
-                                'w-full rounded-[1.75rem] object-cover shadow-xl',
+                                'w-full overflow-hidden rounded-[1.75rem] shadow-xl',
                                 'col-span-2 row-span-2 aspect-square' => $loop->first,
                                 'aspect-square' => ! $loop->first,
                             ])
-                            loading="lazy"
                         >
+                            <img
+                                data-slot="{{ $item['slot']->key }}"
+                                src="{{ $item['value'] }}"
+                                alt="{{ $item['slot']->label() }}"
+                                class="h-full w-full object-cover"
+                                loading="lazy"
+                            >
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -87,7 +96,7 @@
         @break
 
     @case('list')
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div class="mx-auto flex max-w-6xl flex-col gap-10">
                 @if ($textItems->isNotEmpty())
                     <div class="mx-auto max-w-2xl text-center">
@@ -124,7 +133,7 @@
         @break
 
     @case('cta')
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div
                 class="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl"
                 style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
@@ -138,6 +147,7 @@
 
                 @foreach ($linkItems as $item)
                     <a
+                        data-slot="{{ $item['slot']->key }}"
                         href="{{ $item['value'] }}"
                         target="_blank"
                         rel="noopener"
@@ -152,7 +162,7 @@
         @break
 
     @default
-        <section id="{{ $section['key'] }}" class="px-4 py-14 sm:px-8">
+        <section id="{{ $section['key'] }}" class="relative px-4 py-14 sm:px-8">
             <div
                 class="mx-auto flex max-w-3xl flex-col gap-4 rounded-[2rem] p-10 text-center shadow-md"
                 style="background-color: var(--site-surface);"
@@ -162,6 +172,7 @@
                         <h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold">{!! $item['value'] !!}</h2>
                     @elseif ($item['slot']->slot_type === 'link')
                         <a
+                            data-slot="{{ $item['slot']->key }}"
                             href="{{ $item['value'] }}"
                             target="_blank"
                             rel="noopener"

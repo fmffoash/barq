@@ -25,17 +25,19 @@
                     <p data-slot="{{ $item['slot']->key }}" class="text-lg" style="color: color-mix(in srgb, var(--site-background) 85%, transparent);">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
-                    <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
+                    <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                 @endforeach
             </div>
         </section>
         @if ($imageItems->isNotEmpty())
             <div class="-mt-16 px-6 sm:px-10">
-                <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="relative z-10 mx-auto aspect-[16/9] max-w-4xl w-full rounded-[1.75rem] object-cover shadow-2xl" loading="lazy">
+                <div class="relative z-10 mx-auto aspect-[16/9] max-w-4xl w-full overflow-hidden rounded-[1.75rem] shadow-2xl">
+                    <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                </div>
             </div>
         @endif
     @elseif ($section['kind'] === 'gallery')
-        <section id="{{ $section['key'] }}" class="px-6 py-16 sm:px-10">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
             <div class="mx-auto max-w-5xl">
                 @if ($textItems->isNotEmpty())
                     <div class="mb-8 text-center">
@@ -49,7 +51,9 @@
                 @endif
                 <div class="grid gap-4 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full object-cover shadow-md" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%);" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden shadow-md">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%);" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -89,16 +93,16 @@
                     <p data-slot="{{ $item['slot']->key }}" style="color: color-mix(in srgb, var(--site-background) 85%, transparent);">{!! $item['value'] !!}</p>
                 @endforeach
                 @foreach ($linkItems as $item)
-                    <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
+                    <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
                 @endforeach
             </div>
         </section>
     @else
-        <section id="{{ $section['key'] }}" class="px-6 py-16 text-center sm:px-10">
+        <section id="{{ $section['key'] }}" class="relative px-6 py-16 text-center sm:px-10">
             <div class="mx-auto flex max-w-2xl flex-col gap-4">
                 @foreach ($section['items'] as $item)
                     @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold">{!! $item['value'] !!}</h2>
-                    @elseif ($item['slot']->slot_type === 'link')<a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto inline-block rounded-full px-8 py-3 text-base font-semibold" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
+                    @elseif ($item['slot']->slot_type === 'link')<a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto inline-block rounded-full px-8 py-3 text-base font-semibold" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
                     @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{!! $item['value'] !!}</p>@endif
                 @endforeach
             </div>

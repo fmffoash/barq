@@ -40,7 +40,7 @@
         $supportingItems = $textItems->reject(fn ($item) => $heading && $item['slot']->key === $heading['slot']->key);
     @endphp
 
-    <section id="{{ $section['key'] }}" class="px-6 py-14 sm:px-14">
+    <section id="{{ $section['key'] }}" class="relative px-6 py-14 sm:px-14">
         <div class="mx-auto max-w-4xl">
             @unless ($section['kind'] === 'hero')
                 <span class="mb-3 block text-xs font-bold uppercase tracking-[0.2em]" style="color: var(--site-primary);">{{ $tag($section['key']) }}</span>
@@ -56,10 +56,14 @@
                     @endforeach
                     <span class="h-1 w-24 rounded-full" style="background-color: var(--site-primary);"></span>
                     @foreach ($linkItems as $item)
-                        <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="text-sm font-bold uppercase tracking-widest underline decoration-2 underline-offset-4" style="color: var(--site-primary);">{{ $item['slot']->label() }} ←</a>
+                        <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="text-sm font-bold uppercase tracking-widest underline decoration-2 underline-offset-4" style="color: var(--site-primary);">{{ $item['slot']->label() }} ←</a>
                     @endforeach
                     @if ($imageItems->isNotEmpty())
-                        <img src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="mt-4 aspect-[16/9] w-full object-cover" loading="lazy">
+                        {{-- overflow-hidden على الحاوية عشان تكبير/تحريك الصورة (المرحلة 2)
+                        ميكسرش برّه إطارها. --}}
+                        <div class="mt-4 aspect-[16/9] w-full overflow-hidden">
+                            <img data-slot="{{ $imageItems->first()['slot']->key }}" src="{{ $imageItems->first()['value'] }}" alt="{{ $imageItems->first()['slot']->label() }}" class="h-full w-full object-cover" loading="lazy">
+                        </div>
                     @endif
                 </div>
             @elseif ($section['kind'] === 'gallery')
@@ -71,7 +75,9 @@
                 @endforeach
                 <div class="grid gap-1 sm:grid-cols-3">
                     @foreach ($imageItems as $item)
-                        <img src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="aspect-square w-full object-cover grayscale transition hover:grayscale-0" loading="lazy">
+                        <div class="aspect-square w-full overflow-hidden">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover grayscale transition hover:grayscale-0" loading="lazy">
+                        </div>
                     @endforeach
                 </div>
             @elseif ($section['kind'] === 'list')
@@ -100,7 +106,7 @@
                         <p data-slot="{{ $item['slot']->key }}" class="mt-3" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
                     @endforeach
                     @foreach ($linkItems as $item)
-                        <a href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-5 inline-block px-10 py-4 text-sm font-bold uppercase tracking-widest transition hover:opacity-90" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
+                        <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-5 inline-block px-10 py-4 text-sm font-bold uppercase tracking-widest transition hover:opacity-90" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
                     @endforeach
                 </div>
             @else

@@ -32,6 +32,7 @@
 
 <div class="bq-bar">
     <span class="bq-bar-label">🖊️ وضع التعديل المباشر — دوس على أي نص عشان تعدّله في مكانه</span>
+    <button type="button" id="bq-free-position-toggle" class="bq-bar-toggle">📐 ترتيب حر</button>
     <a href="{{ route('projects.show', $project) }}" class="bq-bar-back">رجوع للمشروع</a>
 </div>
 

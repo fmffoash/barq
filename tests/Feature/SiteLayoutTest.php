@@ -83,7 +83,11 @@ class SiteLayoutTest extends TestCase
         $response->assertSee('id="contact"', false);
     }
 
-    public function test_gallery_layout_renders_hero_background_image_and_zigzag_sections(): void
+    // اسم التست القديم كان "renders_hero_background_image" — اتحوّل هيرو gallery من
+    // background-image: url(...) على الـsection لـ<img data-slot> حقيقي (المرحلة 2، تكبير/
+    // تحريك الصورة، docs/rich-text-and-image-editing-plan.md)، فبقى بيترندر بـsrc= زي أي
+    // صورة تانية بدل url() CSS.
+    public function test_gallery_layout_renders_hero_image_and_zigzag_sections(): void
     {
         $site = $this->buildSite($this->buildTemplate('gallery'));
 
@@ -91,7 +95,7 @@ class SiteLayoutTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('أهلاً بيكم في مطعمنا');
-        $response->assertSee("url('/storage/hero.jpg')");
+        $response->assertSee('data-slot="hero_image" src="/storage/hero.jpg"', false);
         $response->assertSee('src="/storage/demo.jpg"', false);
         $response->assertSee('فطار');
     }
@@ -199,7 +203,10 @@ class SiteLayoutTest extends TestCase
         ]);
 
         $site->refresh();
-        $this->assertSame(['color' => '#00ff00', 'font' => 'inter'], $site->styleFor('hero_title'));
+        $this->assertSame(
+            ['color' => '#00ff00', 'font' => 'inter', 'zoom' => null, 'position' => null, 'posX' => null, 'posY' => null, 'width' => null],
+            $site->styleFor('hero_title')
+        );
 
         $this->actingAs($user)->put(route('projects.site.update', $project), [
             'content' => ['hero_title' => 'أهلاً'],
@@ -207,7 +214,10 @@ class SiteLayoutTest extends TestCase
         ]);
 
         $site->refresh();
-        $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
+        $this->assertSame(
+            ['color' => null, 'font' => null, 'zoom' => null, 'position' => null, 'posX' => null, 'posY' => null, 'width' => null],
+            $site->styleFor('hero_title')
+        );
     }
 
     public function test_a_malformed_style_override_color_or_font_is_silently_ignored(): void
@@ -228,7 +238,92 @@ class SiteLayoutTest extends TestCase
         ]);
 
         $site->refresh();
-        $this->assertSame(['color' => null, 'font' => null], $site->styleFor('hero_title'));
+        $this->assertSame(
+            ['color' => null, 'font' => null, 'zoom' => null, 'position' => null, 'posX' => null, 'posY' => null, 'width' => null],
+            $site->styleFor('hero_title')
+        );
+    }
+
+    public function test_saving_free_position_posx_posy_width_persists_and_clears(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $template = Template::factory()->create(['kind' => 'landing']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان',
+            'slot_type' => 'text', 'sort_order' => 1,
+        ]);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'أهلاً']]);
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'أهلاً'],
+            'style' => ['hero_title' => ['posX' => '12.345', 'posY' => '0', 'width' => '40']],
+        ]);
+
+        $site->refresh();
+        $style = $site->styleFor('hero_title');
+        // posX بتتقرّب لمنزلتين عشريتين، وposY=0 (حافة القسم) لازم تفضل 0 مش تتحط null —
+        // array_filter الافتراضي كان هيشيلها غلط، شوف تعليق المدمج في الكنترولر. assertEquals
+        // بدل assertSame هنا لأن json_encode/decode (JSON cast) بيحوّل float صحيح زي 0.0/40.0
+        // لـint (0/40) وقت التخزين — سلوك PHP قياسي، مش باج.
+        $this->assertEquals(12.35, $style['posX']);
+        $this->assertEquals(0, $style['posY']);
+        $this->assertEquals(40, $style['width']);
+
+        // فضّي الحقول كلها تاني بإرسال style بدون posX/posY/width (has() بيرجع false فمفيش
+        // لمسة للخانة دي خالص — partial-safe، مش مسح تلقائي). التخصيص لازم يفضل موجود.
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'أهلاً'],
+        ]);
+        $site->refresh();
+        $this->assertEquals(12.35, $site->styleFor('hero_title')['posX']);
+    }
+
+    public function test_out_of_range_or_malformed_free_position_values_are_rejected(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $template = Template::factory()->create(['kind' => 'landing']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'العنوان',
+            'slot_type' => 'text', 'sort_order' => 1,
+        ]);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'أهلاً']]);
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'أهلاً'],
+            // posX سالب، posY فوق 100، width تحت الحد الأدنى (5%)، كل واحدة لازم ترفض لـnull
+            'style' => ['hero_title' => ['posX' => '-5', 'posY' => '150', 'width' => '2', 'color' => '', 'font' => '']],
+        ]);
+
+        $site->refresh();
+        $style = $site->styleFor('hero_title');
+        $this->assertNull($style['posX']);
+        $this->assertNull($style['posY']);
+        $this->assertNull($style['width']);
+    }
+
+    public function test_free_position_applies_to_any_slot_type_not_just_images(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $template = Template::factory()->create(['kind' => 'landing']);
+        $template->slots()->create([
+            'section_key' => 'hero', 'key' => 'hero_cta', 'label_ar' => 'اطلب دلوقتي',
+            'slot_type' => 'link', 'sort_order' => 1,
+        ]);
+        $project = Project::factory()->for($template)->create();
+        $site = GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_cta' => 'https://example.com']]);
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_cta' => 'https://example.com'],
+            'style' => ['hero_cta' => ['posX' => '20', 'posY' => '30', 'width' => '25']],
+        ]);
+
+        $site->refresh();
+        $style = $site->styleFor('hero_cta');
+        $this->assertEquals(20, $style['posX']);
+        $this->assertEquals(30, $style['posY']);
+        $this->assertEquals(25, $style['width']);
     }
 
     public function test_an_invalid_layout_value_is_rejected_when_updating_a_template(): void

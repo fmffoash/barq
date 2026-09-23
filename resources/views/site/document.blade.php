@@ -13,7 +13,12 @@
     foreach ($sections as $section) {
         foreach ($section['items'] as $item) {
             $style = $item['style'] ?? [];
-            if (filled($style['color'] ?? null) || filled($style['font'] ?? null)) {
+            if (
+                filled($style['color'] ?? null) || filled($style['font'] ?? null)
+                || filled($style['zoom'] ?? null) || filled($style['position'] ?? null)
+                || filled($style['posX'] ?? null) || filled($style['posY'] ?? null)
+                || filled($style['width'] ?? null)
+            ) {
                 $slotStyles->put($item['slot']->key, $style);
             }
         }
@@ -57,6 +62,31 @@
                     @endif
                     @if (filled($style['font'] ?? null))
                         font-family: var(--font-{{ $style['font'] }}) !important;
+                    @endif
+                    {{-- تكبير/تحريك الصورة جوّه إطارها الثابت (المرحلة 2) — object-position
+                    بيشتغل بس لو الصورة object-fit:cover (كل <img> خانة صورة عندها object-cover
+                    فعلاً، شوف الخطة)، وtransform:scale() محتاج overflow-hidden على حاوية
+                    الصورة عشان مايكسرش أي إطار مدوّر الحواف (اتأكد من كل الـ16 layout). --}}
+                    @if (filled($style['position'] ?? null))
+                        object-position: {{ $style['position'] }} !important;
+                    @endif
+                    @if (filled($style['zoom'] ?? null))
+                        transform: scale({{ $style['zoom'] }});
+                    @endif
+                    {{-- ترتيب حر لأي عنصر (نقل/تكبير، المرحلة 3) — position:absolute جوّه
+                    أقرب حاوية position:relative (كل <section> في الـ16 layout بقى relative
+                    عمداً عشان يبقى نفس "الكنفاه" الثابت لكل خانات القسم ده، شوف الخطة). --}}
+                    @if (filled($style['posX'] ?? null) || filled($style['posY'] ?? null) || filled($style['width'] ?? null))
+                        position: absolute !important;
+                        @if (filled($style['posX'] ?? null))
+                            left: {{ $style['posX'] }}% !important;
+                        @endif
+                        @if (filled($style['posY'] ?? null))
+                            top: {{ $style['posY'] }}% !important;
+                        @endif
+                    @endif
+                    @if (filled($style['width'] ?? null))
+                        width: {{ $style['width'] }}% !important;
                     @endif
                 }
             @endforeach

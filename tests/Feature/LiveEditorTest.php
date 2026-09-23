@@ -31,6 +31,20 @@ class LiveEditorTest extends TestCase
         return $project;
     }
 
+    private function buildProjectWithImageSlot(): Project
+    {
+        $template = Template::factory()->create(['kind' => 'landing']);
+        $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'عنوان', 'slot_type' => 'text']);
+        $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_image', 'label_ar' => 'صورة', 'slot_type' => 'image']);
+        $project = Project::factory()->for($template)->create();
+        GeneratedSite::factory()->for($project)->create([
+            'content_json' => ['hero_title' => 'أهلاً بيكم', 'hero_image' => '/storage/site-images/test.jpg'],
+            'status' => 'published',
+        ]);
+
+        return $project;
+    }
+
     public function test_guests_cannot_access_the_live_editor(): void
     {
         $project = $this->buildProjectWithSite();
@@ -268,5 +282,170 @@ class LiveEditorTest extends TestCase
         $page->assertDontSee('<script', false);
         $page->assertDontSee('onerror=', false);
         $page->assertDontSee('<img', false);
+    }
+
+    // ---------------------------------------------------------------------
+    // المرحلة 2: تكبير/تصغير/تحريك الصورة جوّه إطارها الثابت — كل خانة صورة من غير استثناء
+    // (docs/rich-text-and-image-editing-plan.md، توضيح 2026-09-22).
+    // ---------------------------------------------------------------------
+
+    public function test_saving_valid_zoom_and_position_for_an_image_slot_renders_in_the_generated_css(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->buildProjectWithImageSlot();
+
+        $response = $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'style' => [
+                'hero_image' => ['zoom' => '1.8', 'position' => '30% 70%'],
+            ],
+        ]);
+
+        $response->assertRedirect(route('projects.show', $project));
+
+        $site = $project->site->fresh();
+        $this->assertEquals(1.8, $site->styleFor('hero_image')['zoom']);
+        $this->assertSame('30% 70%', $site->styleFor('hero_image')['position']);
+
+        $page = $this->get(route('site.show', ['siteSlug' => $site->slug]));
+        $page->assertOk();
+        $page->assertSee('data-slot="hero_image"', false);
+        $page->assertSee('object-position: 30% 70%', false);
+        $page->assertSee('transform: scale(1.8)', false);
+    }
+
+    public static function invalidZoomPayloads(): array
+    {
+        return [
+            'too small' => ['0.5'],
+            'too large' => ['99'],
+            'not numeric' => ['abc'],
+        ];
+    }
+
+    #[DataProvider('invalidZoomPayloads')]
+    public function test_out_of_range_zoom_is_rejected_while_leaving_position_untouched(string $zoom): void
+    {
+        $user = User::factory()->create();
+        $project = $this->buildProjectWithImageSlot();
+
+        $response = $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'style' => [
+                'hero_image' => ['zoom' => $zoom, 'position' => ''],
+            ],
+        ]);
+
+        $response->assertRedirect(route('projects.show', $project));
+
+        $site = $project->site->fresh();
+        $this->assertNull($site->styleFor('hero_image')['zoom']);
+    }
+
+    public static function invalidPositionPayloads(): array
+    {
+        return [
+            'over 100' => ['200% 200%'],
+            'script tag' => ['<script>alert(1)</script>'],
+            'wrong separator' => ['50%,50%'],
+            'missing percent sign' => ['50 50'],
+        ];
+    }
+
+    #[DataProvider('invalidPositionPayloads')]
+    public function test_malformed_position_is_rejected_while_leaving_zoom_untouched(string $position): void
+    {
+        $user = User::factory()->create();
+        $project = $this->buildProjectWithImageSlot();
+
+        $response = $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'style' => [
+                'hero_image' => ['zoom' => '', 'position' => $position],
+            ],
+        ]);
+
+        $response->assertRedirect(route('projects.show', $project));
+
+        $site = $project->site->fresh();
+        $this->assertNull($site->styleFor('hero_image')['position']);
+
+        // اتأكد صريح إن القيمة الخبيثة معملتش reflect في الصفحة المُرندرة خالص.
+        $page = $this->get(route('site.show', ['siteSlug' => $site->slug]));
+        $page->assertOk();
+        $page->assertDontSee('<script', false);
+    }
+
+    public function test_a_partial_image_style_save_does_not_touch_another_slots_text_style_override(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->buildProjectWithImageSlot();
+        $site = $project->site;
+        $site->update([
+            'style_overrides_json' => [
+                'hero_title' => ['color' => '#123456'],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'style' => [
+                'hero_image' => ['zoom' => '2', 'position' => '10% 20%'],
+            ],
+        ]);
+
+        $response->assertRedirect(route('projects.show', $project));
+        $site->refresh();
+
+        $this->assertSame('#123456', $site->styleFor('hero_title')['color']);
+        $this->assertEquals(2.0, $site->styleFor('hero_image')['zoom']);
+    }
+
+    public function test_resetting_image_style_clears_the_override(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->buildProjectWithImageSlot();
+        $site = $project->site;
+        $site->update([
+            'style_overrides_json' => [
+                'hero_image' => ['zoom' => 2.0, 'position' => '10% 20%'],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'style' => [
+                'hero_image' => ['zoom' => '', 'position' => ''],
+            ],
+        ]);
+
+        $response->assertRedirect(route('projects.show', $project));
+        $site->refresh();
+
+        $this->assertNull($site->styleFor('hero_image')['zoom']);
+        $this->assertNull($site->styleFor('hero_image')['position']);
+    }
+
+    public function test_every_layout_renders_a_data_slot_attribute_on_its_image_tag(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (Template::LAYOUTS as $layout) {
+            $template = Template::factory()->create(['kind' => 'landing', 'layout' => $layout]);
+            $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'عنوان', 'slot_type' => 'text', 'sort_order' => 1]);
+            $template->slots()->create(['section_key' => 'hero', 'key' => 'hero_image', 'label_ar' => 'صورة', 'slot_type' => 'image', 'sort_order' => 2]);
+            $template->slots()->create(['section_key' => 'gallery', 'key' => 'gallery_image_1', 'label_ar' => 'صورة معرض', 'slot_type' => 'image', 'sort_order' => 3]);
+
+            $project = Project::factory()->for($template)->create();
+            $site = GeneratedSite::factory()->for($project)->create([
+                'content_json' => [
+                    'hero_title' => 'عنوان',
+                    'hero_image' => '/storage/site-images/a.jpg',
+                    'gallery_image_1' => '/storage/site-images/b.jpg',
+                ],
+                'status' => 'published',
+            ]);
+
+            // hero_image مش كل الـ16 تصميم بيعرضها في قسم الهيرو (بعض التصاميم، زي bold،
+            // هيرو نص بحت بالتصميم عمداً) — الثابت المضمون في كل التصاميم هو قسم الجاليري.
+            $page = $this->actingAs($user)->get(route('site.show', ['siteSlug' => $site->slug]));
+            $page->assertOk("layout [{$layout}] failed to render");
+            $page->assertSee('data-slot="gallery_image_1"', false);
+        }
     }
 }

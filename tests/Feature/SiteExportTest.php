@@ -123,7 +123,14 @@ class SiteExportTest extends TestCase
     // Phase 7 — التصميمات البصرية الجديدة (modern/gallery) بتستخدم نفس نظام تصدير الصور بالظبط،
     // حتى لما الصورة بتترندر جوّه CSS (background-image: url(...)) بدل <img> عادي زي هيرو الـ
     // gallery layout — لازم المسار يتحول لنسبي جوّه الـ url() برضه، مش بس جوّه src=.
-    public function test_exporting_a_non_classic_layout_rewrites_image_paths_inside_css_url_functions_too(): void
+    // ملحوظة (المرحلة 2، 2026-09-22): كان الاسم القديم "...inside_css_url_functions_too"
+    // لأن هيرو تصميم gallery كان بيترندر بـ background-image: url(...) على الـsection —
+    // اتحول لـ<img data-slot> حقيقي (تكبير/تحريك الصورة، docs/rich-text-and-image-editing-
+    // plan.md) فمفيش أي url() لصور خالص في أي layout دلوقتي، بس rewriteImagePaths() نفسها
+    // (SiteExportService) بتشتغل على $item['value'] بغض النظر عن مكان استخدامه في القالب،
+    // فالتست لسه بيتحقق من نفس الحاجة (تصدير layout غير classic بيعيد كتابة مسار صورة
+    // الهيرو صح)، بس في مكانها الجديد (src=، مش url()).
+    public function test_exporting_a_non_classic_layout_rewrites_hero_image_paths_too(): void
     {
         Storage::fake('public');
 
@@ -154,7 +161,7 @@ class SiteExportTest extends TestCase
 
         $html = $zip->getFromName('index.html');
         $this->assertStringNotContainsString('/storage/', $html);
-        $this->assertMatchesRegularExpression('~url\(&\#039;assets/images/[a-zA-Z0-9._-]+\.jpg&\#039;\)~', $html);
+        $this->assertMatchesRegularExpression('~data-slot="hero_image" src="assets/images/[a-zA-Z0-9._-]+\.jpg"~', $html);
 
         $zip->close();
     }

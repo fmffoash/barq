@@ -17,7 +17,7 @@
     $heading = $textItems->firstWhere('slot.slot_type', 'text');
 @endphp
 
-<section id="{{ $section['key'] }}" class="px-4 py-10 sm:px-8">
+<section id="{{ $section['key'] }}" class="relative px-4 py-10 sm:px-8">
     <div
         @class([
             'mx-auto flex max-w-3xl flex-col items-center gap-5 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl' => $isHero || $isCta,
@@ -32,20 +32,35 @@
 
             @switch($slot->slot_type)
                 @case('image')
-                    <img
-                        src="{{ $value }}"
-                        alt="{{ $slot->label() }}"
+                    {{-- max-h هنا على الـ<img> نفسه (مش الحاوية) عمداً — الحاوية مفيهاش
+                    aspect-ratio ولا height ثابتة، لو حطينا h-full على الصورة وmax-h على
+                    الحاوية بس، الحاوية هتنهار لـheight:0 (تبعية دائرية: ارتفاعها معتمد على
+                    محتواها اللي بدوره معتمد على ارتفاعها). سيبنا الصورة تاخد ارتفاعها الطبيعي
+                    من نسبة أبعادها الحقيقية (زي ما كان قبل المرحلة 2)، والحاوية بترص حواليها
+                    بس (overflow-hidden لمنع تكبير الصورة (المرحلة 2) من الخروج برّه الإطار). --}}
+                    <div
                         @class([
-                            'mx-auto w-full rounded-[1.75rem] object-cover shadow-xl',
-                            'max-h-[420px] ring-4 ring-white/20' => $isHero,
-                            'max-h-[380px]' => ! $isHero,
+                            'mx-auto w-full overflow-hidden rounded-[1.75rem] shadow-xl',
+                            'ring-4 ring-white/20' => $isHero,
                         ])
-                        loading="lazy"
                     >
+                        <img
+                            data-slot="{{ $slot->key }}"
+                            src="{{ $value }}"
+                            alt="{{ $slot->label() }}"
+                            @class([
+                                'w-full object-cover',
+                                'max-h-[420px]' => $isHero,
+                                'max-h-[380px]' => ! $isHero,
+                            ])
+                            loading="lazy"
+                        >
+                    </div>
                     @break
 
                 @case('link')
                     <a
+                        data-slot="{{ $slot->key }}"
                         href="{{ $value }}"
                         target="_blank"
                         rel="noopener"

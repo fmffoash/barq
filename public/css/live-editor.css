@@ -41,6 +41,64 @@
     text-decoration: underline;
 }
 
+.bq-bar-toggle {
+    flex-shrink: 0;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    background: transparent;
+    color: #f1f5f9;
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bq-bar-toggle:hover {
+    background: #1f2937;
+}
+
+.bq-bar-toggle.bq-active {
+    background: #fbbf24;
+    border-color: #fbbf24;
+    color: #111827;
+}
+
+/* ترتيب حر لأي عنصر (نقل/تكبير، المرحلة 3) — لما الوضع ده شغال، أي خانة (غير القوائم،
+   شوف تعليق live-editor.js) بتاخد مؤشر "نقل" وoutline بس مفيش تعديل نص عادي بالدوس. */
+body.bq-free-position-mode [data-slot]:not(li) {
+    cursor: move;
+    outline: 2px dashed transparent;
+    outline-offset: 2px;
+    transition: outline-color 0.15s ease;
+}
+
+/* z-index مؤقت وقت الـhover بس — عشان لو عنصر اتحرك قبل كده (بقى position:absolute) بيغطي
+   عنصر تاني لسه ثابت في مكانه الطبيعي، لسه ممكن توصل للعنصر المغطّى وتسحبه (position:relative
+   هنا بيفعّل z-index لأي عنصر لسه static، وبيتجاهله الـinline style لو العنصر already
+   absolute من سحب سابق — الـinline بياخد أولوية على أي حال). */
+body.bq-free-position-mode [data-slot]:not(li):hover {
+    outline-color: #22d3ee;
+    position: relative;
+    z-index: 500;
+}
+
+body.bq-free-position-mode [data-slot].bq-free-dragging {
+    outline-color: #fbbf24;
+    opacity: 0.85;
+}
+
+.bq-resize-handle {
+    position: fixed;
+    z-index: 2147483001;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: #22d3ee;
+    border: 2px solid #0f172a;
+    cursor: nwse-resize;
+}
+
 /* أي خانة قابلة للتعديل (نص/فقرة بس دلوقتي) بتتعلّم بـ data-bq-editable من الـ JS وقت
    التحميل — الـ hover هنا CSS خالص، صفر حاجة إضافية في كل layout. */
 [data-bq-editable="1"] {
@@ -115,6 +173,42 @@
     align-self: stretch;
     background: #374151;
     margin: 0 2px;
+}
+
+/* أي خانة صورة (slot_type=image) بتاخد hover زي خانات النص، عشان يبان إنها قابلة للتعديل. */
+[data-bq-image-editable="1"] {
+    cursor: pointer;
+    transition: outline-color 0.15s ease;
+    outline: 2px dashed transparent;
+    outline-offset: -3px;
+}
+
+[data-bq-image-editable="1"]:hover {
+    outline-color: #fbbf24;
+}
+
+/* تكبير/تصغير/تحريك الصورة (المرحلة 2) — سطح سحب شفاف فوق الصورة بالظبط. */
+.bq-image-drag-bar {
+    position: fixed;
+    z-index: 2147482999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    background: rgba(17, 24, 39, 0.15);
+    outline: 2px solid #fbbf24;
+    outline-offset: -2px;
+    color: #fff;
+    font-family: Cairo, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    user-select: none;
+}
+
+.bq-image-zoom-range {
+    width: 120px;
+    accent-color: #fbbf24;
 }
 
 .bq-toolbar label {
