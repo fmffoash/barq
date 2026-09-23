@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GeneratedSite;
+use App\Models\TemplateSlot;
 
 // بيبني بيانات رندر الموقع (الأقسام مرتّبة ومفلترة بمحتواها الفعلي + الألوان النهائية) من
 // موقع ناتج معيّن — نفس المنطق مستخدم في المعاينة الحية (SiteController) وفي التصدير كملفات
@@ -73,6 +74,44 @@ class SiteRenderer
                 'kind' => $this->classifySection($section, $index === 0, $index === $sectionCount - 1),
             ]
         );
+
+        // عناصر مضافة من فؤاد بنفسه عن طريق شات الذكاء الاصطناعي (2026-09-24، "ضيف مربع/
+        // صورة جديدة") — مش جزء من template_slots الثابتة، فبتتضاف هنا بعد التصنيف فوق
+        // (بـkind ثابت مش محسوب) كـsection جديد كامل لكل عنصر، آخر الصفحة دايماً
+        // (AiProjectAssistantService::applyAddCustomBlock()). بيستخدموا نفس بنية $sections
+        // بالظبط (slot/value/style) عشان يشتغلوا مع كل الآليات الموجودة من غيرها (ترتيب حر،
+        // تنسيق نص، ترتيب/إظهار أقسام) من غير أي كود إضافي.
+        foreach (($site->custom_blocks_json ?? []) as $block) {
+            if (! is_array($block) || ! isset($block['key'], $block['type'])) {
+                continue;
+            }
+
+            $slot = new TemplateSlot([
+                'key' => $block['key'],
+                'section_key' => $block['key'],
+                'slot_type' => $block['type'],
+                'label_ar' => $block['label'] ?? 'عنصر مضاف',
+                'sort_order' => 0,
+            ]);
+
+            $value = $block['type'] === 'text'
+                ? RichTextSanitizer::clean((string) ($block['content'] ?? ''))
+                : ($block['content'] ?? null);
+
+            if (blank($value)) {
+                continue;
+            }
+
+            $sections->push([
+                'key' => $block['key'],
+                'items' => collect([[
+                    'slot' => $slot,
+                    'value' => $value,
+                    'style' => $site->styleFor($block['key']),
+                ]]),
+                'kind' => $block['type'] === 'image' ? 'gallery' : 'text',
+            ]);
+        }
 
         // تخصيص ألوان/خط الموقع ده بس (لو مفعّل) بيغلب نسخة القالب المشتركة — نفس منطق
         // ترتيب الأقسام فوق، بدل ما أي تعديل يأثر على مشاريع تانية شايلة نفس النسخة.

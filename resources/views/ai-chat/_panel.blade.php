@@ -23,18 +23,27 @@
         @endforelse
     </div>
 
-    <form method="POST" action="{{ route('ai-chat.message', $project) }}" class="flex gap-2 border-t border-slate-800 pt-4">
+    <form method="POST" action="{{ route('ai-chat.message', $project) }}" enctype="multipart/form-data" class="space-y-2 border-t border-slate-800 pt-4">
         @csrf
-        <input
-            type="text"
-            name="message"
-            required
-            placeholder="قولّه يعدّل إيه (مثلاً: غيّر القالب لحاجة أفخم، أو عدّل العنوان الرئيسي لـ...)"
-            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
-        >
-        <button type="submit" data-ai-submit class="shrink-0 rounded-lg bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
-            ابعت
-        </button>
+        {{-- صورة جاهزة اختيارية (المرحلة 4، 2026-09-24) — فؤاد يرفق صورة عنده ويقول في
+        الرسالة "حطها في كذا" أو "ضيف صورة جديدة"، والذكاء الاصطناعي بيقرر الخانة المناسبة
+        من كلام الرسالة (AiProjectAssistantService::applyUpdateImage/applyAddCustomBlock). --}}
+        <label class="flex items-center gap-2 text-xs text-slate-400">
+            <span>📎 إرفاق صورة (اختياري — عشان تضيفها أو تستبدل بيها صورة موجودة)</span>
+            <input type="file" name="image" accept="image/*" class="text-xs text-slate-400 file:mr-2 file:rounded file:border-0 file:bg-slate-800 file:px-2 file:py-1 file:text-slate-200">
+        </label>
+        <div class="flex gap-2">
+            <input
+                type="text"
+                name="message"
+                required
+                placeholder="قولّه يعدّل إيه (مثلاً: غيّر القالب لحاجة أفخم، أو ضيف الصورة دي في الهيرو، أو رجّع كل حاجة زي ما كانت)"
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-400"
+            >
+            <button type="submit" data-ai-submit class="shrink-0 rounded-lg bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
+                ابعت
+            </button>
+        </div>
     </form>
 </div>
 

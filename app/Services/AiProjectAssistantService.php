@@ -8,6 +8,7 @@ use App\Models\GeneratedSite;
 use App\Models\Project;
 use App\Models\Template;
 use App\Models\TemplateVariant;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -148,9 +149,11 @@ class AiProjectAssistantService
     }
 
     /**
-     * رسالة تانية على مشروع موجود بالفعل — تفسير الطلب كفعل (تغيير قالب/محتوى/لون/خط) وتنفيذه.
+     * رسالة تانية على مشروع موجود بالفعل — تفسير الطلب كفعل وتنفيذه. $image اختياري (المرحلة
+     * 4، 2026-09-24) — صورة جاهزة عند فؤاد بيرفقها مع رسالته ("ضيف الصورة دي في كذا")، شوف
+     * ai-chat/_panel.blade.php + AiChatController::message().
      */
-    public function handleFollowUp(Project $project, string $message): string
+    public function handleFollowUp(Project $project, string $message, ?UploadedFile $image = null): string
     {
         $project->loadMissing(['template.slots', 'variant', 'site']);
         $site = $project->site;
@@ -159,7 +162,7 @@ class AiProjectAssistantService
             return 'المشروع ده مالوش موقع ناتج خالص — حاجة غريبة، راجع المشروع من صفحته العادية.';
         }
 
-        $decision = $this->ollama->generateJson($this->buildFollowUpPrompt($project, $site, $message));
+        $decision = $this->ollama->generateJson($this->buildFollowUpPrompt($project, $site, $message, $image !== null));
 
         if (! is_array($decision)) {
             $reply = 'معرفتش أفهم طلبك دلوقتي — النموذج مش متاح أو الرد مش واضح. جرّب تاني أو عدّل يدوي من صفحة المشروع.';
@@ -169,16 +172,24 @@ class AiProjectAssistantService
         }
 
         $action = $decision['action'] ?? 'none';
-        $knownActions = ['change_template', 'update_content', 'update_colors', 'update_font'];
+        $knownActions = [
+            'change_template', 'update_content', 'update_colors', 'update_font',
+            'reset_to_default', 'update_image', 'add_custom_block', 'remove_custom_block',
+        ];
 
         // شبكة أمان: نموذج صغير زي qwen3:8b أحياناً بيرجّع "none" أو قيمة action مش من
-        // الخمسة المتفق عليها رغم إن الرسالة واضحة (لوحظ حياً 2026-09-20 — "غيّر القالب"
+        // القائمة المتفق عليها رغم إن الرسالة واضحة (لوحظ حياً 2026-09-20 — "غيّر القالب"
         // اترفضت مرتين، مرة بـaction=none ومرة بـaction غريب مش في القايمة، رغم إن رد
         // النموذج النصي نفسه فاهم المقصود صح). لو الرسالة فيها كلمة قالب/شكل/تصميم صريحة
-        // والفعل مش واحد من الأربعة المعروفة، نصحّحه لـchange_template بدل رد "مش فاهم".
+        // والفعل مش واحد من المعروفة، نصحّحه لـchange_template بدل رد "مش فاهم". نفس الفكرة
+        // لطلب الرجوع للأصل (فؤاد اشتكى منها حياً 2026-09-24 — كان بيرجّعله رد عام "مش فاهم"
+        // على طلب واضح).
         if (! in_array($action, $knownActions, true) && preg_match('/قالب|شكل|تصميم|تخطيط/u', $message)) {
             $action = 'change_template';
             $decision['category'] ??= $project->template->category;
+        }
+        if (! in_array($action, $knownActions, true) && preg_match('/رجّع|رجع|الغ[يى]|امسح كل|ارجاع/u', $message)) {
+            $action = 'reset_to_default';
         }
 
         $reply = match ($action) {
@@ -186,6 +197,10 @@ class AiProjectAssistantService
             'update_content' => $this->applyUpdateContent($project, $site, $decision),
             'update_colors' => $this->applyUpdateColors($site, $decision),
             'update_font' => $this->applyUpdateFont($site, $decision),
+            'reset_to_default' => $this->applyResetToDefault($site),
+            'update_image' => $this->applyUpdateImage($project, $site, $image, $decision),
+            'add_custom_block' => $this->applyAddCustomBlock($site, $image, $decision),
+            'remove_custom_block' => $this->applyRemoveCustomBlock($site, $decision),
             default => is_string($decision['reply'] ?? null) && trim($decision['reply']) !== ''
                 ? $decision['reply']
                 : 'مش متأكد فاهم طلبك — ممكن توضحه أكتر؟',
@@ -294,6 +309,123 @@ class AiProjectAssistantService
         $site->update(['font_override' => $font]);
 
         return 'تمام، غيّرت الخط لـ"'.TemplateVariant::FONTS[$font].'".';
+    }
+
+    // إلغاء كل التعديلات اليدوية ورجوع الموقع لشكل القالب الأصلي (المرحلة 4، 2026-09-24) —
+    // فؤاد أوضح صراحة إن قصده بـ"رجّع" هو ده بالظبط: مسح كل تخصيص (محتوى/ألوان/خط/ترتيب/
+    // عناصر مضافة) ورجوع كل خانة لقيمتها الافتراضية من القالب. **مفيش نسخة سابقة محفوظة فعلياً
+    // — ده مش undo خطوة بخطوة، ده reset كامل لمرة واحدة.** template_id/template_variant_id
+    // نفسهم متلمسوش (لو فؤاد بدّل القالب، ده قرار منفصل عن "امسح تعديلاتي على المحتوى").
+    private function applyResetToDefault(GeneratedSite $site): string
+    {
+        $site->update([
+            'content_json' => null,
+            'style_overrides_json' => null,
+            'colors_override_json' => null,
+            'font_override' => null,
+            'font_weight_override' => null,
+            'font_style_override' => null,
+            'font_size_scale_override' => null,
+            'sections_override_json' => null,
+            'custom_blocks_json' => null,
+        ]);
+
+        return 'تمام، رجّعت الموقع لشكل القالب الأصلي — كل تعديل عملته (محتوى/ألوان/خط/ترتيب/عناصر مضافة) اتلغى. لو عايز ترجع حاجة بعينها بس مش كل حاجة، قولّي إيه بالظبط.';
+    }
+
+    // فؤاد بيرفق صورة جاهزة عنده ويقول "حطها هنا" — بنحتاج نعرف الخانة المستهدفة (hero_image،
+    // gallery_image_1...) من كلام الرسالة، والصورة نفسها لازم تكون مرفقة فعلاً في نفس الرسالة
+    // (المرحلة 4، 2026-09-24 — الذكاء الاصطناعي بيقرّر الخانة بس، هو مش شايف بايتات الصورة
+    // خالص، التخزين الفعلي هنا في PHP زي أي رفع ملف عادي).
+    private function applyUpdateImage(Project $project, GeneratedSite $site, ?UploadedFile $image, array $decision): string
+    {
+        if (! $image) {
+            return 'قولّي تحط الصورة فين، بس محتاج ترفق الصورة نفسها مع رسالتك (زرار إرفاق الصورة جنب مربع الكتابة).';
+        }
+
+        $slotKey = $decision['slot_key'] ?? null;
+        $imageSlots = $project->template->slots->where('slot_type', 'image');
+
+        if (! is_string($slotKey) || ! $imageSlots->contains('key', $slotKey)) {
+            return 'مش متأكد عايز الصورة دي تحل محل إيه بالظبط — قولّي مثلاً "خليها الصورة الرئيسية" أو "خليها صورة المعرض التانية".';
+        }
+
+        $path = $image->store('site-images', 'public');
+        $content = $site->content_json ?? [];
+        $content[$slotKey] = '/storage/'.$path;
+        $site->update(['content_json' => $content]);
+
+        $label = $imageSlots->firstWhere('key', $slotKey)?->label() ?? $slotKey;
+
+        return "تمام، حطّيت الصورة في \"{$label}\".";
+    }
+
+    // "ضيف مربع/قسم جديد" — نص أو صورة، بيتضاف كـsection جديد كامل آخر الصفحة (مش جوّه
+    // section موجود، شوف SiteRenderer::render() وdocs/rich-text-and-image-editing-plan.md
+    // للتفاصيل المعمارية). فؤاد بعدين يقدر يرتّب/يحرّك العنصر الجديد بالترتيب الحر العادي —
+    // صفر UI جديد لموضعه، بيستخدم نفس الآلية الموجودة.
+    private function applyAddCustomBlock(GeneratedSite $site, ?UploadedFile $image, array $decision): string
+    {
+        $type = in_array($decision['block_type'] ?? null, ['text', 'image'], true) ? $decision['block_type'] : null;
+
+        if ($type === 'image' && ! $image) {
+            return 'عايز تضيف صورة جديدة — بس محتاج ترفق الصورة نفسها مع رسالتك.';
+        }
+        if ($type === null) {
+            $type = $image ? 'image' : 'text';
+        }
+
+        $content = $type === 'text'
+            ? (is_string($decision['content'] ?? null) ? trim($decision['content']) : '')
+            : null;
+
+        if ($type === 'text' && $content === '') {
+            return 'مش متأكد عايز تضيف إيه بالظبط — اكتب النص اللي عايزه في المربع الجديد.';
+        }
+
+        if ($type === 'image') {
+            $path = $image->store('site-images', 'public');
+            $content = '/storage/'.$path;
+        }
+
+        $blocks = $site->custom_blocks_json ?? [];
+        $newKey = 'custom_'.(count($blocks) + 1).'_'.Str::random(6);
+
+        $blocks[] = [
+            'key' => $newKey,
+            'type' => $type,
+            'label' => is_string($decision['label'] ?? null) && trim($decision['label']) !== ''
+                ? trim($decision['label'])
+                : ($type === 'image' ? 'صورة مضافة' : 'نص مضاف'),
+            'content' => $content,
+        ];
+
+        $site->update(['custom_blocks_json' => $blocks]);
+
+        return 'تمام، ضفتلك '.($type === 'image' ? 'الصورة' : 'المربع').' في آخر الصفحة — تقدر تحرّكه لمكانه اللي عايزه من زرار "ترتيب حر" في المحرر.';
+    }
+
+    // مسح عنصر مضاف بالذكاء الاصطناعي (مش خانة أصلية من القالب — تلك مالهاش حذف، بس تقدر
+    // تفضّيها من محتواها). المطابقة بالاسم/التسمية مش المفتاح الداخلي (فؤاد مش شايف المفتاح
+    // أصلاً)، فبتاخد أقرب تطابق بدل تطابق حرفي.
+    private function applyRemoveCustomBlock(GeneratedSite $site, array $decision): string
+    {
+        $blocks = $site->custom_blocks_json ?? [];
+
+        if ($blocks === []) {
+            return 'مفيش عناصر مضافة أصلاً تتمسح دلوقتي.';
+        }
+
+        $hint = is_string($decision['label'] ?? null) ? trim($decision['label']) : '';
+        $target = $hint !== ''
+            ? collect($blocks)->first(fn ($b) => str_contains($b['label'] ?? '', $hint) || str_contains($hint, $b['label'] ?? "\0"))
+            : null;
+        $target ??= collect($blocks)->last();
+
+        $remaining = collect($blocks)->reject(fn ($b) => $b['key'] === $target['key'])->values()->all();
+        $site->update(['custom_blocks_json' => $remaining === [] ? null : $remaining]);
+
+        return 'تمام، مسحت "'.($target['label'] ?? 'العنصر').'".';
     }
 
     /**
@@ -444,7 +576,7 @@ PROMPT;
         return $filtered;
     }
 
-    private function buildFollowUpPrompt(Project $project, GeneratedSite $site, string $message): string
+    private function buildFollowUpPrompt(Project $project, GeneratedSite $site, string $message, bool $hasImage = false): string
     {
         $categories = Template::where('is_active', true)->distinct()->pluck('category')->implode('، ');
         $fonts = implode('، ', array_keys(TemplateVariant::FONTS));
@@ -459,31 +591,61 @@ PROMPT;
             })
             ->implode("\n");
 
+        // خانات الصور — مستبعدة من $currentContent فوق (مش نص، مالهاش معنى هناك) بس لازم
+        // النموذج يشوفها هنا عشان update_image (المرحلة 4، 2026-09-24: فؤاد بيرفق صورة
+        // جاهزة ويقول "حطها في كذا") يقدر يحدد slot_key الصح من اسم الخانة/حالتها (فاضية
+        // ولا معبّأة بالفعل) بدل ما يخمّن.
+        $imageSlots = collect($project->template->slots)
+            ->where('slot_type', 'image')
+            ->map(fn ($slot) => "- key: \"{$slot->key}\" ({$slot->label()}): ".(filled($site->content($slot->key)) ? 'معبّأة بالفعل' : 'فاضية'))
+            ->implode("\n");
+
+        $imageNote = $hasImage
+            ? 'فيه صورة مرفقة فعلاً مع الرسالة دي.'
+            : 'مفيش صورة مرفقة مع الرسالة دي.';
+
+        $customBlocks = collect($site->custom_blocks_json ?? [])
+            ->map(fn ($b) => "- \"{$b['label']}\" (نوعها: {$b['type']})")
+            ->implode("\n") ?: '(مفيش عناصر مضافة دلوقتي)';
+
         return <<<PROMPT
-انت مساعد بيدير مشروع موقع ويب لأدمن. مهمتك: تصنّف رسالة الأدمن لواحد من 5 أنواع أفعال
+انت مساعد بيدير مشروع موقع ويب لأدمن. مهمتك: تصنّف رسالة الأدمن لواحد من 8 أنواع أفعال
 بالظبط، وترجّع JSON — مفيش تفكير زيادة، بس طابق كلمات الرسالة مع القواعد تحت بالترتيب.
 
 القواعد (اتبعها بالترتيب، أول قاعدة تتطابق هي الصح):
-1. لو الرسالة فيها كلمة "قالب" أو "شكل" أو "تصميم" أو "تخطيط" (زي "غيّر القالب"،
+1. لو الرسالة بتطلب "رجّع/الغي/امسح كل" التعديلات ورجوع الموقع لأصله (زي "رجّع كل حاجة
+   زي ما كانت"، "الغي كل التعديلات") → النوع reset_to_default. ده بيمسح كل تخصيص (محتوى/
+   ألوان/خط/عناصر مضافة) ويرجع لشكل القالب الافتراضي — استخدمه بس لو الطلب عن "كل حاجة"،
+   مش تعديل جزء واحد بعينه (ده update_content/update_colors عادي).
+2. لو فيه صورة مرفقة (شوف "{$imageNote}" تحت) والرسالة بتقول "حطها/خليها/استبدلها" في
+   خانة موجودة بالفعل (زي "خليها الصورة الرئيسية") → النوع update_image.
+3. لو فيه صورة مرفقة والرسالة بتقول "ضيف/زوّد" صورة جديدة (مش استبدال خانة موجودة) →
+   النوع add_custom_block بـblock_type="image".
+4. لو الرسالة بتقول "ضيف/زوّد مربع/قسم/نص جديد" (من غير صورة مرفقة) → النوع
+   add_custom_block بـblock_type="text"، والـcontent هو النص المطلوب إضافته (اكتبه إنت
+   بناءً على وصف الأدمن لو مديك وصف بس مش نص جاهز، زي باقي اقتراح المحتوى).
+5. لو الرسالة بتقول "امسح/شيل" عنصر مضاف (شوف قايمة "العناصر المضافة حالياً" تحت) → النوع
+   remove_custom_block، والـlabel هو أقرب اسم من القايمة دي لطلب الأدمن.
+6. لو الرسالة فيها كلمة "قالب" أو "شكل" أو "تصميم" أو "تخطيط" (زي "غيّر القالب"،
    "عايز شكل تاني"، "بدّل التصميم") → النوع change_template.
-2. لو الرسالة فيها كلمة "لون" أو "ألوان" أو اسم لون (أزرق/أحمر/أخضر/ذهبي...) → النوع
+7. لو الرسالة فيها كلمة "لون" أو "ألوان" أو اسم لون (أزرق/أحمر/أخضر/ذهبي...) → النوع
    update_colors.
-3. لو الرسالة فيها كلمة "خط" أو "الخط" أو اسم خط → النوع update_font.
-4. لو الرسالة بتطلب تغيير نص/عنوان/فقرة/خدمة معيّنة (زي "غيّر العنوان لـ..."، "زوّد خدمة
-   كذا") → النوع update_content.
-5. لو الرسالة بتطلب "رجّع/الغي/تراجع" عن تعديلات سابقة (زي "رجّع كل حاجة زي ما كانت"،
-   "الغي التعديلات دي") → النوع none، بس الـreply لازم يوضّح بصراحة إنك **مش بتحتفظ بنسخة
-   سابقة تلقائي** فمعرفتش ترجع كل حاجة مرة واحدة، واطلب منه يقولك بالظبط عايز تاني حاجة
-   ترجع لإيه (مثلاً "رجّع العنوان لـ..." أو "رجّع اللون لـ...") عشان تقدر تعدّلها له كـ
-   update_content/update_colors عادي — **ممنوع** ترد برد عام "مش فاهم، وضّح أكتر" على
-   طلب واضح زي ده، لازم تشرح تحديداً ليه معرفتش تنفّذه.
-6. لو مفيش قاعدة فوق اتطابقت، أو الطلب مش واضح خالص → النوع none.
+8. لو الرسالة فيها كلمة "خط" أو "الخط" أو اسم خط → النوع update_font.
+9. لو الرسالة بتطلب تغيير نص/عنوان/فقرة/خدمة معيّنة في خانة موجودة بالفعل (زي "غيّر
+   العنوان لـ..."، "زوّد خدمة كذا") → النوع update_content.
+10. لو مفيش قاعدة فوق اتطابقت، أو الطلب مش واضح خالص → النوع none، والـreply يوضّح
+    تحديداً إيه اللي مش واضح، مش رد عام "مش فاهم".
 
 الحالة الحالية للمشروع:
 - الفئة: {$project->template->category}
 - القالب: {$project->template->name}
 - محتوى الخانات الحالي:
 {$currentContent}
+- خانات الصور:
+{$imageSlots}
+- {$imageNote}
+- العناصر المضافة حالياً (للنوع remove_custom_block بس):
+{$customBlocks}
 
 الفئات المتاحة (للنوع change_template بس): {$categories}
 الخطوط المتاحة (للنوع update_font بس): {$fonts}
@@ -491,11 +653,15 @@ PROMPT;
 رسالة الأدمن: "{$message}"
 
 بناءً على النوع اللي حددته، رجّع JSON بالشكل المطابق بالظبط:
+- reset_to_default: {"action": "reset_to_default", "reply": "رد قصير يأكّد إنك هترجّع كل حاجة للأصلي"}
+- update_image: {"action": "update_image", "slot_key": "مفتاح من قايمة خانات الصور فوق بالحرف", "reply": "رد قصير"}
+- add_custom_block: {"action": "add_custom_block", "block_type": "text أو image", "content": "النص المطلوب إضافته (لو block_type=text بس، فاضي لو image)", "label": "اسم قصير يوصف العنصر ده (زي \"عرض خاص\" أو \"صورة الفرع الجديد\")", "reply": "رد قصير"}
+- remove_custom_block: {"action": "remove_custom_block", "label": "أقرب اسم من قايمة العناصر المضافة فوق لطلب الأدمن", "reply": "رد قصير"}
 - change_template: {"action": "change_template", "category": "نفس الفئة الحالية إلا لو طلب نشاط مختلف بوضوح", "style_hint": "كلمة أو كلمتين تصف الطابع الجديد المطلوب من الرسالة، أو فاضية لو مش واضح", "reply": "رد قصير بالعامية المصرية يقول إنك هتغيّر الشكل"}
 - update_colors: {"action": "update_colors", "colors": {"primary": "#hex"}, "reply": "رد قصير"}
 - update_font: {"action": "update_font", "font": "مفتاح من قايمة الخطوط فوق بالحرف", "reply": "رد قصير"}
 - update_content: {"action": "update_content", "changes": {"key_من_القايمة_فوق": "القيمة الجديدة"}, "reply": "رد قصير"}
-- none: {"action": "none", "reply": "رد قصير يوضح إنك مش فاهم ويقترح صياغة تانية"}
+- none: {"action": "none", "reply": "رد قصير يوضح تحديداً إيه اللي مش واضح، مش رد عام"}
 
 متكتبش أي حاجة برّه الـ JSON.
 PROMPT;

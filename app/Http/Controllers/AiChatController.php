@@ -71,11 +71,15 @@ class AiChatController extends Controller
 
     public function message(Request $request, Project $project, AiProjectAssistantService $assistant): RedirectResponse
     {
+        // صورة جاهزة مرفقة اختيارياً (المرحلة 4، 2026-09-24 — "ضيف الصورة دي في كذا") —
+        // نفس قيود content_files.* في GeneratedSiteController::update() بالحرف (نوع/حجم
+        // الملف، استبعاد svg عمداً لاحتمال سكريبت جواها).
         $data = $request->validate([
             'message' => ['required', 'string', 'max:4000'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
         ]);
 
-        $assistant->handleFollowUp($project, $data['message']);
+        $assistant->handleFollowUp($project, $data['message'], $request->file('image'));
 
         // بيرجع لنفس الصفحة اللي فؤاد بعت منها — ممكن تكون صفحة المشروع الرئيسية
         // (projects.show) أو صفحة الشات المستقلة (ai-chat.show)، الاتنين فيهم نفس

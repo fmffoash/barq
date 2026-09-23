@@ -143,27 +143,9 @@ class GeneratedSiteController extends Controller
             // ترتيب حر (نقل/تكبير أي عنصر في الصفحة — المرحلة 3، زي Canva/Wix) — بنفس مبدأ
             // partial-safe فوق، بس مش مقصور على slot_type معيّن خالص (فؤاد أكّد صراحة: أي
             // عنصر، نص وأقسام كمان، مش الصور بس — شوف docs/rich-text-and-image-editing-plan.md).
-            // posX/posY نسبة مئوية من حاوية القسم (0-100)، width نسبة مئوية اختيارية للعرض.
-            if ($request->has("style.{$key}.posX") || $request->has("style.{$key}.posY") || $request->has("style.{$key}.width")) {
-                $posXRaw = $request->input("style.{$key}.posX");
-                $posX = is_numeric($posXRaw) && (float) $posXRaw >= 0 && (float) $posXRaw <= 100
-                    ? round((float) $posXRaw, 2)
-                    : null;
-
-                $posYRaw = $request->input("style.{$key}.posY");
-                $posY = is_numeric($posYRaw) && (float) $posYRaw >= 0 && (float) $posYRaw <= 100
-                    ? round((float) $posYRaw, 2)
-                    : null;
-
-                $widthRaw = $request->input("style.{$key}.width");
-                $width = is_numeric($widthRaw) && (float) $widthRaw >= 5 && (float) $widthRaw <= 100
-                    ? round((float) $widthRaw, 2)
-                    : null;
-
-                $styleUpdates['posX'] = $posX;
-                $styleUpdates['posY'] = $posY;
-                $styleUpdates['width'] = $width;
-            }
+            // مستخرجة كدالة منفصلة (extractPositionStyleUpdates) عشان تتستخدم هنا وفي لفة
+            // العناصر المضافة بالذكاء الاصطناعي تحت (custom_blocks_json) من غير تكرار.
+            $styleUpdates = array_merge($styleUpdates, $this->extractPositionStyleUpdates($request, $key));
 
             if ($slot->slot_type === 'image') {
                 // تكبير/تصغير/تحريك الصورة جوّه إطارها الثابت (المرحلة 2، Word-style مش موجود
@@ -237,15 +219,85 @@ class GeneratedSiteController extends Controller
                 : $value;
         }
 
+        // عناصر مضافة بالذكاء الاصطناعي (custom_blocks_json، المرحلة 4 — "ضيف مربع/صورة
+        // جديدة"، AiProjectAssistantService::applyAddCustomBlock()) — نفس آلية content.{key}/
+        // style.{key}.* فوق بالظبط، بس مفتاحها مش خانة قالب حقيقية فمش موجودة في
+        // $project->template->slots، فمحتاجة لفة منفصلة هنا. المحتوى بيتخزن جوّه
+        // custom_blocks_json[n]['content'] نفسه (مش content_json[key])، لكن الترتيب الحر
+        // (posX/posY/width) بيتخزن بالظبط زي أي خانة تانية في style_overrides_json — نفس
+        // الآلية المركزية في document.blade.php (SiteRenderer::render()) بتشتغل عليهم من
+        // غير أي كود إضافي هناك.
+        $customBlocks = $site->custom_blocks_json ?? [];
+        foreach ($customBlocks as $index => $block) {
+            if (! is_array($block) || ! isset($block['key'], $block['type'])) {
+                continue;
+            }
+            $key = $block['key'];
+
+            $posStyleUpdates = $this->extractPositionStyleUpdates($request, $key);
+            if ($posStyleUpdates !== []) {
+                $merged = array_filter(
+                    array_merge($styleOverrides[$key] ?? [], $posStyleUpdates),
+                    fn ($value) => $value !== null
+                );
+                if ($merged === []) {
+                    unset($styleOverrides[$key]);
+                } else {
+                    $styleOverrides[$key] = $merged;
+                }
+            }
+
+            if ($request->has("content.{$key}")) {
+                $value = (string) $request->input("content.{$key}");
+                $customBlocks[$index]['content'] = $block['type'] === 'text'
+                    ? RichTextSanitizer::clean($value)
+                    : $value;
+            }
+        }
+
         $site->update([
             'content_json' => $content,
             'style_overrides_json' => $styleOverrides === [] ? null : $styleOverrides,
+            'custom_blocks_json' => $customBlocks === [] ? null : $customBlocks,
             ...$this->designOverrides($request, $project),
         ]);
 
         return redirect()
             ->route('projects.show', $project)
             ->with('status', 'تم حفظ محتوى الموقع.');
+    }
+
+    // فحص/تنضيف posX/posY/width (ترتيب حر، المرحلة 3) — مستخرجة هنا عشان تتستخدم لكل من
+    // خانات القالب العادية وعناصر custom_blocks_json المضافة بالذكاء الاصطناعي من غير تكرار
+    // نفس منطق الـvalidation. بترجع [] لو مفيش أي حقل من التلاتة موجود في الطلب خالص (يعني
+    // "متلمسش الخانة دي")، مقارنة بمصفوفة فيها null صراحة لو القيمة موجودة بس مش صالحة
+    // (يعني "امسح التخصيص القديم").
+    private function extractPositionStyleUpdates(Request $request, string $key): array
+    {
+        if (
+            ! $request->has("style.{$key}.posX")
+            && ! $request->has("style.{$key}.posY")
+            && ! $request->has("style.{$key}.width")
+        ) {
+            return [];
+        }
+
+        $posXRaw = $request->input("style.{$key}.posX");
+        $posX = is_numeric($posXRaw) && (float) $posXRaw >= 0 && (float) $posXRaw <= 100
+            ? round((float) $posXRaw, 2)
+            : null;
+
+        $posYRaw = $request->input("style.{$key}.posY");
+        $posY = is_numeric($posYRaw) && (float) $posYRaw >= 0 && (float) $posYRaw <= 100
+            ? round((float) $posYRaw, 2)
+            : null;
+
+        $widthRaw = $request->input("style.{$key}.width");
+        $width = is_numeric($widthRaw) && (float) $widthRaw >= 5 && (float) $widthRaw <= 100
+            ? round((float) $widthRaw, 2)
+            : null;
+
+        return ['posX' => $posX, 'posY' => $posY, 'width' => $width];
     }
 
     // تخصيص شكل الموقع ده بالكامل (ألوان/خط/ترتيب أقسام) — مستقل عن نسخة القالب المشتركة،
