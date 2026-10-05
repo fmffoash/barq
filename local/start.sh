@@ -37,6 +37,10 @@ fi
   done
 ) &
 
-# Several workers: a slow AI request (can take a minute) doesn't freeze the other pages.
+# PHP's own web server (not `artisan serve`, which can't pass -d settings): the app accepts
+# images up to 8 MB (PHP's default limit is 2 MB) and AI replies can take over a minute.
+# Several workers: a slow AI request doesn't freeze the other pages.
+echo "Running on $URL - keep this terminal open while you work (Ctrl+C stops the app)."
 export PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
-exec php artisan serve --host=127.0.0.1 --port="$PORT" --no-reload
+exec php -d upload_max_filesize=10M -d post_max_size=64M -d max_execution_time=0 -d memory_limit=512M \
+  -S "127.0.0.1:${PORT}" -t public local/server.php

@@ -5,16 +5,12 @@
 
 ## التشغيل على جهازك
 
-الدليل الكامل خطوة بخطوة: **[docs/LOCAL-SETUP.md](docs/LOCAL-SETUP.md)**. باختصار، بعد تسطيب
-PHP 8.3+ و Composer و Node.js و Ollama:
+**ويندوز:** نزّل `local/install-windows.bat` ودوس عليه دبل كليك — بيسطّب كل حاجة لوحده
+(PHP/Node/Composer نسخة خاصة بالتطبيق + Ollama والموديل) وبيحط أيقونة **"لوحة المواقع"** على
+سطح المكتب. **ماك/لينكس:** `./local/setup.sh` مرة واحدة، وبعدين `./local/start.sh`.
 
-| ويندوز (دبل كليك) | ماك / لينكس | |
-|---|---|---|
-| `local\setup.bat` | `./local/setup.sh` | تجهيز — مرة واحدة |
-| `local\start.bat` | `./local/start.sh` | تشغيل على http://127.0.0.1:8010 |
-| `local\update.bat` | `./local/update.sh` | تحديث لآخر كود |
-
-`php artisan barq:doctor` بيفحص كل حاجة ويقول إيه الناقص.
+الدليل الكامل خطوة بخطوة: **[docs/LOCAL-SETUP.md](docs/LOCAL-SETUP.md)** — وفحص الصحة:
+`local\doctor.bat` (ويندوز) أو `php artisan barq:doctor`.
 
 ## للمطوّرين
 

@@ -74,10 +74,25 @@ chown -R www-data:www-data storage bootstrap/cache
 ## 💻 التشغيل المحلي على جهاز فؤاد (2026-10-05)
 فؤاد طلب يجهّز اللوحة "موديل ثابت" على جهازه ويشتغل عليها محلي بدل السيرفر. **الدليل الكامل
 لفؤاد: `docs/LOCAL-SETUP.md`** (عربي، خطوة بخطوة). اللي اتعمل:
+- **`local/install-windows.bat` — ملف التسطيب الوحيد اللي فؤاد بينزّله** (فؤاد سأل صراحةً
+  "محتاج مني إيه عشان يشتغل كبرنامج على الجهاز"): بيسطّب Git (winget) لو مش موجود، بيعمل clone
+  لـ`C:\barq` (أو `git pull` لو موجود)، وبينادي `setup`. الريبو public فمفيش تسجيل دخول GitHub.
 - **`local/`** — `setup` (مرة واحدة) / `start` (يومي، بيفتح المتصفح) / `update` (بديل الديبلوي
   القياسي محلياً) — نسخة `.bat`+`.ps1` لويندوز (دبل كليك) ونسخة `.sh` لماك/لينكس، بنفس المنطق.
   ملفات `.ps1`/`.bat` **ASCII بس عن قصد** (PowerShell 5.1 بيقرا UTF-8 من غير BOM كـANSI —
   نفس سبب قاعدة "متعدّلش بـPowerShell على ملفات فيها عربي") و**CRLF** (`.gitattributes`).
+  على ويندوز `setup.ps1` **بينزّل بنفسه** نسخة خاصة من PHP (windows.php.net، 8.4 nts x64) و
+  Composer (`composer.phar` + `composer.bat`) وNode.js LTS (portable zip) جوّه `.runtime/`
+  (gitignored) لو مش متسطّبين — كل تنزيل متأكد من الـchecksum، والـPATH بيتعدّل جوّه الشباك بس
+  (`local/runtime.ps1` → `Use-LocalRuntime`). عشان كده أي أمر artisan يدوي على ويندوز يتعمل
+  عن طريق `local\artisan.bat` (بيحط PHP الخاص في الـPATH)، مش `php artisan` مباشرة. `setup`
+  كمان بيسطّب Ollama (winget أو OllamaSetup.exe) وبيعمل أيقونة **"لوحة المواقع"** (`local/
+  app.ico`) على سطح المكتب وStart بتشغّل `start.bat` في شباك متصغّر.
+- **`local/start` بيشغّل `php -S ... local/server.php` مباشرة، مش `artisan serve`** — artisan
+  serve مبيعدّيش `-d` للسيرفر اللي بيشغّله، وإحنا محتاجين `upload_max_filesize=10M`/
+  `post_max_size=64M` (**باج حقيقي اتأكد بالتجربة:** PHP افتراضياً 2 ميجا والتطبيق بيقبل صور
+  لحد 8 ميجا، فأي صورة أكبر من 2 ميجا كانت بترجع "failed to upload" محلياً) و
+  `max_execution_time=0`. `local/server.php` نسخة من راوتر Laravel الداخلي بنفس المنطق.
 - **`php artisan barq:local-setup`** — كل منطق التجهيز بعد `composer install`/`.env` (ملف
   SQLite + migrate + storage:link + المكتبة لو فاضية + الأدمن لو مفيش + فحص الصحة)، عشان
   ويندوز وماك/لينكس ينادوا نفس الكود بدل ما يتكرر مرتين. آمن يتعاد، **ممنوع في production**.
@@ -309,7 +324,8 @@ app/Services/             — OllamaService (اقتراح محتوى بالذك�
 app/Console/Commands/     — CreateAdminUser.php (عمل/تحديث حساب الأدمن)،
                              SeedTemplateLibrary.php (توليد/تحديث مكتبة القوالب الأصلية، Phase 7)،
                              LocalSetup.php/Doctor.php/ExportData.php/ImportData.php (التشغيل المحلي)
-local/                    — سكريبتات التشغيل المحلي (setup/start/update، ويندوز + ماك/لينكس)
+local/                    — التشغيل المحلي: install-windows.bat (التسطيب بملف واحد)، setup/start/update
+                             (ويندوز + ماك/لينكس)، runtime.ps1، server.php، artisan.bat/doctor.bat
 routes/web.php            — مسارات لوحة التحكم (login + dashboard + templates + projects)
 routes/site.php           — مسارات المواقع المنشورة (تحت {siteSlug}.barq.tafraos.com بس)
 routes/console.php        — أوامر الطرفية
