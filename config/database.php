@@ -38,7 +38,10 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
+            // التشغيل المحلي على ماك/لينكس بيشغّل كذا worker مع بعض (PHP_CLI_SERVER_WORKERS في
+            // local/start.sh) — من غير مهلة انتظار، طلبين بيكتبوا في نفس اللحظة (حفظ من المحرر +
+            // تحديث الجلسة مثلاً) بيرجّع "database is locked" فوراً بدل ما التاني يستنى ثواني.
+            'busy_timeout' => env('DB_BUSY_TIMEOUT') === null ? null : (int) env('DB_BUSY_TIMEOUT'),
             'journal_mode' => null,
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',

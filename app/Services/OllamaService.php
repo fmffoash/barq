@@ -48,8 +48,21 @@ class OllamaService
      */
     public function generateJson(string $prompt): ?array
     {
+        $timeout = (int) config('services.ollama.timeout', 120);
+
+        // التشغيل المحلي (2026-10-05): سيرفر PHP المدمج (`php artisan serve`) بيطبّق
+        // max_execution_time من php.ini (الافتراضي 30 ثانية)، وعلى ويندوز العداد ده وقت
+        // فعلي (wall-clock) مش وقت معالج زي لينكس — فانتظار رد Ollama (26-49 ثانية أو أكتر
+        // على جهاز من غير GPU) كان هيوقع بـ"Maximum execution time exceeded" قبل ما الرد
+        // يوصل. set_time_limit بيصفّر العداد مع كل نداء، فكل نداء لـOllama بياخد مهلته كاملة.
+        // لو الحد أصلاً 0 (مفتوح — CLI/التستات) مبنلمسوش، عشان مانفرضش حد مكانش موجود.
+        $currentLimit = (int) ini_get('max_execution_time');
+        if ($currentLimit > 0 && function_exists('set_time_limit')) {
+            @set_time_limit(max($currentLimit, $timeout + 30));
+        }
+
         try {
-            $response = Http::timeout((int) config('services.ollama.timeout', 120))
+            $response = Http::timeout($timeout)
                 ->post(rtrim((string) config('services.ollama.base_url'), '/').'/api/generate', [
                     'model' => config('services.ollama.model'),
                     'prompt' => $prompt,

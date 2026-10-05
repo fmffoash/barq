@@ -18,10 +18,12 @@ class CreateAdminUser extends Command
 {
     public function handle(): int
     {
-        $name = $this->ask('الاسم', 'الأدمن');
-        $email = $this->ask('البريد الإلكتروني');
-        $password = $this->secret('كلمة المرور (٨ حروف على الأقل)');
-        $passwordConfirmation = $this->secret('تأكيد كلمة المرور');
+        // كل سؤال بالإنجليزي جنب العربي (2026-10-05): طرفية ويندوز مبتدعمش اتجاه النص من اليمين
+        // للشمال، فالعربي لوحده بيطلع مقلوب ومش مقروء وقت التجهيز المحلي (barq:local-setup).
+        $name = $this->ask('Name / الاسم', 'الأدمن');
+        $email = $this->ask('Email / البريد الإلكتروني');
+        $password = $this->secret('Password, 8+ characters / كلمة المرور (٨ حروف على الأقل)');
+        $passwordConfirmation = $this->secret('Confirm password / تأكيد كلمة المرور');
 
         $validator = Validator::make(
             [
