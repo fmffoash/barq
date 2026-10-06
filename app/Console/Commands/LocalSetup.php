@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\File;
 // بيتنده من سكريبتات local/ (ويندوز وماك/لينكس بنفس المنطق بالظبط، بدل ما يتكرر مرتين). آمن
 // يتشغّل أكتر من مرة: كل خطوة بتتخطّى نفسها لو اتعملت قبل كده. ممنوع على السيرفر (production)
 // عشان محدش يشغّله هناك بالغلط.
-#[Signature('barq:local-setup')]
+#[Signature('barq:local-setup
+    {--skip-admin : Do not ask for the admin account and do not run the health check (local/setup.ps1 asks for the account itself, then runs barq:doctor)}')]
 #[Description('Prepare this machine to run the app locally (database, storage link, template library, admin account)')]
 class LocalSetup extends Command
 {
@@ -45,7 +46,15 @@ class LocalSetup extends Command
             $this->call('barq:seed-template-library');
         }
 
-        if (! User::query()->exists()) {
+        if ($this->option('skip-admin')) {
+            return self::SUCCESS;
+        }
+
+        // على ويندوز السؤال المخفي عن الباسورد مبيشتغلش (شوف CreateAdminUser) — setup.ps1 بيستخدم
+        // --skip-admin وبيسأل بنفسه، ولو حد شغّل الأمر ده مباشرة بيتقاله يستخدم create-admin.bat.
+        if (! User::query()->exists() && windows_os()) {
+            $this->warn('No admin account yet — create it with local\\create-admin.bat.');
+        } elseif (! User::query()->exists()) {
             $this->newLine();
             $this->line('<options=bold>Create your admin account</> — you will be asked for: name, email, password (8+ characters), and the password again.');
             $this->line('The password is typed hidden and is never saved in any file.');

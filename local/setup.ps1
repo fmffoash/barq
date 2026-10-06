@@ -1,5 +1,5 @@
-# One-time setup on Windows (see docs/LOCAL-SETUP.md). Run it by double-clicking setup.bat
-# (install-windows.bat calls it too). Safe to run again: every step skips itself if done.
+# One-time setup on Windows (see docs/LOCAL-SETUP.md). Run by install-windows.bat or setup.bat.
+# Safe to run again: every step skips itself if it was already done.
 # Kept ASCII-only on purpose: Windows PowerShell 5.1 misreads UTF-8 files without a BOM.
 
 $ErrorActionPreference = 'Continue'
@@ -7,35 +7,10 @@ $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 . (Join-Path $PSScriptRoot 'runtime.ps1')
 Use-LocalRuntime $Root
+Disable-QuickEdit
+Protect-AppFolder $Root
 
-$herdHint = 'Or install Laravel Herd (https://herd.laravel.com/windows) and run this again.'
-
-Say 'PHP'
-if (Test-Php) {
-    Write-Host "Using $((Get-Command 'php').Source)"
-} else {
-    Write-Host 'Not found (or too old) - downloading a private copy for this app...'
-    if (-not (Install-PortablePhp $Root)) { Fail "Could not download PHP automatically. Check the internet connection and run setup again. $herdHint" }
-    Use-LocalRuntime $Root
-    if (-not (Test-Php)) { Fail "The downloaded PHP does not start correctly. $herdHint" }
-}
-
-Say 'Composer'
-if (Get-Command 'composer' -ErrorAction SilentlyContinue) {
-    Write-Host 'Already installed.'
-} else {
-    if (-not (Install-PortableComposer $Root)) { Fail "Could not download Composer. Check the internet connection and run setup again. $herdHint" }
-    Use-LocalRuntime $Root
-}
-
-Say 'Node.js'
-if ((Get-Command 'node' -ErrorAction SilentlyContinue) -and (Get-Command 'npm' -ErrorAction SilentlyContinue)) {
-    Write-Host "Using $(& node -v)"
-} else {
-    Write-Host 'Not found - downloading a private copy for this app...'
-    if (-not (Install-PortableNode $Root)) { Fail 'Could not download Node.js. Check the internet connection and run setup again.' }
-    Use-LocalRuntime $Root
-}
+Initialize-Runtime $Root
 
 if (-not (Test-Path '.env')) {
     Say 'Creating .env from .env.example'
@@ -53,9 +28,25 @@ Say 'Installing and building the interface (npm ci + npm run build)'
 Run 'npm' @('ci')
 Run 'npm' @('run', 'build')
 
-Say 'Preparing database, template library and admin account'
-& php artisan barq:local-setup
-$setupStatus = $LASTEXITCODE
+Say 'Preparing the database and the template library'
+Run 'php' @('artisan', 'barq:local-setup', '--skip-admin')
+
+$incomplete = @()
+
+& php artisan barq:create-admin --check | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Say 'Your login'
+    if (-not [bool](Invoke-AdminAccountPrompt | Select-Object -Last 1)) {
+        $incomplete += 'the login was not created - double-click local\create-admin.bat to create it'
+    }
+}
+
+# The app is usable from here on, so the icon comes before the big (optional) AI download.
+if ($script:OnWindows) {
+    Say 'Desktop shortcut'
+    New-AppShortcuts $Root
+    Write-Host 'Added an icon to the desktop and the Start menu.'
+}
 
 $model = 'qwen3:8b'
 $modelLine = Get-Content '.env' -Encoding UTF8 | Where-Object { $_ -match '^OLLAMA_MODEL=' } | Select-Object -Last 1
@@ -68,7 +59,7 @@ Say "AI (Ollama + model $model)"
 $haveOllama = [bool](Get-Command 'ollama' -ErrorAction SilentlyContinue)
 if (-not $haveOllama -and $script:OnWindows) {
     Write-Host 'Installing Ollama...'
-    $haveOllama = Install-Ollama $Root
+    $haveOllama = [bool](Install-Ollama $Root | Select-Object -Last 1)
 }
 if (-not $haveOllama) {
     Warn 'Ollama is not installed - the app works without it, only the AI features stay off.'
@@ -82,16 +73,22 @@ if (-not $haveOllama) {
     } else {
         Write-Host 'Downloading the model (about 5 GB for qwen3:8b - one time only)...'
         & ollama pull $model
-        if ($LASTEXITCODE -ne 0) { Warn "Download failed - run later:  ollama pull $model" }
+        if ($LASTEXITCODE -ne 0) { Warn "Download failed - run the installer again later, or:  ollama pull $model" }
     }
 }
 
-if ($script:OnWindows) {
-    Say 'Desktop shortcut'
-    New-AppShortcuts $Root
-    Write-Host 'Added an icon to the desktop and the Start menu.'
+Remove-Item (Join-Path $Root '.runtime\downloads') -Recurse -Force -ErrorAction SilentlyContinue
+
+& php artisan barq:doctor
+if ($LASTEXITCODE -ne 0) { $incomplete += 'the health check above shows FAIL lines' }
+
+if ($incomplete.Count -gt 0) {
+    Write-Host "`nSETUP IS NOT COMPLETE:" -ForegroundColor Red
+    $incomplete | ForEach-Object { Write-Host " - $_" -ForegroundColor Red }
+    Write-Host 'Fix that (or run install-windows.bat again), then open the app from the desktop icon.' -ForegroundColor Red
+    exit 1
 }
 
 Say 'Done'
-Write-Host 'Open the app with the new desktop icon (or local\start.bat). It opens http://127.0.0.1:8010'
-exit $setupStatus
+Write-Host 'Open the app with the new desktop icon. It opens http://127.0.0.1:8010 in your browser.'
+exit 0

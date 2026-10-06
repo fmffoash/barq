@@ -7,7 +7,10 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use PDO;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 // التشغيل المحلي على جهاز فؤاد (2026-10-05): barq:doctor (فحص الصحة) وbarq:local-setup
@@ -117,6 +120,80 @@ class LocalMachineSetupTest extends TestCase
             $this->assertTrue(file_exists($linkDir.'/storage'));
         } finally {
             File::deleteDirectory($linkDir);
+        }
+    }
+
+    public function test_local_setup_can_leave_the_admin_account_and_health_check_to_the_windows_script(): void
+    {
+        Template::factory()->create();
+        config(['filesystems.links' => []]);
+
+        $this->artisan('barq:local-setup', ['--skip-admin' => true])
+            ->expectsOutputToContain('Template library already present')
+            ->doesntExpectOutputToContain('Health check')
+            ->assertSuccessful();
+
+        $this->assertSame(0, User::count());
+    }
+
+    public function test_create_admin_check_reports_whether_an_account_exists(): void
+    {
+        $this->artisan('barq:create-admin', ['--check' => true])
+            ->expectsOutputToContain('No admin account yet.')
+            ->assertFailed();
+
+        User::factory()->create();
+
+        $this->artisan('barq:create-admin', ['--check' => true])
+            ->expectsOutputToContain('An admin account exists.')
+            ->assertSuccessful();
+    }
+
+    // ويندوز: setup.ps1 / create-admin.ps1 بيسألوا بـRead-Host وبيبعتوا للأمر ده على stdin (3 سطور
+    // base64 لـUTF-8). التست بيشغّل artisan كـprocess حقيقي ببايب على stdin بالظبط زي PowerShell،
+    // على ملف SQLite مؤقت (الـ:memory: بتاع التستات مش مرئي لـprocess تاني).
+    public function test_create_admin_reads_an_arabic_name_and_password_from_stdin_exactly(): void
+    {
+        $database = storage_path('framework/testing/admin-stdin-'.uniqid().'.sqlite');
+        touch($database);
+        $env = ['DB_CONNECTION' => 'sqlite', 'DB_DATABASE' => $database, 'APP_ENV' => 'testing'];
+
+        try {
+            $migrate = new Process([PHP_BINARY, 'artisan', 'migrate', '--force'], base_path(), $env);
+            $migrate->mustRun();
+
+            $password = 'كلمة-سر-عربي-123';
+            $payload = implode("\n", array_map('base64_encode', ['فؤاد', ' owner@example.com ', $password]))."\n";
+
+            $create = new Process([PHP_BINARY, 'artisan', 'barq:create-admin', '--stdin'], base_path(), $env, $payload);
+            $create->run();
+            $this->assertSame(0, $create->getExitCode(), $create->getOutput().$create->getErrorOutput());
+
+            $check = new Process([PHP_BINARY, 'artisan', 'barq:create-admin', '--check'], base_path(), $env);
+            $check->run();
+            $this->assertSame(0, $check->getExitCode());
+
+            $row = (new PDO('sqlite:'.$database))->query('select name, email, password from users')->fetch(PDO::FETCH_ASSOC);
+            $this->assertSame('فؤاد', $row['name']);
+            $this->assertSame('owner@example.com', $row['email']);
+            $this->assertTrue(Hash::check($password, $row['password']));
+
+            // الاسم فاضي (Enter) = سطر base64 فاضي في الأول → الاسم الحالي بيفضل، ونفس الإيميل = تغيير الباسورد.
+            $payload = implode("\n", array_map('base64_encode', ['', 'owner@example.com', 'new-password-456']))."\n";
+            $update = new Process([PHP_BINARY, 'artisan', 'barq:create-admin', '--stdin'], base_path(), $env, $payload);
+            $update->run();
+            $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+            $row = (new PDO('sqlite:'.$database))->query('select name, password, (select count(*) from users) as total from users')->fetch(PDO::FETCH_ASSOC);
+            $this->assertSame('فؤاد', $row['name']);
+            $this->assertSame(1, (int) $row['total']);
+            $this->assertTrue(Hash::check('new-password-456', $row['password']));
+
+            $garbage = new Process([PHP_BINARY, 'artisan', 'barq:create-admin', '--stdin'], base_path(), $env, "not base64!\n");
+            $garbage->run();
+            $this->assertSame(1, $garbage->getExitCode());
+            $this->assertStringContainsString('Expected three base64-encoded lines', $garbage->getOutput().$garbage->getErrorOutput());
+        } finally {
+            @unlink($database);
         }
     }
 }

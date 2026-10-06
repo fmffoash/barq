@@ -39,7 +39,7 @@ class Doctor extends Command
 
         $this->newLine();
         if ($this->failed) {
-            $this->error('Some required checks failed — run the "fix" command next to each FAIL, then run `php artisan barq:doctor` again.');
+            $this->error('Some required checks failed — run the "fix" command next to each FAIL, then run '.(windows_os() ? 'local\\doctor.bat' : '`php artisan barq:doctor`').' again.');
 
             return self::FAILURE;
         }
@@ -61,7 +61,9 @@ class Doctor extends Command
         $this->report(
             $missing === [] ? 'ok' : 'fail',
             $missing === [] ? 'PHP extensions' : 'Missing PHP extensions: '.implode(', ', $missing),
-            'Enable them in php.ini (e.g. extension='.($missing[0] ?? 'zip').') — Laravel Herd has them all enabled',
+            windows_os()
+                ? 'Run local\\setup.bat again (it sets up its own PHP with everything enabled)'
+                : 'Enable them in php.ini (e.g. extension='.($missing[0] ?? 'zip').') — Laravel Herd has them all enabled',
         );
 
         // Guzzle بيعرف يشتغل من غير curl، بس curl هو اللي متجرّب فعلياً مع نداءات Ollama الطويلة.
@@ -72,7 +74,7 @@ class Doctor extends Command
 
     private function checkAppKey(): void
     {
-        $this->report(config('app.key') ? 'ok' : 'fail', 'APP_KEY', 'php artisan key:generate');
+        $this->report(config('app.key') ? 'ok' : 'fail', 'APP_KEY', $this->artisan('key:generate'));
     }
 
     private function checkDatabase(): bool
@@ -80,14 +82,14 @@ class Doctor extends Command
         try {
             DB::connection()->getPdo();
         } catch (Throwable $e) {
-            $this->report('fail', 'Database connection: '.$e->getMessage(), 'php artisan barq:local-setup');
+            $this->report('fail', 'Database connection: '.$e->getMessage(), windows_os() ? 'Run local\\setup.bat again' : 'php artisan barq:local-setup');
 
             return false;
         }
 
         $migrator = app('migrator');
         if (! $migrator->repositoryExists()) {
-            $this->report('fail', 'Database is empty (no tables yet)', 'php artisan migrate');
+            $this->report('fail', 'Database is empty (no tables yet)', $this->artisan('migrate'));
 
             return false;
         }
@@ -97,7 +99,7 @@ class Doctor extends Command
         $this->report(
             $pending === [] ? 'ok' : 'fail',
             $pending === [] ? 'Database ('.DB::connection()->getDriverName().', up to date)' : count($pending).' pending migration(s)',
-            'php artisan migrate',
+            $this->artisan('migrate'),
         );
 
         return $pending === [];
@@ -105,13 +107,13 @@ class Doctor extends Command
 
     private function checkAdminAndLibrary(): void
     {
-        $this->report(User::query()->exists() ? 'ok' : 'fail', 'Admin account', 'php artisan barq:create-admin');
+        $this->report(User::query()->exists() ? 'ok' : 'fail', 'Admin account', windows_os() ? 'local\\create-admin.bat' : 'php artisan barq:create-admin');
 
         $templates = Template::query()->count();
         $this->report(
             $templates > 0 ? 'ok' : 'warn',
             "Templates in library: {$templates}",
-            'php artisan barq:seed-template-library',
+            $this->artisan('barq:seed-template-library'),
         );
     }
 
@@ -120,7 +122,7 @@ class Doctor extends Command
         $this->report(
             is_file(public_path('build/manifest.json')) ? 'ok' : 'fail',
             'Built CSS/JS (public/build)',
-            'npm ci && npm run build',
+            windows_os() ? 'Run local\\update.bat (it rebuilds the interface)' : 'npm ci && npm run build',
         );
 
         // public/hot بيفضل موجود لو `npm run dev` اتقفل غلط — ووجوده بيخلّي @vite يدوّر على سيرفر
@@ -140,7 +142,7 @@ class Doctor extends Command
         $this->report(
             $missingLinks === [] ? 'ok' : 'warn',
             'Uploaded images link (public/storage)',
-            'php artisan storage:link',
+            $this->artisan('storage:link'),
         );
     }
 
@@ -169,6 +171,13 @@ class Doctor extends Command
             "Ollama model {$model}",
             "ollama pull {$model}",
         );
+    }
+
+    // على ويندوز PHP الخاص بالتطبيق (.runtime) مش في الـPATH العام، فـ`php artisan` في شباك عادي
+    // بيقول "php is not recognized" — local\\artisan.bat بيحطه في الـPATH الأول.
+    private function artisan(string $arguments): string
+    {
+        return (windows_os() ? 'local\\artisan.bat ' : 'php artisan ').$arguments;
     }
 
     private function report(string $status, string $label, string $fix): void

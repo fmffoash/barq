@@ -4,7 +4,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PORT="${BARQ_PORT:-8010}"
+# Port: BARQ_PORT if set, else the one in APP_URL in .env (so changing it there is enough), else 8010.
+ENV_PORT="$(sed -n 's#^APP_URL=.*:\([0-9]\{2,5\}\)/\{0,1\}["'"'"']\{0,1\} *$#\1#p' .env 2>/dev/null | tail -n1)"
+PORT="${BARQ_PORT:-${ENV_PORT:-8010}}"
 URL="http://127.0.0.1:${PORT}"
 
 open_browser() {

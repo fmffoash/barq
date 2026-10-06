@@ -93,6 +93,28 @@ chown -R www-data:www-data storage bootstrap/cache
   `post_max_size=64M` (**باج حقيقي اتأكد بالتجربة:** PHP افتراضياً 2 ميجا والتطبيق بيقبل صور
   لحد 8 ميجا، فأي صورة أكبر من 2 ميجا كانت بترجع "failed to upload" محلياً) و
   `max_execution_time=0`. `local/server.php` نسخة من راوتر Laravel الداخلي بنفس المنطق.
+- **مراجعة مستقلة لسكريبتات ويندوز (2026-10-06، 5 مراجعين + مُحقّق لكل واحد)** — لأن مفيش ويندوز
+  حقيقي نجرّب عليه، اتعملت مراجعة عدائية لكل `local/*.ps1|bat` من 5 زوايا (PowerShell 5.1، cmd،
+  تنزيل الـruntime، رحلة المستخدم، الأمان) وكل نتيجة اتحاول تتنفي. **أهم اللي اتصلح:**
+  (1) **`$this->secret()` بتاع Symfony على ويندوز بيشغّل `hiddeninput.exe` اللي محتاج Visual C++
+  2008 (MSVCR90.dll، اتأكد من الـimports)** — مش موجود على ويندوز نضيف، فالباسورد كان بيرجع فاضي
+  والحساب مبيتعملش. الحل: الأسئلة بقت في PowerShell (`Read-Host -AsSecureString` بيقرا أي لغة
+  صح) وبتتبعت لـ`barq:create-admin --stdin` (3 سطور base64 UTF-8 على pipe — مش ملف ولا env)،
+  و`local\create-admin.bat` لنسيان الباسورد؛ `barq:create-admin` التفاعلي بيرفض على ويندوز
+  بتوجيه للـbat. (2) `Start-Process -Wait` بيستنى **كل** العمليات الفرعية — مثبّت Ollama بيسيب
+  الـtray app شغالة فكان هيعلّق للأبد؛ بقى `-PassThru` + `WaitForExit()` (`Invoke-Installer`).
+  (3) أي أمر native جوّه function بيبقى جزء من قيمتها الراجعة (winget/php كانوا بيتسرّبوا لـ
+  `$haveOllama` فيبقى array = true) — `| Out-Host` أو `Start-Process -NoNewWindow`. (4) PHP 8.4
+  مبني بـVC++ 14.4x وبيرفض runtime 14.3x — الحد بقى 14.40 + فحص `php -n -v` نفسه، وكود 3010
+  (محتاج ريستارت)/1602 (UAC اترفض) بيطلع رسالة صح مش "اتأكد من النت". (5) `powershell -File`
+  بيرجّع 0 دايماً لو مفيش `exit` صريح — start.ps1 بقى يرجّع كود php ويطلّع MessageBox (الشباك
+  متصغّر). (6) QuickEdit في الكونسول: دوسة جوّه الشباك بتجمّد السيرفر (worker واحد) — اتقفل
+  بـP/Invoke. (7) نسخة Node أقدم من 20.19/22.12 أو Composer 1 بقوا يتعاملوا كـ"مش موجود".
+  (8) `install-windows.bat` متخزّن CRLF فعلياً (`-text` في `.gitattributes`، عشان رابط raw)
+  والـupdate جوّه block واحد (git pull ممكن يستبدل الملف وهو شغال). (9) فولدر `C:\barq` بيتقفل
+  على حساب المستخدم + SYSTEM + Admins (بيورث "Authenticated Users: Modify" من `C:\`). (10) curl
+  بيقع على Invoke-WebRequest لو فشل، والـchecksum مبقاش بيتجاهل لو اتكشف mismatch.
+  (11) `composer --version` لازم `--no-interaction` — خرجه متلقّط، فأي سؤال كان هيعلّق مخفي.
 - **`php artisan barq:local-setup`** — كل منطق التجهيز بعد `composer install`/`.env` (ملف
   SQLite + migrate + storage:link + المكتبة لو فاضية + الأدمن لو مفيش + فحص الصحة)، عشان
   ويندوز وماك/لينكس ينادوا نفس الكود بدل ما يتكرر مرتين. آمن يتعاد، **ممنوع في production**.
