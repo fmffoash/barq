@@ -115,6 +115,12 @@ chown -R www-data:www-data storage bootstrap/cache
   على حساب المستخدم + SYSTEM + Admins (بيورث "Authenticated Users: Modify" من `C:\`). (10) curl
   بيقع على Invoke-WebRequest لو فشل، والـchecksum مبقاش بيتجاهل لو اتكشف mismatch.
   (11) `composer --version` لازم `--no-interaction` — خرجه متلقّط، فأي سؤال كان هيعلّق مخفي.
+  **أول تسطيب حقيقي على ويندوز فؤاد (2026-10-06): نجح كله** (PHP/الداتابيز/المكتبة/الحساب/Ollama
+  والموديل، فحص الصحة كله OK) — **ما عدا أيقونة سطح المكتب: مااتعملتش من غير أي رسالة.** السبب:
+  `WScript.Shell`'s `CreateShortcut().Save()` بيحفظ المسار عن طريق ANSI code page، فالاسم العربي
+  (أو أي مسار فيه عربي/OneDrive) بيفشل على ويندوز مش عربي. الحل: الـ.lnk بيتحفظ في مسار ASCII
+  جوّه `.runtime` وبعدين `[IO.File]::Copy` (Unicode) لسطح المكتب/Start، ولو فشل بيسمّيها
+  `Sites Panel`؛ و`setup.ps1` بقى يقول الحقيقة (`SETUP IS NOT COMPLETE` لو مفيش أيقونة اتعملت).
 - **`php artisan barq:local-setup`** — كل منطق التجهيز بعد `composer install`/`.env` (ملف
   SQLite + migrate + storage:link + المكتبة لو فاضية + الأدمن لو مفيش + فحص الصحة)، عشان
   ويندوز وماك/لينكس ينادوا نفس الكود بدل ما يتكرر مرتين. آمن يتعاد، **ممنوع في production**.

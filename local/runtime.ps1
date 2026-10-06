@@ -454,20 +454,49 @@ function Protect-AppFolder([string]$Root) {
 }
 
 # Desktop + Start-menu shortcut that starts the app (minimized window) and opens the browser.
+# Returns how many shortcuts were actually created.
+#
+# WScript.Shell saves .lnk files through the ANSI code page, so an Arabic name (or an Arabic
+# username / OneDrive folder in the path) silently fails on non-Arabic Windows. The shortcut is
+# therefore saved under an ASCII path inside the app folder, then moved into place with .NET,
+# which handles any Unicode path. If even that fails, an English name is used instead.
 function New-AppShortcuts([string]$Root) {
-    if (-not $script:OnWindows) { return }
+    if (-not $script:OnWindows) { return 0 }
     # The shortcut's Arabic name, built from code points so this file stays ASCII.
-    $name = -join ([char[]](0x0644, 0x0648, 0x062D, 0x0629, 0x0020, 0x0627, 0x0644, 0x0645, 0x0648, 0x0627, 0x0642, 0x0639))
-    $shell = New-Object -ComObject WScript.Shell
-    foreach ($folder in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
-        if (-not $folder) { continue }
-        $shortcut = $shell.CreateShortcut((Join-Path $folder "$name.lnk"))
+    $arabicName = -join ([char[]](0x0644, 0x0648, 0x062D, 0x0629, 0x0020, 0x0627, 0x0644, 0x0645, 0x0648, 0x0627, 0x0642, 0x0639))
+    $staging = Join-Path $Root '.runtime\app-shortcut.lnk'
+    New-Item -ItemType Directory -Force -Path (Split-Path $staging) | Out-Null
+    $created = 0
+
+    try {
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($staging)
         $shortcut.TargetPath = Join-Path $Root 'local\start.bat'
         $shortcut.WorkingDirectory = $Root
         $shortcut.WindowStyle = 7
         $shortcut.IconLocation = (Join-Path $Root 'local\app.ico') + ',0'
         $shortcut.Save()
+    } catch {
+        Warn "Could not create the shortcut: $($_.Exception.Message)"
+        return 0
     }
+    if (-not (Test-Path -LiteralPath $staging)) { Warn 'Could not create the shortcut.'; return 0 }
+
+    foreach ($folder in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
+        if (-not $folder -or -not (Test-Path -LiteralPath $folder)) { continue }
+        foreach ($name in @($arabicName, 'Sites Panel')) {
+            $target = Join-Path $folder "$name.lnk"
+            try {
+                [IO.File]::Copy($staging, $target, $true)
+                $created++
+                break
+            } catch {
+                Warn "Could not place the shortcut in $folder ($name): $($_.Exception.Message)"
+            }
+        }
+    }
+    Remove-Item -LiteralPath $staging -Force -ErrorAction SilentlyContinue
+    return $created
 }
 
 # Port: BARQ_PORT if set, else the one in APP_URL in .env (so changing it there is enough), else 8010.
