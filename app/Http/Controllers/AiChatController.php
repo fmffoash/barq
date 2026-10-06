@@ -39,7 +39,7 @@ class AiChatController extends Controller
     public function store(Request $request, AiProjectAssistantService $assistant): RedirectResponse
     {
         $data = $request->validate([
-            'message' => ['required', 'string', 'max:4000'],
+            'message' => ['required', 'string', 'max:30000'],
             'template_id' => ['nullable', 'integer', 'exists:templates,id'],
             'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'font' => ['nullable', 'string'],
@@ -75,7 +75,7 @@ class AiChatController extends Controller
         // نفس قيود content_files.* في GeneratedSiteController::update() بالحرف (نوع/حجم
         // الملف، استبعاد svg عمداً لاحتمال سكريبت جواها).
         $data = $request->validate([
-            'message' => ['required', 'string', 'max:4000'],
+            'message' => ['required', 'string', 'max:30000'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
         ]);
 

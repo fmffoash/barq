@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\GeneratedSite;
 use App\Models\Project;
 use App\Models\Template;
+use App\Services\Ai\AiResult;
 use App\Services\AiProjectAssistantService;
 use App\Services\OllamaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +17,7 @@ use Tests\TestCase;
 // المرحلة 4 (2026-09-24) — فيدباك فؤاد الحي: "رجّع" لازم يعني مسح كل تعديل فعلاً (مش رد
 // "مش فاهم")، إضافة عنصر جديد ورفع صورة جاهزة لازم يبقوا عن طريق المساعد الذكي بالشات.
 // اختبارات المسار السعيد لكل فعل جديد في AiProjectAssistantService، بتعمل mock لـ
-// OllamaService::generateJson() عشان تختبر منطق التطبيق نفسه من غير الاعتماد على نموذج حقيقي.
+// OllamaService::run() عشان تختبر منطق التطبيق نفسه من غير الاعتماد على نموذج حقيقي.
 class AiAssistantExtendedActionsTest extends TestCase
 {
     use RefreshDatabase;
@@ -24,7 +25,9 @@ class AiAssistantExtendedActionsTest extends TestCase
     private function mockOllamaDecision(array $decision): void
     {
         $mock = Mockery::mock(OllamaService::class);
-        $mock->shouldReceive('generateJson')->once()->andReturn($decision);
+        $mock->shouldReceive('preflight')->andReturnNull();
+        $mock->shouldReceive('model')->andReturn('qwen3:8b');
+        $mock->shouldReceive('run')->once()->andReturn(AiResult::success($decision, json_encode($decision)));
         $this->app->instance(OllamaService::class, $mock);
     }
 

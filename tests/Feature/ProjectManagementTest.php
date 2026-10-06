@@ -313,6 +313,8 @@ class ProjectManagementTest extends TestCase
     public function test_suggesting_content_only_fills_empty_slots_and_never_overwrites_manual_content(): void
     {
         Http::fake([
+            // فحص سريع قبل الطلب (OllamaService::preflight): Ollama شغال والنموذج متسطّب.
+            '*/api/tags' => Http::response(['models' => [['name' => config('services.ollama.model')]]], 200),
             '*/api/generate' => Http::response([
                 'response' => json_encode([
                     'hero_title' => 'عنوان مقترح بالذكاء الاصطناعي',

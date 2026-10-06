@@ -370,15 +370,16 @@ class GeneratedSiteController extends Controller
         $site = $project->site()->firstOrFail();
         $content = $site->content_json ?? [];
 
-        $suggestions = app(OllamaService::class)->suggestContent(
-            $project->template,
-            $validated['business_description'],
-        );
+        $ollama = app(OllamaService::class);
+        $result = $ollama->preflight() ?? $ollama->suggestContentResult($project->template, $validated['business_description']);
+        $suggestions = $result->ok ? $result->data : [];
 
         if ($suggestions === []) {
             return redirect()
                 ->route('projects.site.edit', $project)
-                ->with('status', 'معرفناش نقترح محتوى دلوقتي — النموذج مش متاح. كمّل الخانات يدوي.');
+                ->with('status', $result->ok
+                    ? 'الذكاء الاصطناعي مرجّعش محتوى المرة دي — جرّب تاني أو كمّل الخانات يدوي.'
+                    : $result->message($ollama->model()));
         }
 
         $filledCount = 0;
