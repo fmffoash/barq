@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GeneratedSite;
 use App\Models\Project;
 use App\Models\Template;
+use App\Services\TemplatePreviewService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,15 +54,20 @@ class ProjectController extends Controller
 
         $templates = Template::where('is_active', true)
             ->withCount('variants')
+            // كل الخانات + النسخ: صورة شكل القالب بتتعرض بس لو بصمته مطابقة (TemplatePreviewService).
+            ->with(['slots', 'variants'])
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
             ->orderBy('name')
             ->get();
 
+        $previews = app(TemplatePreviewService::class);
+
         return view('projects.create', [
             'template' => null,
             'templates' => $templates,
             'categories' => $categories,
+            'thumbnails' => $templates->mapWithKeys(fn (Template $t) => [$t->id => $previews->thumbnailUrl($t)]),
         ]);
     }
 

@@ -11,4 +11,7 @@
 return [
     // بعد كام يوم تتعلّم أي نسخة معاينة اتعملت ومحدش اعتمدها (للتنضيف الدوري لاحقًا).
     'preview_cleanup_days' => (int) env('BARQ_PREVIEW_CLEANUP_DAYS', 30),
+
+    // صور معاينة شكل كل قالب (TemplatePreviewService) — فاضي = public/images/template-previews.
+    'template_previews_dir' => env('BARQ_TEMPLATE_PREVIEWS_DIR'),
 ];

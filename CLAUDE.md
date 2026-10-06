@@ -329,6 +329,33 @@ SiteRenderer العادي). **رجعناها بعد التجربة** — حتى 
 لعدد كبير من القوالب مرة واحدة. **لو حد فكّر يرجّع الفكرة دي تاني:** ممكن تنفع لمعاينة
 قالب **واحد** بس (زي صفحة `templates/show.blade.php`)، مش لشبكة فيها 300 كارت مع بعض.
 
+**🖼️ شكل القالب الحقيقي على الكارت + معاينة كاملة قبل الاختيار (2026-10-06)** — فؤاد (بعد التشغيل
+المحلي): "عايز شكل القالب نفسه هو اللي يكون موجود بدل الصورة علشان أتفرج عليه وأعاينه قبل ما
+أختاره". الحل بيتجنّب غلطة الـiframe اللي فوق بالظبط، من جزئين (`TemplatePreviewService`):
+- **صورة حقيقية لكل كارت = لقطة شاشة جاهزة** (`public/images/template-previews/{slug}.jpg`،
+  640×400 JPEG ~25KB، 300 صورة ≈ 7.4MB، متخزّنة في git) — صفر رندر وقت فتح الصفحة، مجرد `<img
+  loading=lazy>`. اللقطة بتتعرض **بس** لو "بصمة" القالب الحالية (layout/الاسم/ألوان وخط وأقسام
+  النسخة الافتراضية/كل الخانات بمحتواها الافتراضي — ترتيب مفاتيح الـJSON متجاهَل عمداً) مطابقة
+  للبصمة المتسجّلة في `manifest.json` وقت اللقطة. لو فؤاد عدّل ألوان قالب أو عمل قالب جديد بنفسه،
+  الكارت بيرجع للعرض القديم (صورة الفئة + تدرّج الألوان) بدل ما يعرض صورة كدابة. اتأكد إن مكتبة
+  متولّدة من الصفر (`barq:seed-template-library` على داتابيز فاضية) بتطابق الـ300 بصمة كلهم.
+- **معاينة كاملة حيّة لقالب واحد** — `templates.preview` (`TemplateController::preview()`)
+  بيرندر القالب بنفس `SiteRenderer` بمحتواه الافتراضي عن طريق Project/GeneratedSite مؤقتين
+  بالذاكرة (صفر كتابة داتابيز)، في تاب جديد، مع شريط عائم "استخدم القالب ده / رجوع للقوالب"
+  (`site/partials/template-preview-bar.blade.php`، بيظهر بس لما `$previewTemplate` متبعت — مش في
+  الموقع الحقيقي ولا التصدير ولا اللقطات). زرار "👁 معاينة" موجود على كروت `/templates` و
+  "مشروع جديد" وصفحة القالب وجنب قايمة القوالب في صفحة الإنشاء بالذكاء الاصطناعي.
+- الكارت نفسه جزئية مشتركة: `templates/partials/preview-image.blade.php`.
+
+**⚠️ قاعدة: أي تعديل على تصميم (`site/layouts/*`، `SiteRenderer`، CSS المواقع) أو على مكتبة
+القوالب (`SeedTemplateLibrary`) لازم يتبعه `php artisan barq:template-thumbnails` في جلسة تطوير
+(محتاج Node + Playwright — مش جزء من تشغيل التطبيق عند فؤاد) وكوميت للصور + `manifest.json`.**
+الأمر بيعيد تصوير اللي بصمته اتغيّرت بس (`--force` للكل، `--only=slug`)، على داتابيز فيها المكتبة
+(`barq:seed-template-library`). تعديل تصميم بيغيّر الشكل من غير ما يغيّر البصمة (البصمة على الداتا
+بس، مش على كود الـlayout) — فالصورة هتفضل تتعرض بالشكل القديم لحد ما تتعمل `--force`؛ ده سبب
+القاعدة. اتعلّمنا في التنفيذ: `php -S` المؤقت جوّه الأمر لازم `disableOutput()` (لوج كل طلب بيملا
+الـpipe والسيرفر بيقف بعد ~22 صفحة).
+
 ## التقنيات
 Laravel 13 · PHP 8.3+ (القيد الفعلي في `composer.json`، مش 8.5 زي ما كان مكتوب هنا غلط —
 8.5 جاية من الـ boilerplate العام بتاع Laravel Boost في `AGENTS.md`، مش من قيد المشروع
@@ -348,10 +375,14 @@ app/Services/             — OllamaService (اقتراح محتوى بالذك�
                              SiteExportService (تصدير zip ثابت، Phase 4)،
                              WordPressService (توفير site + دفع محتوى على شبكة Multisite، Phase 5)،
                              RichTextSanitizer (تطهير HTML التنسيق الجزئي وقت الحفظ، Phase 17)،
-                             DataTransferService (نقل البيانات بين تشغيلين في zip، التشغيل المحلي)
+                             DataTransferService (نقل البيانات بين تشغيلين في zip، التشغيل المحلي)،
+                             TemplatePreviewService (معاينة القالب + صور الكروت وبصماتها)
 app/Console/Commands/     — CreateAdminUser.php (عمل/تحديث حساب الأدمن)،
                              SeedTemplateLibrary.php (توليد/تحديث مكتبة القوالب الأصلية، Phase 7)،
-                             LocalSetup.php/Doctor.php/ExportData.php/ImportData.php (التشغيل المحلي)
+                             LocalSetup.php/Doctor.php/ExportData.php/ImportData.php (التشغيل المحلي)،
+                             GenerateTemplateThumbnails.php (`barq:template-thumbnails`، أداة مطوّر)
+scripts/template-thumbnails.cjs — تصوير القوالب بـPlaywright (بيناديه barq:template-thumbnails)
+public/images/template-previews/ — صور شكل كل قالب + manifest.json بالبصمات (متولّدة، متخزّنة في git)
 local/                    — التشغيل المحلي: install-windows.bat (التسطيب بملف واحد)، setup/start/update
                              (ويندوز + ماك/لينكس)، runtime.ps1، server.php، artisan.bat/doctor.bat
 routes/web.php            — مسارات لوحة التحكم (login + dashboard + templates + projects)
@@ -368,7 +399,8 @@ resources/views/templates/partials/color-picker.blade.php — منتقي ألو�
 resources/views/errors/   — 404.blade.php (نفس التصميم لمسارات لوحة التحكم والمواقع المنشورة)
 tests/Feature/            — AuthenticationTest, TemplateManagementTest, ProjectManagementTest,
                              SiteRenderingTest, OllamaContentSuggestionTest, TemplateLibraryTest,
-                             SiteExportTest, WordPressIntegrationTest, SiteLayoutTest (Phase 7)
+                             SiteExportTest, WordPressIntegrationTest, SiteLayoutTest (Phase 7),
+                             TemplatePreviewTest
 ```
 
 ## المعمار: التوجيه بالمسار (Path Routing)

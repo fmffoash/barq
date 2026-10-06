@@ -25,6 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
     Route::resource('templates', TemplateController::class);
+    // معاينة كاملة لشكل القالب الحقيقي قبل اختياره (TemplatePreviewService) — صفحة واحدة بس
+    // وقت ما فؤاد يدوس "معاينة"، مش iframe لكل كارت (شوف CLAUDE.md).
+    Route::get('templates/{template}/preview', [TemplateController::class, 'preview'])
+        ->name('templates.preview');
 
     Route::post('templates/{template}/variants', [TemplateVariantController::class, 'store'])
         ->name('templates.variants.store');
