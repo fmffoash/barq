@@ -25,6 +25,25 @@
         </div>
     @endif
 
+    {{-- شكل القالب الحقيقي (2026-10-06) — صورة جاهزة + معاينة كاملة حيّة في تاب جديد. صفحة
+    واحدة بس، فمعاينة الشكل هنا مش بتتقل أي حاجة (عكس iframe لكل كارت في /templates). --}}
+    @if ($template->kind === 'landing')
+        <div class="mb-6 grid items-center gap-5 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+            <div class="md:border-e md:border-slate-800">
+                @include('templates.partials.preview-image', ['template' => $template, 'thumbnail' => $thumbnail])
+            </div>
+            <div class="space-y-3 p-6">
+                <p class="text-sm text-slate-400">ده شكل القالب بمحتواه الافتراضي. افتح المعاينة الكاملة عشان تشوف الصفحة كلها بنفس شكلها الحقيقي.</p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('templates.preview', $template) }}" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-amber-400 hover:text-amber-400">👁 معاينة كاملة</a>
+                    @if ($template->is_active)
+                        <a href="{{ route('projects.create', ['template' => $template->id]) }}" class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">استخدم القالب ده</a>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- بيانات القالب --}}
     <div class="mb-8 flex items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <div>

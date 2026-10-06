@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Template;
+use App\Services\TemplatePreviewService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,17 +28,20 @@ class TemplateController extends Controller
             ->orderBy('category')
             ->pluck('category');
 
-        // with('variants') + خانة hero_image بس (مش كل الخانات) عشان كارت كل قالب في الفيو
-        // يعرض معاينة سريعة (ألوانه + صورة الغلاف لو موجودة) من غير استعلام إضافي لكل قالب
-        // (defaultVariant() بتقرا من الـ collection المحمّلة — 2026-09-21).
+        // with('variants', 'slots') كاملين — صورة شكل القالب (TemplatePreviewService) بتتعرض بس لو
+        // بصمة القالب (كل خاناته + نسخته الافتراضية) مطابقة للقطة، والبصمة محتاجة كل الخانات.
+        // استعلامين بس للصفحة كلها مهما كان عدد القوالب.
         $templates = Template::withCount(['variants', 'slots'])
-            ->with(['variants', 'slots' => fn ($query) => $query->where('key', 'hero_image')])
+            ->with(['variants', 'slots'])
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
             ->orderBy('name')
             ->get();
 
-        return view('templates.index', compact('templates', 'categories'));
+        $previews = app(TemplatePreviewService::class);
+        $thumbnails = $templates->mapWithKeys(fn (Template $template) => [$template->id => $previews->thumbnailUrl($template)]);
+
+        return view('templates.index', compact('templates', 'categories', 'thumbnails'));
     }
 
     public function create(): View
@@ -70,8 +74,20 @@ class TemplateController extends Controller
         $template->load(['variants', 'slots']);
 
         $slotsBySection = $template->slots->groupBy('section_key');
+        $thumbnail = app(TemplatePreviewService::class)->thumbnailUrl($template);
 
-        return view('templates.show', compact('template', 'slotsBySection'));
+        return view('templates.show', compact('template', 'slotsBySection', 'thumbnail'));
+    }
+
+    // معاينة كاملة حيّة لشكل القالب قبل اختياره — شوف TemplatePreviewService. قراءة بس،
+    // صفر كتابة داتابيز.
+    public function preview(Template $template, TemplatePreviewService $previews): View
+    {
+        if ($template->kind !== 'landing') {
+            return view('site.coming-soon', ['project' => $previews->siteFor($template)->project]);
+        }
+
+        return view('site.show', $previews->render($template) + ['previewTemplate' => $template]);
     }
 
     public function edit(Template $template): View

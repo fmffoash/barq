@@ -131,6 +131,12 @@
 >
     @include('site.layouts.'.($layout ?: 'classic'))
 
+    {{-- معاينة قالب قبل اختياره (templates.preview) — شريط صغير "استخدم القالب ده / رجوع"؛
+    مش موجود في عرض الموقع الحقيقي ولا التصدير ولا لقطات صور الكروت. --}}
+    @isset($previewTemplate)
+        @include('site.partials.template-preview-bar', ['template' => $previewTemplate])
+    @endisset
+
     @if ($editable)
         @include('site.partials.live-editor', [
             'project' => $project,

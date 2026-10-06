@@ -61,50 +61,16 @@
         </div>
     @else
         {{-- شبكة مرنة حقيقية (auto-fill) بدل عدد أعمدة ثابت — عدد الكروت جنب بعض بيتحدد
-        بعرض الشاشة الفعلي (كل كارت 240px على الأقل)، والباقي بينزل صف تحت تلقائي. كانت قبل
-        كده sm:grid-cols-2 lg:grid-cols-3 (تتوقف عند 3 أعمدة مهما اتسعت الشاشة أكتر) —
-        فؤاد لاحظ إن الصفحة بتفضل بنفس الشكل ومساحة فاضية على الشاشات الواسعة (2026-09-21). --}}
+        بعرض الشاشة الفعلي (كل كارت 280px على الأقل)، والباقي بينزل صف تحت تلقائي (2026-09-21). --}}
         <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
             @foreach ($templates as $template)
-                @php
-                    $colors = $template->defaultVariant()?->colors_json;
-                    $heroImage = $template->slots->firstWhere('key', 'hero_image')?->default_value;
+                {{-- صورة شكل القالب الحقيقي (لقطة جاهزة، صفر نداء سيرفر إضافي) + "معاينة" بتفتح
+                الشكل كامل حيّ في تاب جديد — قالب واحد بس وقت ما فؤاد يطلبه (2026-10-06). تجربة
+                الـiframe لكل كارت اتلغت 2026-09-21 لأنها كانت بتحمّل عشرات الصفحات مرة واحدة. --}}
+                <div class="flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-amber-400/60">
+                    @include('templates.partials.preview-image', ['template' => $template, 'thumbnail' => $thumbnails[$template->id] ?? null])
 
-                    $fallbackStyle = match (true) {
-                        (bool) $heroImage => "background-image: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,.55)), url('{$heroImage}');",
-                        (bool) $colors => "background-image: linear-gradient(135deg, {$colors['primary']}, {$colors['background']});",
-                        default => '',
-                    };
-                @endphp
-
-                <a
-                    href="{{ route('templates.show', $template) }}"
-                    class="block overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-amber-400/60"
-                >
-                    {{-- رجعنا للمعاينة الخفيفة (صورة الفئة + تدرّج ألوان القالب، بدون أي
-                    نداء سيرفر إضافي — 2026-09-21). كنا جرّبنا معاينة حقيقية 100% بـiframe
-                    (templates.preview) لكل قالب، لكن فؤاد شاف السيرفر بيتقل واضح لحظة فتح
-                    الصفحة — 300 قالب حتى مع lazy-loading يعني عشرات الـiframes بتتحمّل مرة
-                    واحدة على pool صغير (max_children=2) وسيرفر 4 أنوية بس. مش نمط مناسب
-                    للحجم ده، بغض النظر عن أي تحسين إضافي في الطريقة. الصورة/اللون بيدوا
-                    إحساس حقيقي بمزاج القالب (نفس صور الفئة الحقيقية اللي اترفعت) من غير أي
-                    تكلفة على السيرفر — واسم التصميم (badge) بيدي تلميح إضافي عن الشكل. --}}
-                    <div
-                        class="relative flex h-56 items-end bg-cover bg-center"
-                        style="{{ $fallbackStyle }}"
-                    >
-                        @unless ($heroImage || $colors)
-                            <span class="mx-auto mb-auto mt-auto text-3xl opacity-30">🖼️</span>
-                        @endunless
-
-                        @if ($template->kind === 'landing')
-                            <span class="m-2 rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-200 backdrop-blur">
-                                {{ \App\Models\Template::layoutLabel($template->layout) }}
-                            </span>
-                        @endif
-                    </div>
-
-                    <div class="p-5">
+                    <a href="{{ route('templates.show', $template) }}" class="block flex-1 p-5">
                         <div class="mb-3 flex items-start justify-between gap-2">
                             <h2 class="font-semibold text-slate-100">{{ $template->name }}</h2>
 
@@ -126,8 +92,20 @@
                             <span>{{ $template->variants_count }} نسخة</span>
                             <span>{{ $template->slots_count }} خانة محتوى</span>
                         </div>
+                    </a>
+
+                    <div class="flex gap-2 border-t border-slate-800 px-5 py-3">
+                        @if ($template->kind === 'landing')
+                            <a href="{{ route('templates.preview', $template) }}" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:border-amber-400 hover:text-amber-400">👁 معاينة</a>
+                        @endif
+
+                        @if ($template->is_active)
+                            <a href="{{ route('projects.create', ['template' => $template->id]) }}" class="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-amber-300">استخدم القالب</a>
+                        @endif
+
+                        <a href="{{ route('templates.show', $template) }}" class="ms-auto rounded-lg px-2 py-1.5 text-xs text-slate-500 transition hover:text-slate-300">التفاصيل</a>
                     </div>
-                </a>
+                </div>
             @endforeach
         </div>
     @endif

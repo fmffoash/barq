@@ -55,19 +55,27 @@
                     @endif
                 </div>
             @else
-                <div class="grid gap-4 sm:grid-cols-2">
+                {{-- صورة شكل كل قالب الحقيقي + "معاينة" بتفتح الشكل كامل في تاب جديد (2026-10-06)
+                — عشان فؤاد يشوف القالب قبل ما يختاره. --}}
+                <div class="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
                     @foreach ($templates as $t)
-                        <a
-                            href="{{ route('projects.create', ['template' => $t->id]) }}"
-                            class="block rounded-2xl border border-slate-800 bg-slate-900/60 p-5 transition hover:border-amber-400/60"
-                        >
-                            <h2 class="mb-2 font-semibold text-slate-100">{{ $t->name }}</h2>
-                            <p class="mb-3 text-sm text-slate-500">
-                                {{ $t->category ?: 'بدون تصنيف' }} &middot;
-                                {{ $t->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
-                            </p>
-                            <p class="text-xs text-slate-500">{{ $t->variants_count }} نسخة متاحة</p>
-                        </a>
+                        <div class="flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-amber-400/60">
+                            @include('templates.partials.preview-image', ['template' => $t, 'thumbnail' => $thumbnails[$t->id] ?? null])
+
+                            <div class="flex flex-1 flex-col p-4">
+                                <h2 class="mb-1 font-semibold text-slate-100">{{ $t->name }}</h2>
+                                <p class="mb-3 text-sm text-slate-500">
+                                    {{ $t->category ?: 'بدون تصنيف' }} &middot;
+                                    {{ $t->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
+                                </p>
+                                <div class="mt-auto flex gap-2">
+                                    @if ($t->kind === 'landing')
+                                        <a href="{{ route('templates.preview', $t) }}" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:border-amber-400 hover:text-amber-400">👁 معاينة</a>
+                                    @endif
+                                    <a href="{{ route('projects.create', ['template' => $t->id]) }}" class="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-amber-300">اختار القالب ده</a>
+                                </div>
+                            </div>
+                        </div>
                     @endforeach
                 </div>
             @endif

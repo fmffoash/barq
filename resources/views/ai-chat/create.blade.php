@@ -76,6 +76,17 @@
                         >
                             🖼️ تصفح
                         </a>
+                        {{-- معاينة كاملة للقالب المختار بالظبط (2026-10-06) — بيتفعّل لما يتختار قالب. --}}
+                        <a
+                            id="preview-template-link"
+                            href="#"
+                            data-url-pattern="{{ route('templates.preview', ['template' => '__ID__']) }}"
+                            target="_blank"
+                            rel="noopener"
+                            class="pointer-events-none shrink-0 rounded-lg border border-slate-700 px-3 py-2.5 text-sm text-slate-500 opacity-40 transition"
+                        >
+                            👁 معاينة
+                        </a>
                     </div>
                 </div>
 
@@ -128,7 +139,20 @@
             const templateSelect = document.getElementById('template-select');
             const browseLink = document.getElementById('browse-templates-link');
             const browseBaseUrl = browseLink.href;
+            const previewLink = document.getElementById('preview-template-link');
             const colorEnabled = document.getElementById('color-enabled');
+
+            function updatePreviewLink() {
+                const id = templateSelect.disabled ? '' : templateSelect.value;
+                const on = id !== '';
+                previewLink.href = on ? previewLink.dataset.urlPattern.replace('__ID__', encodeURIComponent(id)) : '#';
+                previewLink.classList.toggle('pointer-events-none', !on);
+                previewLink.classList.toggle('opacity-40', !on);
+                previewLink.classList.toggle('text-slate-500', !on);
+                previewLink.classList.toggle('text-amber-400', on);
+            }
+
+            templateSelect.addEventListener('change', updatePreviewLink);
             const colorInput = document.getElementById('color-input');
 
             categorySelect.addEventListener('change', function () {
@@ -144,6 +168,7 @@
                     browseLink.href = browseBaseUrl;
                     browseLink.classList.add('pointer-events-none', 'opacity-40', 'text-slate-500');
                     browseLink.classList.remove('text-amber-400', 'hover:bg-amber-400/10');
+                    updatePreviewLink();
                     return;
                 }
 
@@ -165,11 +190,14 @@
                         opt.textContent = t.name;
                         templateSelect.appendChild(opt);
                     });
+                updatePreviewLink();
             });
 
             colorEnabled.addEventListener('change', function () {
                 colorInput.disabled = !colorEnabled.checked;
             });
+
+            updatePreviewLink();
         })();
     </script>
 @endpush
