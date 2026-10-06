@@ -44,8 +44,12 @@ if ($LASTEXITCODE -ne 0) {
 # The app is usable from here on, so the icon comes before the big (optional) AI download.
 if ($script:OnWindows) {
     Say 'Desktop shortcut'
-    New-AppShortcuts $Root
-    Write-Host 'Added an icon to the desktop and the Start menu.'
+    $shortcuts = [int](New-AppShortcuts $Root | Select-Object -Last 1)
+    if ($shortcuts -gt 0) {
+        Write-Host 'Added an icon to the desktop and the Start menu.'
+    } else {
+        $incomplete += 'the desktop icon could not be created - open the app with C:\barq\local\start.bat'
+    }
 }
 
 $model = 'qwen3:8b'

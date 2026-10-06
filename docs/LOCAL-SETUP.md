@@ -147,6 +147,7 @@ del C:\barq\barq-data.zip     # على جهازك
 | نسيت الباسورد | دبل كليك على `C:\barq\local\create-admin.bat` واكتب **نفس الإيميل** — بيغيّر الباسورد |
 | رسالة "Port 8010 is used by another program" | افتح `C:\barq\.env` بـNotepad وغيّر `APP_URL=http://127.0.0.1:8010` لـ`8020` مثلاً، واحفظ، وافتح الأيقونة تاني |
 | التسطيب وقف في النص | شغّل `install-windows.bat` تاني — بيكمّل من مكان ما وقف |
+| أيقونة "لوحة المواقع" مش موجودة | افتح اللوحة من `C:\barq\local\start.bat`، وشغّل `install-windows.bat` تاني عشان يعمل الأيقونة (لو الاسم العربي منفعش بيسمّيها **Sites Panel**) |
 | الأنتي فيروس مسح `php.exe` | ضيف `C:\barq` للاستثناءات وشغّل `install-windows.bat` تاني |
 
 ---
