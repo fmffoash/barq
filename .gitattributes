@@ -1,5 +1,13 @@
 * text=auto eol=lf
 
+# سكريبتات ويندوز (local/) — cmd/PowerShell محتاجين CRLF، فبتتسحب كده حتى على لينكس/ماك.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+# الملف ده بالذات بيتنزّل لوحده من GitHub (raw) — raw بيقدّم الـblob زي ما هو، فلازم يتخزّن CRLF
+# فعلياً (مش بس يتحوّل وقت الـcheckout)، وإلا cmd ممكن ميلاقيش الـlabels جوّه ملف LF.
+local/install-windows.bat -text
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html

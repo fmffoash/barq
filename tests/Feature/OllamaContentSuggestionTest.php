@@ -129,4 +129,32 @@ class OllamaContentSuggestionTest extends TestCase
         $this->assertSame([], $suggestions);
         Http::assertNothingSent();
     }
+
+    // التشغيل المحلي (2026-10-05): سيرفر PHP المدمج بيطبّق max_execution_time (30 ثانية
+    // افتراضياً، ووقت فعلي على ويندوز) — من غير التمديد ده أي رد بطيء من Ollama كان بيوقع.
+    public function test_it_extends_a_finite_php_time_limit_to_cover_the_ollama_timeout(): void
+    {
+        config(['services.ollama.timeout' => 180]);
+        Http::fake(['*/api/generate' => Http::response(['response' => json_encode(['a' => 'b'])], 200)]);
+
+        set_time_limit(30);
+
+        try {
+            (new OllamaService)->generateJson('أي طلب');
+
+            $this->assertSame('210', ini_get('max_execution_time'));
+        } finally {
+            set_time_limit(0);
+        }
+    }
+
+    public function test_it_leaves_an_unlimited_time_limit_alone(): void
+    {
+        Http::fake(['*/api/generate' => Http::response(['response' => json_encode(['a' => 'b'])], 200)]);
+
+        set_time_limit(0);
+        (new OllamaService)->generateJson('أي طلب');
+
+        $this->assertSame('0', ini_get('max_execution_time'));
+    }
 }

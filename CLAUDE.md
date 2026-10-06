@@ -71,6 +71,74 @@ chown -R www-data:www-data storage bootstrap/cache
 نفس المعالجة من الأول، وإلا هنفضل نلف في حلقة "الديبلوي صح على السيرفر بس مش باين للمستخدم"
 زي ما حصل هنا (فؤاد شاف نفس الـ`<select>` القديم رغم إن كود صح كان موجود على السيرفر فعلاً).**
 
+## 💻 التشغيل المحلي على جهاز فؤاد (2026-10-05)
+فؤاد طلب يجهّز اللوحة "موديل ثابت" على جهازه ويشتغل عليها محلي بدل السيرفر. **الدليل الكامل
+لفؤاد: `docs/LOCAL-SETUP.md`** (عربي، خطوة بخطوة). اللي اتعمل:
+- **`local/install-windows.bat` — ملف التسطيب الوحيد اللي فؤاد بينزّله** (فؤاد سأل صراحةً
+  "محتاج مني إيه عشان يشتغل كبرنامج على الجهاز"): بيسطّب Git (winget) لو مش موجود، بيعمل clone
+  لـ`C:\barq` (أو `git pull` لو موجود)، وبينادي `setup`. الريبو public فمفيش تسجيل دخول GitHub.
+- **`local/`** — `setup` (مرة واحدة) / `start` (يومي، بيفتح المتصفح) / `update` (بديل الديبلوي
+  القياسي محلياً) — نسخة `.bat`+`.ps1` لويندوز (دبل كليك) ونسخة `.sh` لماك/لينكس، بنفس المنطق.
+  ملفات `.ps1`/`.bat` **ASCII بس عن قصد** (PowerShell 5.1 بيقرا UTF-8 من غير BOM كـANSI —
+  نفس سبب قاعدة "متعدّلش بـPowerShell على ملفات فيها عربي") و**CRLF** (`.gitattributes`).
+  على ويندوز `setup.ps1` **بينزّل بنفسه** نسخة خاصة من PHP (windows.php.net، 8.4 nts x64) و
+  Composer (`composer.phar` + `composer.bat`) وNode.js LTS (portable zip) جوّه `.runtime/`
+  (gitignored) لو مش متسطّبين — كل تنزيل متأكد من الـchecksum، والـPATH بيتعدّل جوّه الشباك بس
+  (`local/runtime.ps1` → `Use-LocalRuntime`). عشان كده أي أمر artisan يدوي على ويندوز يتعمل
+  عن طريق `local\artisan.bat` (بيحط PHP الخاص في الـPATH)، مش `php artisan` مباشرة. `setup`
+  كمان بيسطّب Ollama (winget أو OllamaSetup.exe) وبيعمل أيقونة **"لوحة المواقع"** (`local/
+  app.ico`) على سطح المكتب وStart بتشغّل `start.bat` في شباك متصغّر.
+- **`local/start` بيشغّل `php -S ... local/server.php` مباشرة، مش `artisan serve`** — artisan
+  serve مبيعدّيش `-d` للسيرفر اللي بيشغّله، وإحنا محتاجين `upload_max_filesize=10M`/
+  `post_max_size=64M` (**باج حقيقي اتأكد بالتجربة:** PHP افتراضياً 2 ميجا والتطبيق بيقبل صور
+  لحد 8 ميجا، فأي صورة أكبر من 2 ميجا كانت بترجع "failed to upload" محلياً) و
+  `max_execution_time=0`. `local/server.php` نسخة من راوتر Laravel الداخلي بنفس المنطق.
+- **مراجعة مستقلة لسكريبتات ويندوز (2026-10-06، 5 مراجعين + مُحقّق لكل واحد)** — لأن مفيش ويندوز
+  حقيقي نجرّب عليه، اتعملت مراجعة عدائية لكل `local/*.ps1|bat` من 5 زوايا (PowerShell 5.1، cmd،
+  تنزيل الـruntime، رحلة المستخدم، الأمان) وكل نتيجة اتحاول تتنفي. **أهم اللي اتصلح:**
+  (1) **`$this->secret()` بتاع Symfony على ويندوز بيشغّل `hiddeninput.exe` اللي محتاج Visual C++
+  2008 (MSVCR90.dll، اتأكد من الـimports)** — مش موجود على ويندوز نضيف، فالباسورد كان بيرجع فاضي
+  والحساب مبيتعملش. الحل: الأسئلة بقت في PowerShell (`Read-Host -AsSecureString` بيقرا أي لغة
+  صح) وبتتبعت لـ`barq:create-admin --stdin` (3 سطور base64 UTF-8 على pipe — مش ملف ولا env)،
+  و`local\create-admin.bat` لنسيان الباسورد؛ `barq:create-admin` التفاعلي بيرفض على ويندوز
+  بتوجيه للـbat. (2) `Start-Process -Wait` بيستنى **كل** العمليات الفرعية — مثبّت Ollama بيسيب
+  الـtray app شغالة فكان هيعلّق للأبد؛ بقى `-PassThru` + `WaitForExit()` (`Invoke-Installer`).
+  (3) أي أمر native جوّه function بيبقى جزء من قيمتها الراجعة (winget/php كانوا بيتسرّبوا لـ
+  `$haveOllama` فيبقى array = true) — `| Out-Host` أو `Start-Process -NoNewWindow`. (4) PHP 8.4
+  مبني بـVC++ 14.4x وبيرفض runtime 14.3x — الحد بقى 14.40 + فحص `php -n -v` نفسه، وكود 3010
+  (محتاج ريستارت)/1602 (UAC اترفض) بيطلع رسالة صح مش "اتأكد من النت". (5) `powershell -File`
+  بيرجّع 0 دايماً لو مفيش `exit` صريح — start.ps1 بقى يرجّع كود php ويطلّع MessageBox (الشباك
+  متصغّر). (6) QuickEdit في الكونسول: دوسة جوّه الشباك بتجمّد السيرفر (worker واحد) — اتقفل
+  بـP/Invoke. (7) نسخة Node أقدم من 20.19/22.12 أو Composer 1 بقوا يتعاملوا كـ"مش موجود".
+  (8) `install-windows.bat` متخزّن CRLF فعلياً (`-text` في `.gitattributes`، عشان رابط raw)
+  والـupdate جوّه block واحد (git pull ممكن يستبدل الملف وهو شغال). (9) فولدر `C:\barq` بيتقفل
+  على حساب المستخدم + SYSTEM + Admins (بيورث "Authenticated Users: Modify" من `C:\`). (10) curl
+  بيقع على Invoke-WebRequest لو فشل، والـchecksum مبقاش بيتجاهل لو اتكشف mismatch.
+  (11) `composer --version` لازم `--no-interaction` — خرجه متلقّط، فأي سؤال كان هيعلّق مخفي.
+- **`php artisan barq:local-setup`** — كل منطق التجهيز بعد `composer install`/`.env` (ملف
+  SQLite + migrate + storage:link + المكتبة لو فاضية + الأدمن لو مفيش + فحص الصحة)، عشان
+  ويندوز وماك/لينكس ينادوا نفس الكود بدل ما يتكرر مرتين. آمن يتعاد، **ممنوع في production**.
+- **`php artisan barq:doctor`** — فحص صحة (PHP/إضافات/APP_KEY/الداتابيز والـmigrations/
+  `public/build`/`public/hot`/لينك الصور/الأدمن/المكتبة/Ollama والموديل) بـOK/WARN/FAIL وأمر
+  التصليح جنب كل مشكلة. **أول حاجة تتعمل لو فؤاد قال "مش شغال" محلياً.**
+- **`barq:export-data` / `barq:import-data`** (`DataTransferService`) — نقل كل البيانات (8
+  جداول + صور `storage/app/public`) في zip بصيغة JSON مستقلة عن نوع الداتابيز (mysqldump مبيتقريش
+  صح في SQLite). الاستيراد استبدال كامل مش دمج، بيتحقق من كل حاجة قبل أي مسح، بيرفض مسارات
+  `..`، وبيتخطّى أي ملف مش صورة. اتجرّب حي MariaDB → SQLite: كل الجداول متطابقة (بعد الـcasts).
+- **العنوان المحلي `http://127.0.0.1:8010`** (مش 8000 عشان مايتخانقش مع Tafra ERP لو شغال
+  محلي) — `127.0.0.1` بس، مش `0.0.0.0` (صفر وصول من الشبكة). `.env.example` بقى قالب التشغيل
+  المحلي (`OLLAMA_TIMEOUT=180`، `DB_BUSY_TIMEOUT=5000`، شيلنا `BARQ_ADMIN_HOST`/
+  `BARQ_BASE_DOMAIN` المهجورين).
+- **⚠️ باج اتكشف بالتجربة واتصلح:** `php artisan serve` (سيرفر PHP المدمج) **بيطبّق**
+  `max_execution_time` من php.ini (30 ثانية افتراضياً — اتأكد عملياً)، وعلى ويندوز العداد ده
+  وقت فعلي مش وقت معالج زي لينكس، فأي رد Ollama أبطأ من 30 ثانية كان هيوقع بـfatal.
+  `OllamaService::generateJson()` بقى يمدّ الحد (`timeout + 30`) لو كان محدود، ومبيلمسوش لو 0.
+- **ويندوز = worker واحد** (`PHP_CLI_SERVER_WORKERS` مش مدعوم هناك) — وقت توليد الذكاء
+  الاصطناعي باقي الصفحات بتستنى، ده متوقع. ماك/لينكس 4 workers (`start.sh`، محتاج `--no-reload`).
+- قواعد الصيانة 1/3/5 فوق (chown/reload FPM/كاش Cloudflare) **خاصة بالسيرفر بس**، مالهاش
+  لازمة محلياً. القاعدة 4 (`npm run build` دايماً) جوّه `local/update` تلقائياً.
+- النسخة اللي على السيرفر لسه شغالة زي ما هي — قفلها قرار فؤاد، مش جزء من التجهيز ده.
+
 ## الحالة الحالية (2026-09-21 — لايف على السيرفر ومُختبر حي بالكامل)
 **دلوقتي لايف على `https://adamfoash.tafraos.com`** (nginx + PHP 8.3-fpm + MySQL، نفس
 سيرفر Tafra ERP بصفر تعارض)، أدمن واحد فقط (Foash) بيدخل ويعمل قوالب بخاناتها (slots)
@@ -273,9 +341,13 @@ app/Services/             — OllamaService (اقتراح محتوى بالذك�
                              SiteRenderer (بناء الأقسام/الألوان المشترك بين المعاينة والتصدير)،
                              SiteExportService (تصدير zip ثابت، Phase 4)،
                              WordPressService (توفير site + دفع محتوى على شبكة Multisite، Phase 5)،
-                             RichTextSanitizer (تطهير HTML التنسيق الجزئي وقت الحفظ، Phase 17)
+                             RichTextSanitizer (تطهير HTML التنسيق الجزئي وقت الحفظ، Phase 17)،
+                             DataTransferService (نقل البيانات بين تشغيلين في zip، التشغيل المحلي)
 app/Console/Commands/     — CreateAdminUser.php (عمل/تحديث حساب الأدمن)،
-                             SeedTemplateLibrary.php (توليد/تحديث مكتبة القوالب الأصلية، Phase 7)
+                             SeedTemplateLibrary.php (توليد/تحديث مكتبة القوالب الأصلية، Phase 7)،
+                             LocalSetup.php/Doctor.php/ExportData.php/ImportData.php (التشغيل المحلي)
+local/                    — التشغيل المحلي: install-windows.bat (التسطيب بملف واحد)، setup/start/update
+                             (ويندوز + ماك/لينكس)، runtime.ps1، server.php، artisan.bat/doctor.bat
 routes/web.php            — مسارات لوحة التحكم (login + dashboard + templates + projects)
 routes/site.php           — مسارات المواقع المنشورة (تحت {siteSlug}.barq.tafraos.com بس)
 routes/console.php        — أوامر الطرفية
