@@ -112,7 +112,9 @@ class SiteExportService
         );
 
         foreach ($files as $file) {
-            $relativePath = substr($file->getPathname(), strlen($sourceDir) + 1);
+            // مسارات الـzip لازم بـ"/" دايماً — على ويندوز getPathname() بيرجّع "\" فكان الملف
+            // بيتخزن باسم "assets\app.css" حرفياً والموقع المصدّر يفتح من غير تصميم.
+            $relativePath = str_replace('\\', '/', substr($file->getPathname(), strlen($sourceDir) + 1));
             $zip->addFile($file->getPathname(), $relativePath);
         }
 

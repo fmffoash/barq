@@ -32,7 +32,7 @@ class LocalMachineSetupTest extends TestCase
 
         $this->artisan('barq:doctor')
             ->expectsOutputToContain('[FAIL] Admin account')
-            ->expectsOutputToContain('fix: php artisan barq:create-admin')
+            ->expectsOutputToContain(windows_os() ? 'fix: local\\create-admin.bat' : 'fix: php artisan barq:create-admin')
             ->assertFailed();
     }
 
@@ -97,6 +97,10 @@ class LocalMachineSetupTest extends TestCase
 
     public function test_local_setup_creates_the_admin_account_when_none_exists_and_skips_an_existing_library(): void
     {
+        if (windows_os()) {
+            $this->markTestSkipped('على ويندوز الأمر مبيسألش عن الحساب (setup.ps1 بيسأل بنفسه) — شوف LocalSetup.');
+        }
+
         // لينك مؤقت عشان storage:link مايعملش public/storage حقيقي جوّه الريبو وقت التست.
         $linkDir = storage_path('framework/testing/links-'.uniqid());
         File::ensureDirectoryExists($linkDir);
