@@ -140,6 +140,17 @@ class CategoryGuesser
     }
 
     /**
+     * كلمات النص (موحّدة + من غير "ال"/"و"/"ب" في أولها) — نفس اللي guess() بيقارن بيه، للاستخدام
+     * برّه (TemplatePicker/FollowUpIntent).
+     *
+     * @return array{0: array<string, true>, 1: string} [الكلمات, النص كله بمسافات حوالين كل كلمة]
+     */
+    public static function words(string $text): array
+    {
+        return self::tokens($text);
+    }
+
+    /**
      * كلمات النص بعد التوحيد، كل كلمة بنسختها من غير "ال"/"و"/"ب"... في أولها.
      *
      * @return array{0: array<string, true>, 1: string}

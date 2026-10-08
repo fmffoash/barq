@@ -22,12 +22,18 @@ class AiAssistantExtendedActionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function mockOllamaDecision(array $decision): void
+    // $instant: الطلب واضح كفاية إنه يتنفّذ من غير ذكاء اصطناعي خالص (FollowUpIntent، 2026-10-08)
+    // — التست بيتأكد إن النموذج متنادىش أصلاً، والنتيجة نفسها.
+    private function mockOllamaDecision(array $decision, bool $instant = false): void
     {
         $mock = Mockery::mock(OllamaService::class);
         $mock->shouldReceive('preflight')->andReturnNull();
         $mock->shouldReceive('model')->andReturn('qwen3:8b');
-        $mock->shouldReceive('run')->once()->andReturn(AiResult::success($decision, json_encode($decision)));
+        if ($instant) {
+            $mock->shouldReceive('run')->never();
+        } else {
+            $mock->shouldReceive('run')->once()->andReturn(AiResult::success($decision, json_encode($decision)));
+        }
         $this->app->instance(OllamaService::class, $mock);
     }
 
@@ -49,7 +55,7 @@ class AiAssistantExtendedActionsTest extends TestCase
     public function test_reset_to_default_clears_every_override(): void
     {
         $project = $this->buildProject();
-        $this->mockOllamaDecision(['action' => 'reset_to_default', 'reply' => 'تمام']);
+        $this->mockOllamaDecision(['action' => 'reset_to_default', 'reply' => 'تمام'], instant: true);
 
         $reply = app(AiProjectAssistantService::class)->handleFollowUp($project, 'رجّع كل حاجة زي ما كانت');
 
@@ -65,7 +71,7 @@ class AiAssistantExtendedActionsTest extends TestCase
         Storage::fake('public');
         $project = $this->buildProject();
         $image = UploadedFile::fake()->image('menu.jpg');
-        $this->mockOllamaDecision(['action' => 'update_image', 'slot_key' => 'hero_image', 'reply' => 'تمام']);
+        $this->mockOllamaDecision(['action' => 'update_image', 'slot_key' => 'hero_image', 'reply' => 'تمام'], instant: true);
 
         app(AiProjectAssistantService::class)->handleFollowUp($project, 'خليها الصورة الرئيسية', $image);
 
@@ -114,7 +120,7 @@ class AiAssistantExtendedActionsTest extends TestCase
             'block_type' => 'image',
             'label' => 'صورة الفرع الجديد',
             'reply' => 'تمام',
-        ]);
+        ], instant: true);
 
         app(AiProjectAssistantService::class)->handleFollowUp($project, 'ضيف الصورة دي كمان', $image);
 
@@ -141,8 +147,10 @@ class AiAssistantExtendedActionsTest extends TestCase
     {
         // شبكة الأمان في handleFollowUp() — نموذج صغير أحياناً بيرجّع action مش معروف رغم
         // إن الرسالة واضحة (نفس فكرة شبكة أمان change_template الموجودة من قبل).
+        // (2026-10-08) الجملة دي بقت بتتفهم من غير نموذج خالص (FollowUpIntent) — والشبكة نفسها
+        // لسه موجودة لو جت صياغة تانية النموذج رجّع فيها "none".
         $project = $this->buildProject();
-        $this->mockOllamaDecision(['action' => 'none', 'reply' => 'مش فاهم']);
+        $this->mockOllamaDecision(['action' => 'none', 'reply' => 'مش فاهم'], instant: true);
 
         $reply = app(AiProjectAssistantService::class)->handleFollowUp($project, 'ارجع بقالك رجّع الموقع زي ما كان الأول');
 

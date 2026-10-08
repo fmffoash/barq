@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Console\Commands\SeedTemplateLibrary;
 use App\Models\AiChatMessage;
 use App\Models\GeneratedSite;
 use App\Models\Project;
@@ -10,6 +9,7 @@ use App\Models\Template;
 use App\Models\TemplateVariant;
 use App\Services\Ai\AiResult;
 use App\Support\CategoryGuesser;
+use App\Support\FollowUpIntent;
 use App\Support\PastedText;
 use App\Support\PlaceParser;
 use Illuminate\Http\UploadedFile;
@@ -33,6 +33,7 @@ class AiProjectAssistantService
     public function __construct(
         private readonly OllamaService $ollama,
         private readonly PhotoPoolService $photos,
+        private readonly TemplatePicker $picker,
     ) {}
 
     /**
@@ -134,6 +135,7 @@ class AiProjectAssistantService
         $aiNote = $result->ok ? '' : $result->message($this->ollama->model());
         $place = is_array($context['place'] ?? null) ? $context['place'] : [];
         $photos = array_values(array_filter((array) ($context['photos'] ?? []), 'is_string'));
+        $pickReason = null;
 
         if (($context['mode'] ?? null) === 'content') {
             $template = Template::with('slots')->find($context['template_id'] ?? 0);
@@ -172,8 +174,11 @@ class AiProjectAssistantService
                 ? Str::limit(PastedText::clean($picked['project_name']), 60, '')
                 : ($this->nameFromMessage($message) ?: $category));
 
-            $styleHint = is_string($picked['style_hint'] ?? null) ? trim($picked['style_hint']) : '';
-            $template = $this->pickTemplateInCategory($category, $styleHint);
+            // الطابع من النموذج + أي كلمة طابع في كلام فؤاد نفسه ("عايزه فخم").
+            $styleHint = trim((is_string($picked['style_hint'] ?? null) ? $picked['style_hint'] : '').' '.$message);
+            $choice = $this->picker->pick($category, $this->specialtyContext($message, $place, $projectName), $styleHint);
+            $template = $choice['template'] ?? null;
+            $pickReason = $choice['reason'] ?? null;
 
             if (! $template) {
                 $this->photos->discard($photos);
@@ -221,10 +226,11 @@ class AiProjectAssistantService
         });
 
         $extrasNote = $extras === [] ? '' : "\nومن البيانات اللي بعتها: ".implode('، ', $extras).'.';
+        $templateNote = "بقالب \"{$template->name}\" (فئة {$category}".($pickReason ? "، {$pickReason}" : '').')';
         $reply = match (true) {
-            $aiFilled > 0 => "تمام! عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، ومليت {$aiFilled} خانة بمحتوى مناسب.{$extrasNote}\nاتفرج عليه، وقولي لو عايز تغيّر حاجة.",
-            $aiNote !== '' => "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category}) بالمحتوى الافتراضي للقالب.{$extrasNote}\n{$aiNote}\nلما تصلّحها اكتبلي هنا \"اكتب المحتوى من جديد\".",
-            default => "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، بس الذكاء الاصطناعي مرجّعش محتوى — الخانات فيها المحتوى الافتراضي للقالب.{$extrasNote}\nجرّب تقولي \"اكتب المحتوى من جديد\".",
+            $aiFilled > 0 => "تمام! عملتلك مشروع \"{$projectName}\" {$templateNote}، ومليت {$aiFilled} خانة بمحتوى مناسب.{$extrasNote}\nاتفرج عليه، وقولي لو عايز تغيّر حاجة.",
+            $aiNote !== '' => "عملتلك مشروع \"{$projectName}\" {$templateNote} بالمحتوى الافتراضي للقالب.{$extrasNote}\n{$aiNote}\nلما تصلّحها اكتبلي هنا \"اكتب المحتوى من جديد\".",
+            default => "عملتلك مشروع \"{$projectName}\" {$templateNote}، بس الذكاء الاصطناعي مرجّعش محتوى — الخانات فيها المحتوى الافتراضي للقالب.{$extrasNote}\nجرّب تقولي \"اكتب المحتوى من جديد\".",
         };
 
         $this->logMessages($project, $message, $reply);
@@ -240,7 +246,8 @@ class AiProjectAssistantService
     {
         $prepared = $this->prepareFollowUp($project, $message, $image);
 
-        if (! $prepared['ok']) {
+        // خطأ في الإدخال، أو طلب واضح اتنفّذ على طول من غير ذكاء اصطناعي (FollowUpIntent).
+        if (! $prepared['ok'] || ! isset($prepared['ai'])) {
             return $prepared['reply'];
         }
 
@@ -252,6 +259,10 @@ class AiProjectAssistantService
 
     /**
      * الصورة المرفقة بتتخزن هنا (قبل الذكاء الاصطناعي) عشان خطوة التطبيق متحتاجش الملف تاني.
+     *
+     * (2026-10-08) الطلبات الواضحة (FollowUpIntent — قالب/لون/خط/حجم الخط/رجوع للأصل/مكان الصورة)
+     * بتتنفّذ هنا على طول وبيرجع reply من غير ai — مفيش انتظار للنموذج خالص. "اكتب المحتوى من
+     * جديد" بيروح للنموذج كطلب محتوى مباشر، وأي حاجة تانية للنموذج بشكل رد محدد (followUpSchema).
      *
      * @return array{ok: bool, reply?: string, context?: array<string, mixed>, ai?: array{prompt: string, schema: array<string, mixed>|null, task: string}}
      */
@@ -270,15 +281,94 @@ class AiProjectAssistantService
         }
 
         $imagePath = $image ? '/storage/'.$image->store('site-images', 'public') : null;
+        $context = ['message' => $message, 'image_path' => $imagePath];
+        $intent = FollowUpIntent::detect($message, $imagePath !== null, $project, $site);
+
+        if ($intent !== null && $intent['action'] !== 'rewrite_content') {
+            return ['ok' => true, 'reply' => $this->completeFollowUp($project, $context, AiResult::success($intent, ''))];
+        }
+
+        if ($intent !== null) {
+            $slots = $this->rewritableSlots($project);
+            $firstMessage = (string) $project->aiChatMessages()->where('role', 'user')->value('content');
+            $description = trim($firstMessage."\n\nطلب جديد من صاحب المشروع: ".$message);
+
+            return [
+                'ok' => true,
+                'context' => $context + ['intent' => 'rewrite_content'],
+                'ai' => [
+                    'prompt' => $this->ollama->buildPrompt($slots, $this->promptMessage($description, $project->place_json ?? [])),
+                    'schema' => $this->ollama->contentSchema($slots),
+                    'task' => 'content',
+                ],
+            ];
+        }
 
         return [
             'ok' => true,
-            'context' => ['message' => $message, 'image_path' => $imagePath],
+            'context' => $context,
             'ai' => [
                 'prompt' => $this->buildFollowUpPrompt($project, $site, $this->promptMessage($message), $imagePath !== null),
-                'schema' => null,
+                'schema' => $this->followUpSchema($project),
                 'task' => 'follow_up',
             ],
+        ];
+    }
+
+    /**
+     * الخانات اللي "اكتب المحتوى من جديد" بيكتبها: النصوص والقوايم — من غير آراء العملاء (حقيقية
+     * بس، مبتتألّفش) ولا ملاحظة التواصل لو جاية من بيانات المكان بالحرف.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\TemplateSlot>
+     */
+    private function rewritableSlots(Project $project)
+    {
+        $keepNote = PlaceParser::contactNote($project->place_json ?? []) !== null;
+
+        return $project->template->slots
+            ->whereIn('slot_type', ['text', 'textarea', 'list'])
+            ->reject(fn ($slot) => OllamaService::isTestimonials($slot)
+                || ($keepNote && $slot->key === 'contact_note')
+                || ($slot->section_key === 'testimonials'))
+            ->values();
+    }
+
+    /**
+     * شكل رد النموذج في رسايل التعديل — الفعل من القايمة بالحرف، و"changes" بمفاتيح خانات
+     * القالب الحقيقية بس (النموذج مايقدرش يخترع مفتاح)، والخط من الخطوط المتاحة.
+     *
+     * @return array<string, mixed>
+     */
+    private function followUpSchema(Project $project): array
+    {
+        $text = ['type' => 'string'];
+        $slotProperties = [];
+
+        foreach ($project->template->slots->whereIn('slot_type', ['text', 'textarea', 'list', 'link']) as $slot) {
+            $slotProperties[$slot->key] = $slot->slot_type === 'list' ? ['type' => 'array', 'items' => $text] : $text;
+        }
+
+        return [
+            'type' => 'object',
+            'properties' => [
+                'action' => ['type' => 'string', 'enum' => [
+                    'reset_to_default', 'update_image', 'add_custom_block', 'remove_custom_block',
+                    'change_template', 'update_colors', 'update_font', 'update_content', 'none',
+                ]],
+                'reply' => $text,
+                'changes' => ['type' => 'object', 'properties' => (object) $slotProperties],
+                'colors' => ['type' => 'object', 'properties' => [
+                    'primary' => $text, 'background' => $text, 'surface' => $text, 'text' => $text, 'muted' => $text,
+                ]],
+                'font' => ['type' => 'string', 'enum' => array_keys(TemplateVariant::FONTS)],
+                'category' => $text,
+                'style_hint' => $text,
+                'slot_key' => $text,
+                'block_type' => ['type' => 'string', 'enum' => ['text', 'image']],
+                'content' => $text,
+                'label' => $text,
+            ],
+            'required' => ['action', 'reply'],
         ];
     }
 
@@ -299,10 +389,17 @@ class AiProjectAssistantService
             return $reply;
         }
 
+        if (($context['intent'] ?? null) === 'rewrite_content') {
+            $reply = $this->applyRewriteContent($project, $site, $result->data ?? []);
+            $this->logMessages($project, $message, $reply);
+
+            return $reply;
+        }
+
         $decision = $result->data;
         $action = $decision['action'] ?? 'none';
         $knownActions = [
-            'change_template', 'update_content', 'update_colors', 'update_font',
+            'change_template', 'update_content', 'update_colors', 'update_font', 'update_font_size',
             'reset_to_default', 'update_image', 'add_custom_block', 'remove_custom_block',
         ];
 
@@ -311,7 +408,9 @@ class AiProjectAssistantService
             $action = 'change_template';
             $decision['category'] ??= $project->template->category;
         }
-        if (! in_array($action, $knownActions, true) && preg_match('/رجّع|رجع|الغ[يى]|امسح كل|ارجاع/u', $message)) {
+        // الرجوع الكامل بيمسح كل تعديل — بس لو الرسالة فيها "كل"/"التعديلات" صراحةً (كان أي
+        // "رجّع" لوحدها، فـ"رجّع العنوان زي ما كان" كانت ممكن تمسح كل حاجة).
+        if (! in_array($action, $knownActions, true) && preg_match('/(رجّع|رجع|الغ[يى]|ارجاع).*(كل|التعديلات|الموقع)|امسح كل التعديلات/u', $message)) {
             $action = 'reset_to_default';
         }
 
@@ -320,6 +419,7 @@ class AiProjectAssistantService
             'update_content' => $this->applyUpdateContent($project, $site, $decision),
             'update_colors' => $this->applyUpdateColors($site, $decision),
             'update_font' => $this->applyUpdateFont($site, $decision),
+            'update_font_size' => $this->applyUpdateFontSize($site, $decision),
             'reset_to_default' => $this->applyResetToDefault($site),
             'update_image' => $this->applyUpdateImage($project, $site, $imagePath, $decision),
             'add_custom_block' => $this->applyAddCustomBlock($site, $imagePath, $decision),
@@ -492,7 +592,16 @@ class AiProjectAssistantService
 
         $styleHint = is_string($decision['style_hint'] ?? null) ? trim($decision['style_hint']) : '';
 
-        $newTemplate = $this->pickTemplateInCategory($category, $styleHint, exceptId: $project->template_id);
+        // نفس التخصص (من أول رسالة/بيانات المكان) بتصميم مختلف عن الحالي.
+        $firstMessage = (string) $project->aiChatMessages()->where('role', 'user')->value('content');
+        $choice = $this->picker->pick(
+            $category,
+            $this->specialtyContext($firstMessage, $project->place_json ?? [], $project->name),
+            $styleHint,
+            exceptId: $project->template_id,
+            avoidLayout: $category === $project->template->category ? $project->template->layout : null,
+        );
+        $newTemplate = $choice['template'] ?? null;
 
         if (! $newTemplate) {
             return 'معرفتش ألاقي قالب تاني مناسب في نفس الفئة — ممكن توضح أكتر عايز شكل إيه؟';
@@ -581,6 +690,50 @@ class AiProjectAssistantService
         $site->update(['font_override' => $font]);
 
         return 'تمام، غيّرت الخط لـ"'.TemplateVariant::FONTS[$font].'".';
+    }
+
+    // "كبّر/صغّر الخط" (2026-10-08) — نفس font_size_scale_override بتاع درج "تصميم الموقع"، خطوة
+    // 10% في كل مرة، وفي نفس الحدود اللي الفورم بيقبلها.
+    private function applyUpdateFontSize(GeneratedSite $site, array $decision): string
+    {
+        $scale = is_numeric($decision['scale'] ?? null) ? round(max(0.7, min(1.5, (float) $decision['scale'])), 2) : null;
+
+        if ($scale === null) {
+            return 'معرفتش أحدد حجم الخط — قول "كبّر الخط" أو "صغّر الخط".';
+        }
+
+        $site->update(['font_size_scale_override' => $scale == 1.0 ? null : $scale]);
+
+        return 'تمام، حجم الكلام في الموقع بقى '.(int) round($scale * 100).'% من الأصلي.';
+    }
+
+    /**
+     * "اكتب المحتوى من جديد" — النموذج كتب كل النصوص تاني، وبيتكتبوا فوق القديم (ده المطلوب).
+     * الخانات الفاضية في الرد (أو آراء العملاء) مابتمسحش اللي موجود.
+     *
+     * @param  array<mixed, mixed>  $data
+     */
+    private function applyRewriteContent(Project $project, GeneratedSite $site, array $data): string
+    {
+        $written = $this->ollama->filterToKnownKeys($this->rewritableSlots($project), $data);
+        $content = $site->content_json ?? [];
+        $count = 0;
+
+        foreach ($written as $key => $value) {
+            if ($value === '' || $value === []) {
+                continue;
+            }
+            $content[$key] = $value;
+            $count++;
+        }
+
+        if ($count === 0) {
+            return 'الذكاء الاصطناعي مرجّعش محتوى المرة دي — جرّب تاني.';
+        }
+
+        $site->update(['content_json' => $content]);
+
+        return "تمام، كتبت المحتوى من جديد ({$count} خانة) — اتفرج عليه.";
     }
 
     // إلغاء كل التعديلات اليدوية ورجوع الموقع لشكل القالب الأصلي (المرحلة 4، 2026-09-24) —
@@ -699,57 +852,16 @@ class AiProjectAssistantService
     }
 
     /**
-     * بتدوّر على قالب داخل فئة معيّنة، بـ3 مستويات أولوية: (1) اسم القالب نفسه فيه كلمة
-     * الطابع المطلوب حرفياً (زي "فاخر" جوه "مطعم فاخر")، (2) طابع القالب (layout) شخصيته
-     * قريبة من الكلمة المطلوبة (بنستخدم نفس LAYOUT_KEYWORDS بتاعة SeedTemplateLibrary —
-     * بيغطي حالة إن النموذج رجّع كلمة زي "راقي" مش موجودة حرفياً في اسم القالب بس فعلاً
-     * بتوصف تصميم glass/framed/signature)، (3) عشوائي تماماً.
+     * الكلام اللي بيوصف تخصص النشاط (لاختيار القالب — TemplatePicker): الاسم + نوع النشاط على
+     * جوجل + رسالة فؤاد. (2026-10-08) اختيار القالب اتنقل كله لـTemplatePicker — قبله كان: اسم
+     * القالب فيه كلمة الطابع حرفياً، وإلا عشوائي. ⚠️ درس 2026-09-21 لسه سارٍ هناك: لو مفيش
+     * دليل، الاختيار مش "أول قالب أبجدياً" (كان "غيّر القالب" بيلف بين نفس القالبين).
      *
-     * ⚠️ (اتصلح 2026-09-21) المستوى الأخير **لازم يفضل عشوائي مش "أول قالب أبجدياً"** —
-     * كان قبل كده `$templates->first()` بعد استبعاد القالب الحالي بس، فلو تصنيف الطابع فشل
-     * (بيحصل مع نموذج صغير زي qwen3:8b)، "غيّر القالب" كان بيدور بين نفس القالبين بس كل
-     * مرة (الأول أبجدياً، وبعد استبعاده القالب اللي قبله يرجع الأول تاني) بدل ما يجرّب حاجة
-     * فعلاً مختلفة — لوحظ حياً: طلب "قالب فاخر" مرتين ورجع بينهم على نفس القالب الأصلي.
-     *
-     * $exceptId بيستبعد القالب الحالي (لما المستخدم يطلب "غيّر القالب" — الرد لازم يكون
-     * قالب مختلف فعلاً مش نفسه).
+     * @param  array<string, mixed>  $place
      */
-    private function pickTemplateInCategory(string $category, string $styleHint, ?int $exceptId = null): ?Template
+    private function specialtyContext(string $message, array $place, string $name): string
     {
-        $query = Template::where('is_active', true)->where('category', $category);
-
-        if ($exceptId) {
-            $query->where('id', '!=', $exceptId);
-        }
-
-        $templates = $query->with('variants')->get();
-
-        if ($templates->isEmpty()) {
-            return null;
-        }
-
-        if ($styleHint !== '') {
-            $match = $templates->first(fn (Template $t) => str_contains($t->name, $styleHint));
-            if ($match) {
-                return $match;
-            }
-
-            $byLayout = $templates->first(function (Template $t) use ($styleHint) {
-                foreach (SeedTemplateLibrary::LAYOUT_KEYWORDS[$t->layout] ?? [] as $keyword) {
-                    if (str_contains($keyword, $styleHint) || str_contains($styleHint, $keyword)) {
-                        return true;
-                    }
-                }
-
-                return false;
-            });
-
-            if ($byLayout) {
-                return $byLayout;
-            }
-        }
-
-        return $templates->random();
+        return implode("\n", array_filter([$name, (string) ($place['kind'] ?? ''), Str::limit($message, 2000, '')]));
     }
 
     /**

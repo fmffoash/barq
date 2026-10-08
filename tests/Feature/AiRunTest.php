@@ -259,7 +259,7 @@ class AiRunTest extends TestCase
         $run = $this->post(route('ai-runs.start'), [
             'kind' => 'follow_up',
             'project_id' => $project->id,
-            'message' => 'حط الصورة دي في الهيرو',
+            'message' => 'حط الصورة دي جنب الخدمات',
             'image' => UploadedFile::fake()->image('photo.jpg', 400, 300),
         ], ['Accept' => 'application/json'])->json('run');
 
