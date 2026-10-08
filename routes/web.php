@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AiRunController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeneratedSiteController;
@@ -48,6 +49,15 @@ Route::middleware('auth')->group(function () {
     Route::post('ai', [AiChatController::class, 'store'])->name('ai-chat.store');
     Route::get('projects/{project}/ai', [AiChatController::class, 'show'])->name('ai-chat.show');
     Route::post('projects/{project}/ai', [AiChatController::class, 'message'])->name('ai-chat.message');
+
+    // طلبات الذكاء الاصطناعي بالعدّاد والبث (AiRunController) — نفس الأفعال اللي فوق بالظبط،
+    // بس المتصفح بيشوف الرد وهو بيتكتب والوقت الباقي. الفورمز اللي فوق فاضلة للحالة اللي
+    // الجافاسكريبت مش شغال فيها.
+    Route::post('ai/runs', [AiRunController::class, 'start'])->name('ai-runs.start');
+    Route::post('ai/runs/{run}/stream', [AiRunController::class, 'stream'])->name('ai-runs.stream');
+    Route::post('ai/runs/{run}/server', [AiRunController::class, 'server'])->name('ai-runs.server');
+    Route::post('ai/runs/{run}/complete', [AiRunController::class, 'complete'])->name('ai-runs.complete');
+    Route::post('ai/runs/{run}/cancel', [AiRunController::class, 'cancel'])->name('ai-runs.cancel');
 
     Route::resource('projects', ProjectController::class);
     Route::post('projects/{project}/deliver', [ProjectController::class, 'deliver'])

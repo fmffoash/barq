@@ -28,7 +28,9 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('ai-chat.store') }}" id="ai-create-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+    {{-- data-ai-run: resources/js/ai-run.js بيبعته بالعدّاد (AiRunController)، والـaction العادي
+    للحالة اللي الجافاسكريبت مش شغال فيها. --}}
+    <form method="POST" action="{{ route('ai-chat.store') }}" id="ai-create-form" data-ai-run="create" data-ai-run-url="{{ route('ai-runs.start') }}" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         @csrf
         <textarea
             name="message"
@@ -113,22 +115,14 @@
     </form>
 
     <p class="mt-3 text-xs text-slate-600">
-        ملحوظة: التوليد بياخد نص دقيقة تقريباً (النموذج شغال محلي على السيرفر، صفر بيانات بتتبعت لأي API خارجي).
+        ملحوظة: النموذج شغال محلي (صفر بيانات بتتبعت لأي API خارجي) — هتشوف عدّاد بالمرحلة والوقت الباقي وهو شغال.
     </p>
 @endsection
 
 @push('scripts')
-    <script id="ai-templates-data" type="application/json">{!! $templates->toJson() !!}</script>
+    {{-- @json بيهرّب < و > — اسم قالب فيه "</script>" مايقدرش يقفل الوسم ده. --}}
+    <script id="ai-templates-data" type="application/json">@json($templates)</script>
     <script>
-        document.addEventListener('submit', function (event) {
-            if (!event.target.contains(document.querySelector('[data-ai-submit]'))) return;
-            const btn = event.target.querySelector('[data-ai-submit]');
-            if (btn && event.submitter === btn) {
-                btn.disabled = true;
-                btn.textContent = 'بيفكر... (نص دقيقة تقريباً)';
-            }
-        });
-
         // فلترة القالب بالفئة المختارة (2026-09-21) — كل البيانات (300 قالب، id/name/category
         // بس) متحمّلة في الصفحة من الأول، فالفلترة بتحصل فوراً في المتصفح من غير أي نداء
         // تاني للسيرفر. لو الأدمن معملش أي اختيار هنا، القوايم دي بتفضل disabled فمش

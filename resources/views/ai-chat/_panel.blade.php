@@ -23,7 +23,7 @@
         @endforelse
     </div>
 
-    <form method="POST" action="{{ route('ai-chat.message', $project) }}" enctype="multipart/form-data" class="space-y-2 border-t border-slate-800 pt-4">
+    <form method="POST" action="{{ route('ai-chat.message', $project) }}" enctype="multipart/form-data" data-ai-run="follow_up" data-ai-run-url="{{ route('ai-runs.start') }}" data-ai-project="{{ $project->id }}" class="space-y-2 border-t border-slate-800 pt-4">
         @csrf
         {{-- صورة جاهزة اختيارية (المرحلة 4، 2026-09-24) — فؤاد يرفق صورة عنده ويقول في
         الرسالة "حطها في كذا" أو "ضيف صورة جديدة"، والذكاء الاصطناعي بيقرر الخانة المناسبة
@@ -49,14 +49,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('submit', function (event) {
-            const btn = event.target.querySelector('[data-ai-submit]');
-            if (btn && event.submitter === btn) {
-                btn.disabled = true;
-                btn.textContent = 'بيفكر...';
-            }
-        });
-
+        // الإرسال نفسه (بالعدّاد) في resources/js/ai-run.js — الفورم عليه data-ai-run.
         const chatLog = document.getElementById('chat-log');
         if (chatLog) chatLog.scrollTop = chatLog.scrollHeight;
     </script>

@@ -40,7 +40,7 @@
             القالب دا لسه مفيهوش أي خانة محتوى. ضيف خانات من صفحة القالب الأول.
         </div>
     @else
-        <form method="POST" action="{{ route('projects.site.suggest', $project) }}" class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <form method="POST" action="{{ route('projects.site.suggest', $project) }}" data-ai-run="suggest" data-ai-run-url="{{ route('ai-runs.start') }}" data-ai-project="{{ $project->id }}" class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
             @csrf
             <h2 class="mb-1.5 text-sm font-semibold text-slate-200">✨ اقترح محتوى بالذكاء الاصطناعي</h2>
             <p class="mb-3 text-xs text-slate-500">

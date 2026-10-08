@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Template;
 use App\Models\TemplateVariant;
+use App\Services\Ai\Runs\SuggestContentRun;
 use App\Services\OllamaService;
 use App\Services\RichTextSanitizer;
 use App\Services\SiteExportService;
@@ -359,58 +360,25 @@ class GeneratedSiteController extends Controller
 
     // بتاخد وصف قصير للنشاط وتقترح محتوى بالذكاء الاصطناعي (Ollama) للخانات الفاضية بس —
     // أي خانة اتكتب فيها حاجة يدوي بالفعل بتفضل زي ما هي، صفر دعس على محتوى الأدمن.
-    public function suggest(Request $request, Project $project): RedirectResponse
+    // (2026-10-08) المنطق نفسه في SuggestContentRun — نفس الكلاس اللي المتصفح بيشغّله بالعدّاد
+    // (AiRunController)، والمسار ده للحالة اللي الجافاسكريبت مش شغال فيها.
+    public function suggest(Request $request, Project $project, SuggestContentRun $suggester): RedirectResponse
     {
         $validated = $request->validate([
             'business_description' => ['required', 'string', 'max:500'],
         ]);
 
-        $project->loadMissing('template.slots');
+        $prepared = $suggester->prepareFor($project, $validated['business_description']);
 
-        $site = $project->site()->firstOrFail();
-        $content = $site->content_json ?? [];
+        if (! isset($prepared['ai'])) {
+            return redirect()->route('projects.site.edit', $project)->with('status', $prepared['reply'] ?? '');
+        }
 
         $ollama = app(OllamaService::class);
-        $result = $ollama->preflight() ?? $ollama->suggestContentResult($project->template, $validated['business_description']);
-        $suggestions = $result->ok ? $result->data : [];
+        $result = $ollama->preflight()
+            ?? $ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
 
-        if ($suggestions === []) {
-            return redirect()
-                ->route('projects.site.edit', $project)
-                ->with('status', $result->ok
-                    ? 'الذكاء الاصطناعي مرجّعش محتوى المرة دي — جرّب تاني أو كمّل الخانات يدوي.'
-                    : $result->message($ollama->model()));
-        }
-
-        $filledCount = 0;
-
-        foreach ($suggestions as $key => $value) {
-            if (! $this->slotIsEmpty($content[$key] ?? null)) {
-                continue;
-            }
-
-            // $value مطهّر بالفعل لخانات text/textarea (OllamaService::filterToKnownKeys بقى
-            // بينادي RichTextSanitizer::clean() مركزياً — المرحلة 1).
-            $content[$key] = $value;
-            $filledCount++;
-        }
-
-        $site->update(['content_json' => $content]);
-
-        $message = $filledCount > 0
-            ? "تم اقتراح محتوى لـ {$filledCount} خانة فاضية — راجعها وعدّل اللي محتاجه."
-            : 'كل الخانات معبّاة بالفعل — مفيش خانة فاضية تتقترح ليها محتوى.';
-
-        return redirect()->route('projects.site.edit', $project)->with('status', $message);
-    }
-
-    private function slotIsEmpty(mixed $value): bool
-    {
-        if (is_array($value)) {
-            return $value === [];
-        }
-
-        return $value === null || trim((string) $value) === '';
+        return redirect()->route('projects.site.edit', $project)->with('status', $suggester->apply($project, $result));
     }
 
     public function publish(Project $project): RedirectResponse

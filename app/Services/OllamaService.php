@@ -100,19 +100,23 @@ class OllamaService
      */
     public function run(string $prompt, ?array $schema = null, string $task = 'content'): AiResult
     {
-        $timeout = $this->timeout();
+        return $this->runBody($this->body($prompt, $schema, $task), $task, mb_strlen($prompt));
+    }
 
-        // سيرفر PHP المدمج بيطبّق max_execution_time، وعلى ويندوز العداد ده وقت فعلي مش وقت
-        // معالج — فبنمدّه يغطي مهلة Ollama كاملة. لو الحد أصلاً 0 (مفتوح) مبنلمسوش.
-        $currentLimit = (int) ini_get('max_execution_time');
-        if ($currentLimit > 0 && function_exists('set_time_limit')) {
-            @set_time_limit(max($currentLimit, $timeout + 30));
-        }
+    /**
+     * نفس run() بس بجسم طلب جاهز (طلب اتجهّز قبل كده واتحفظ في ai_runs — AiRunController).
+     *
+     * @param  array<string, mixed>  $body
+     */
+    public function runBody(array $body, string $task, int $promptChars = 0): AiResult
+    {
+        $body['stream'] = false;
+        $this->extendTimeLimit();
 
         try {
-            $response = Http::timeout($timeout)
+            $response = Http::timeout($this->timeout())
                 ->connectTimeout(5)
-                ->post($this->baseUrl().'/api/generate', $this->body($prompt, $schema, $task));
+                ->post($this->baseUrl().'/api/generate', $body);
         } catch (ConnectionException $e) {
             $timedOut = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28');
             Log::warning('Ollama request failed to complete.', ['message' => $e->getMessage()]);
@@ -134,7 +138,87 @@ class OllamaService
             );
         }
 
-        return $this->finish((string) $response->json('response'), (array) $response->json(), $task);
+        return $this->finish((string) $response->json('response'), (array) $response->json(), $task, (string) ($body['model'] ?? ''), $promptChars);
+    }
+
+    /**
+     * بث الرد سطر بسطر (NDJSON زي Ollama بالظبط) — المسار اللي السيرفر بيوصّل فيه الرد للمتصفح
+     * لما المتصفح مش قادر يكلّم Ollama بنفسه. أي فشل بيطلع سطر {"error": ..., "kind": ...} بدل
+     * ما البث يقف ساكت.
+     *
+     * @param  array<string, mixed>  $body
+     * @param  callable(string): void  $emit
+     */
+    public function stream(array $body, callable $emit): void
+    {
+        $body['stream'] = true;
+        $this->extendTimeLimit();
+
+        try {
+            $response = Http::timeout($this->timeout())
+                ->connectTimeout(5)
+                ->withOptions(['stream' => true])
+                ->post($this->baseUrl().'/api/generate', $body);
+        } catch (ConnectionException $e) {
+            $timedOut = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28');
+            $emit($this->errorLine($timedOut ? AiResult::TIMEOUT : AiResult::DOWN, $e->getMessage()));
+
+            return;
+        } catch (Throwable $e) {
+            $emit($this->errorLine(AiResult::DOWN, $e->getMessage()));
+
+            return;
+        }
+
+        if (! $response->successful()) {
+            $error = (string) ($response->json('error') ?? $response->body());
+            $emit($this->errorLine($response->status() === 404 && str_contains($error, 'not found') ? AiResult::MODEL_MISSING : AiResult::HTTP_ERROR, $error));
+
+            return;
+        }
+
+        $stream = $response->toPsrResponse()->getBody();
+        $buffer = '';
+
+        try {
+            while (! $stream->eof()) {
+                $buffer .= $stream->read(8192);
+
+                while (($newline = strpos($buffer, "\n")) !== false) {
+                    $line = trim(substr($buffer, 0, $newline));
+                    $buffer = substr($buffer, $newline + 1);
+
+                    if ($line !== '') {
+                        $emit($line);
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            $emit($this->errorLine(str_contains($e->getMessage(), 'timed out') ? AiResult::TIMEOUT : AiResult::DOWN, $e->getMessage()));
+
+            return;
+        }
+
+        if (trim($buffer) !== '') {
+            $emit(trim($buffer));
+        }
+    }
+
+    private function errorLine(string $kind, string $detail): string
+    {
+        Log::warning('Ollama stream failed.', ['kind' => $kind, 'message' => $detail]);
+
+        return (string) json_encode(['error' => $detail, 'kind' => $kind], JSON_UNESCAPED_UNICODE);
+    }
+
+    // سيرفر PHP المدمج بيطبّق max_execution_time، وعلى ويندوز العداد ده وقت فعلي مش وقت
+    // معالج — فبنمدّه يغطي مهلة Ollama كاملة. لو الحد أصلاً 0 (مفتوح) مبنلمسوش.
+    private function extendTimeLimit(): void
+    {
+        $currentLimit = (int) ini_get('max_execution_time');
+        if ($currentLimit > 0 && function_exists('set_time_limit')) {
+            @set_time_limit(max($currentLimit, $this->timeout() + 30));
+        }
     }
 
     /**
@@ -142,8 +226,10 @@ class OllamaService
      * المتصفح جمّعه من البث.
      *
      * @param  array<string, mixed>  $metrics  آخر رسالة من Ollama (فيها التوقيتات وdone_reason)
+     * @param  string  $model  النموذج اللي اتبعتله الطلب فعلاً (فاضي = النموذج الحالي)
+     * @param  int  $promptChars  طول البرومبت بالحروف (عشان تقدير عدد التوكنز للعدّاد)
      */
-    public function finish(string $text, array $metrics, string $task): AiResult
+    public function finish(string $text, array $metrics, string $task, string $model = '', int $promptChars = 0): AiResult
     {
         $metrics = array_intersect_key($metrics, array_flip([
             'total_duration', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration',
@@ -152,7 +238,7 @@ class OllamaService
 
         if (($metrics['eval_count'] ?? 0) > 0) {
             try {
-                AiStats::record($this->model(), $task, $metrics);
+                AiStats::record($model !== '' ? $model : $this->model(), $task, $metrics, $promptChars);
             } catch (Throwable) {
                 // التسجيل للعدّاد بس — فشله ميأثرش على الرد نفسه.
             }
@@ -229,6 +315,56 @@ class OllamaService
             || (! str_contains($model, ':') && $names->contains($model.':latest'));
 
         return $installed ? null : AiResult::failure(AiResult::MODEL_MISSING, $model);
+    }
+
+    /**
+     * النموذج محمّل في الذاكرة دلوقتي ولا هياخد وقت تحميل الأول (للعدّاد بس — أي فشل = "مش
+     * معروف"، فالعدّاد بيحسب وقت التحميل احتياطي).
+     */
+    public function isLoaded(?string $model = null): ?bool
+    {
+        $model ??= $this->model();
+
+        try {
+            $response = Http::timeout(2)->connectTimeout(1)->get($this->baseUrl().'/api/ps');
+        } catch (Throwable) {
+            return null;
+        }
+
+        if (! $response->successful() || ! is_array($response->json('models'))) {
+            return null;
+        }
+
+        return collect($response->json('models'))
+            ->contains(fn ($m) => in_array($m['name'] ?? $m['model'] ?? null, [$model, $model.':latest'], true));
+    }
+
+    /**
+     * المتصفح يكلّم Ollama بنفسه (بث مباشر، السيرفر فاضي لباقي الصفحات) — ده ممكن بس لو Ollama
+     * والصفحة الاتنين على نفس الجهاز (127.0.0.1/localhost): Ollama بيقبل الطلبات من الأصول دي
+     * بس افتراضياً (OLLAMA_ORIGINS)، ولو البرنامج مفتوح من جهاز تاني أو دومين، "127.0.0.1" في
+     * المتصفح هيبقى جهاز تاني خالص. OLLAMA_BROWSER_DIRECT=false بيقفله نهائياً.
+     */
+    public function browserDirect(string $requestHost): bool
+    {
+        $setting = config('services.ollama.browser_direct', 'auto');
+
+        if (is_bool($setting)) {
+            return $setting;
+        }
+
+        $setting = strtolower((string) $setting);
+        if (in_array($setting, ['0', 'false', 'off', 'no', 'never'], true)) {
+            return false;
+        }
+        if (in_array($setting, ['1', 'true', 'on', 'yes', 'always'], true)) {
+            return true;
+        }
+
+        $loopback = ['127.0.0.1', 'localhost', '::1', '[::1]'];
+        $ollamaHost = strtolower((string) parse_url($this->baseUrl(), PHP_URL_HOST));
+
+        return in_array($ollamaHost, $loopback, true) && in_array(strtolower($requestHost), $loopback, true);
     }
 
     /**

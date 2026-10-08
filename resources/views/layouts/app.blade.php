@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', '')</title>
 
@@ -61,6 +62,10 @@
     <main class="px-6 py-8">
         @yield('content')
     </main>
+
+    @auth
+        @include('partials.ai-run-panel')
+    @endauth
 
     @stack('scripts')
 </body>

@@ -22,10 +22,15 @@ class AiStats
         'extract' => 800, 'classify' => 200, 'benchmark' => 120,
     ];
 
+    // عدد الحروف في التوكن الواحد تقريباً (عربي + شوية إنجليزي) لحد ما يتقاس من ردود حقيقية —
+    // العدّاد محتاجه عشان يقدّر وقت "قراية الطلب" قبل ما Ollama يقول عدد التوكنز الفعلي.
+    private const DEFAULT_CHARS_PER_TOKEN = 2.8;
+
     /**
      * @param  array<string, mixed>  $metrics  الحقول اللي Ollama بيرجّعها في آخر رد
+     * @param  int  $promptChars  طول البرومبت بالحروف (0 = مش معروف)
      */
-    public static function record(string $model, string $task, array $metrics): void
+    public static function record(string $model, string $task, array $metrics, int $promptChars = 0): void
     {
         $all = (array) Setting::get(self::KEY, []);
         $stats = $all[$model] ?? ['tasks' => [], 'n' => 0];
@@ -49,6 +54,14 @@ class AiStats
         }
         if ($evalCount > 0) {
             $stats['tasks'][$task]['eval_count'] = self::ema($stats['tasks'][$task]['eval_count'] ?? null, $evalCount);
+        }
+        // Ollama بيعيد استخدام أول الطلب لو اتكرر (الكاش) فبيعدّ توكنز أقل من الحقيقي — نسبة
+        // برّه المعقول (أو طلب قصير) معناها كاش، فبنتجاهلها.
+        if ($promptChars >= 500 && $promptCount >= 150) {
+            $ratio = $promptChars / $promptCount;
+            if ($ratio >= 1.2 && $ratio <= 6.0) {
+                $stats['chars_per_token'] = self::ema($stats['chars_per_token'] ?? null, $ratio);
+            }
         }
 
         $stats['n'] = (int) ($stats['n'] ?? 0) + 1;
@@ -74,6 +87,15 @@ class AiStats
             'eval_tokens' => (int) round((float) ($stats['tasks'][$task]['eval_count'] ?? self::DEFAULT_EVAL_TOKENS[$task] ?? 400)),
             'measured' => isset($stats['eval_tps']),
         ];
+    }
+
+    // تقدير عدد توكنز برومبت طوله $chars حرف بالنموذج ده.
+    public static function promptTokens(string $model, int $chars): int
+    {
+        $stats = ((array) Setting::get(self::KEY, []))[$model] ?? [];
+        $ratio = (float) ($stats['chars_per_token'] ?? self::DEFAULT_CHARS_PER_TOKEN);
+
+        return (int) ceil($chars / max($ratio, 1.0));
     }
 
     /**
