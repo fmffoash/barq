@@ -11,6 +11,7 @@ use App\Models\TemplateVariant;
 use App\Services\Ai\AiResult;
 use App\Support\CategoryGuesser;
 use App\Support\PastedText;
+use App\Support\PlaceParser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,10 @@ use Illuminate\Support\Str;
  */
 class AiProjectAssistantService
 {
-    public function __construct(private readonly OllamaService $ollama) {}
+    public function __construct(
+        private readonly OllamaService $ollama,
+        private readonly PhotoPoolService $photos,
+    ) {}
 
     /**
      * أول رسالة — لسه معندناش مشروع. بتختار فئة وقالب مناسبين، تعمل المشروع، وتملّي محتواه.
@@ -44,9 +48,9 @@ class AiProjectAssistantService
      *
      * @return array{ok: bool, reply: string, project?: Project}
      */
-    public function createFromMessage(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null): array
+    public function createFromMessage(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null, array $photos = []): array
     {
-        $prepared = $this->prepareCreate($message, $templateId, $color, $font);
+        $prepared = $this->prepareCreate($message, $templateId, $color, $font, $photos);
 
         if (! $prepared['ok']) {
             return $prepared;
@@ -60,9 +64,13 @@ class AiProjectAssistantService
     }
 
     /**
+     * $photos: صور اتخزنت بالفعل (PhotoPoolService — ملزوقة من جوجل مابس أو مرفوعة) بتتوزّع
+     * على خانات الصور لما المشروع يتعمل.
+     *
+     * @param  list<string>  $photos
      * @return array{ok: bool, reply?: string, context?: array<string, mixed>, ai?: array{prompt: string, schema: array<string, mixed>, task: string}}
      */
-    public function prepareCreate(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null): array
+    public function prepareCreate(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null, array $photos = []): array
     {
         $message = PastedText::clean($message);
 
@@ -70,7 +78,10 @@ class AiProjectAssistantService
             return ['ok' => false, 'reply' => 'اكتب وصف للنشاط الأول (أو الزق بياناته).'];
         }
 
-        $context = ['message' => $message, 'color' => $color, 'font' => $font];
+        // بيانات المكان بالحرف (تليفون/عنوان/مواعيد/تقييم) — بتتحط في الموقع مباشرة وبتروح للنموذج
+        // كبيانات مؤكدة (PlaceParser).
+        $place = PlaceParser::parse($message);
+        $context = ['message' => $message, 'color' => $color, 'font' => $font, 'place' => $place, 'photos' => array_values($photos)];
 
         if ($templateId) {
             $template = Template::where('is_active', true)->where('kind', 'landing')->with('slots')->find($templateId);
@@ -85,7 +96,7 @@ class AiProjectAssistantService
                 'ok' => true,
                 'context' => $context + ['mode' => 'content', 'template_id' => $template->id],
                 'ai' => [
-                    'prompt' => $this->ollama->buildPrompt($slots, $this->promptMessage($message)),
+                    'prompt' => $this->ollama->buildPrompt($slots, $this->promptMessage($message, $place)),
                     'schema' => $this->ollama->contentSchema($slots),
                     'task' => 'content',
                 ],
@@ -104,7 +115,7 @@ class AiProjectAssistantService
             'ok' => true,
             'context' => $context + ['mode' => 'pick', 'guess' => $guess['category'] ?? null],
             'ai' => [
-                'prompt' => $this->buildCreatePrompt($this->promptMessage($message), $categories, $guess['category'] ?? null),
+                'prompt' => $this->buildCreatePrompt($this->promptMessage($message, $place), $categories, $guess['category'] ?? null),
                 'schema' => $this->createSchema($categories),
                 'task' => 'create',
             ],
@@ -121,16 +132,20 @@ class AiProjectAssistantService
     {
         $message = (string) $context['message'];
         $aiNote = $result->ok ? '' : $result->message($this->ollama->model());
+        $place = is_array($context['place'] ?? null) ? $context['place'] : [];
+        $photos = array_values(array_filter((array) ($context['photos'] ?? []), 'is_string'));
 
         if (($context['mode'] ?? null) === 'content') {
             $template = Template::with('slots')->find($context['template_id'] ?? 0);
 
             if (! $template) {
+                $this->photos->discard($photos);
+
                 return ['ok' => false, 'reply' => 'القالب اللي اخترته اتمسح في النص — اختار قالب تاني.'];
             }
 
             $category = (string) $template->category;
-            $projectName = $this->nameFromMessage($message) ?: $template->name;
+            $projectName = $place['name'] ?? ($this->nameFromMessage($message) ?: $template->name);
             $content = $result->ok
                 ? $this->ollama->filterToKnownKeys($template->slots, $result->data)
                 : [];
@@ -144,20 +159,25 @@ class AiProjectAssistantService
                 : (in_array($context['guess'] ?? null, $categories->all(), true) ? $context['guess'] : null);
 
             if ($category === null) {
+                $this->photos->discard($photos);
+
                 return [
                     'ok' => false,
                     'reply' => trim(($aiNote !== '' ? $aiNote."\n" : '').'معرفتش أحدد نوع النشاط من الكلام ده — اكتب نوعه صراحة في أول السطر (مثلاً: عيادة أسنان، مطعم مشويات، صالون حريمي) وجرّب تاني.'),
                 ];
             }
 
-            $projectName = is_string($picked['project_name'] ?? null) && trim($picked['project_name']) !== ''
+            // الاسم من جوجل مابس بالحرف أولى من اسم النموذج (ممكن يترجمه أو يزوّد عليه).
+            $projectName = $place['name'] ?? (is_string($picked['project_name'] ?? null) && trim($picked['project_name']) !== ''
                 ? Str::limit(PastedText::clean($picked['project_name']), 60, '')
-                : ($this->nameFromMessage($message) ?: $category);
+                : ($this->nameFromMessage($message) ?: $category));
 
             $styleHint = is_string($picked['style_hint'] ?? null) ? trim($picked['style_hint']) : '';
             $template = $this->pickTemplateInCategory($category, $styleHint);
 
             if (! $template) {
+                $this->photos->discard($photos);
+
                 return ['ok' => false, 'reply' => 'معرفتش ألاقي قالب مناسب — جرّب توصف النشاط بشكل مختلف شوية.'];
             }
 
@@ -173,12 +193,18 @@ class AiProjectAssistantService
         $colorsOverride = is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) ? ['primary' => $color] : null;
         $fontOverride = is_string($font) && array_key_exists($font, TemplateVariant::FONTS) ? $font : null;
 
-        $project = DB::transaction(function () use ($template, $variant, $projectName, $content, $colorsOverride, $fontOverride) {
+        $aiFilled = count($content);
+        [$content, $extras] = $this->finalizeContent($template, $content, $place, $photos);
+        $projectName = Str::limit(PastedText::clean($projectName), 60, '');
+
+        $project = DB::transaction(function () use ($template, $variant, $projectName, $content, $colorsOverride, $fontOverride, $place, $photos) {
             $project = Project::create([
                 'template_id' => $template->id,
                 'template_variant_id' => $variant?->id,
                 'name' => $projectName,
                 'slug' => $this->uniqueProjectSlug($projectName),
+                'contact_phone' => $place['phones'][0] ?? null,
+                'place_json' => $place ?: null,
                 'status' => 'draft',
             ]);
 
@@ -188,16 +214,17 @@ class AiProjectAssistantService
                 'content_json' => $content,
                 'colors_override_json' => $colorsOverride,
                 'font_override' => $fontOverride,
+                'photo_pool_json' => $photos ?: null,
             ]);
 
             return $project;
         });
 
-        $filledCount = count($content);
+        $extrasNote = $extras === [] ? '' : "\nومن البيانات اللي بعتها: ".implode('، ', $extras).'.';
         $reply = match (true) {
-            $filledCount > 0 => "تمام! عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، ومليت {$filledCount} خانة بمحتوى مناسب. اتفرج عليه تحت، وقولي لو عايز تغيّر حاجة.",
-            $aiNote !== '' => "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category}) بالمحتوى الافتراضي للقالب.\n{$aiNote}\nلما تصلّحها اكتبلي هنا \"اكتب المحتوى من جديد\".",
-            default => "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، بس الذكاء الاصطناعي مرجّعش محتوى — الخانات فيها المحتوى الافتراضي للقالب. جرّب تقولي \"اكتب المحتوى من جديد\".",
+            $aiFilled > 0 => "تمام! عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، ومليت {$aiFilled} خانة بمحتوى مناسب.{$extrasNote}\nاتفرج عليه، وقولي لو عايز تغيّر حاجة.",
+            $aiNote !== '' => "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category}) بالمحتوى الافتراضي للقالب.{$extrasNote}\n{$aiNote}\nلما تصلّحها اكتبلي هنا \"اكتب المحتوى من جديد\".",
+            default => "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، بس الذكاء الاصطناعي مرجّعش محتوى — الخانات فيها المحتوى الافتراضي للقالب.{$extrasNote}\nجرّب تقولي \"اكتب المحتوى من جديد\".",
         };
 
         $this->logMessages($project, $message, $reply);
@@ -308,6 +335,83 @@ class AiProjectAssistantService
     }
 
     /**
+     * بعد رد الذكاء الاصطناعي (أو فشله) — اللي جه من فؤاد نفسه بيتحط بالحرف:
+     * - زرار التواصل (واتساب/اتصال/الموقع) والمواعيد والعنوان من بيانات المكان (PlaceParser).
+     * - الصور اللي لزقها/رفعها بالترتيب في خانات الصور (PhotoPoolService::assign).
+     * - آراء العملاء: الافتراضية في المكتبة أسماء متألّفة — على موقع نشاط حقيقي ده كدب. لو
+     *   النموذج مالقاش آراء حقيقية في الكلام، القسم بيتشال (أو بيبقى سطر تقييم جوجل الحقيقي بس).
+     *
+     * @param  array<string, mixed>  $content
+     * @param  array<string, mixed>  $place
+     * @param  list<string>  $photos
+     * @return array{0: array<string, mixed>, 1: list<string>} المحتوى + وصف اللي اتحط (للرد)
+     */
+    private function finalizeContent(Template $template, array $content, array $place, array $photos): array
+    {
+        $template->loadMissing('slots');
+        $slots = $template->slots->keyBy('key');
+        $extras = [];
+
+        if ($link = PlaceParser::contactLink($place)) {
+            $filledLink = false;
+            foreach ($template->slots->where('slot_type', 'link') as $slot) {
+                if (empty($content[$slot->key])) {
+                    $content[$slot->key] = $link;
+                    $filledLink = true;
+                }
+            }
+            if ($filledLink) {
+                $extras[] = str_starts_with($link, 'https://wa.me/') ? 'زرار واتساب برقمه' : (str_starts_with($link, 'tel:') ? 'زرار اتصال برقمه' : 'لينك موقعه');
+            }
+        }
+
+        if (($note = PlaceParser::contactNote($place)) && $slots->has('contact_note')) {
+            $content['contact_note'] = RichTextSanitizer::clean($note);
+            $extras[] = 'المواعيد والعنوان';
+        }
+
+        foreach ($template->slots->where('slot_type', 'list') as $slot) {
+            if (! str_contains($slot->key, 'testimonial')) {
+                continue;
+            }
+
+            $titleKey = $template->slots->first(fn ($s) => $s->section_key === $slot->section_key && $s->slot_type === 'text')?->key;
+            $real = array_values(array_filter((array) ($content[$slot->key] ?? []), fn ($item) => is_string($item) && trim($item) !== ''));
+            $rating = PlaceParser::ratingLine($place);
+
+            $content[$slot->key] = $real;
+            if ($titleKey && $rating) {
+                $content[$titleKey] = $rating;
+                $extras[] = 'تقييم جوجل';
+            } elseif ($titleKey && $real === []) {
+                $content[$titleKey] = '';
+            }
+        }
+
+        $content = $this->photos->assign($template, $content, $photos);
+        $placed = count(array_filter($content, fn ($value) => is_string($value) && in_array($value, $photos, true)));
+        if ($placed > 0) {
+            $extras[] = self::photosLabel($placed).' في الموقع';
+        }
+        if (count($photos) > $placed) {
+            $extras[] = self::photosLabel(count($photos) - $placed).' زيادة في مخزن صور المشروع';
+        }
+
+        return [$content, $extras];
+    }
+
+    // "صورة واحدة / صورتين / 3 صور / 11 صورة" — زي ما بنتكلم.
+    private static function photosLabel(int $count): string
+    {
+        return match (true) {
+            $count === 1 => 'صورة واحدة',
+            $count === 2 => 'صورتين',
+            $count <= 10 => "{$count} صور",
+            default => "{$count} صورة",
+        };
+    }
+
+    /**
      * @return Collection<int, string>
      */
     private function activeCategories()
@@ -323,10 +427,13 @@ class AiProjectAssistantService
     }
 
     // الكوبي الطويل جداً بيتقص قبل ما يروح للذكاء الاصطناعي (الأول بيبقى فيه الاسم والبيانات
-    // المهمة) — عشان الطلب كله يفضل جوّه مساحة القراية (num_ctx) ومتقصّش التعليمات.
-    private function promptMessage(string $message): string
+    // المهمة) — عشان الطلب كله يفضل جوّه مساحة القراية (num_ctx) ومتقصّش التعليمات. بيانات
+    // المكان المؤكدة (لو فيه) بتتحط فوق الكلام عشان النموذج يعتمد عليها.
+    private function promptMessage(string $message, array $place = []): string
     {
-        return Str::limit($message, 6000, ' …');
+        $block = PlaceParser::promptBlock($place);
+
+        return ($block !== '' ? $block."\n\n" : '').Str::limit($message, 6000, ' …');
     }
 
     // أول سطر له معنى في الرسالة (في كوبي جوجل مابس أول سطر هو اسم المكان) كاسم مشروع لو
@@ -365,9 +472,11 @@ class AiProjectAssistantService
                         'about_title' => $text, 'about_body' => $text,
                         'services_title' => $text, 'services_list' => $list,
                         'gallery_title' => $text, 'testimonials_title' => $text,
+                        // آراء حقيقية بس (من كوبي جوجل مثلاً) — قايمة فاضية مسموحة ومطلوبة لو مفيش.
+                        'testimonials_list' => ['type' => 'array', 'items' => ['type' => 'string'], 'maxItems' => 3],
                         'contact_title' => $text, 'contact_note' => $text,
                     ],
-                    'required' => ['hero_title', 'hero_subtitle', 'about_title', 'about_body', 'services_title', 'services_list', 'gallery_title', 'testimonials_title', 'contact_title', 'contact_note'],
+                    'required' => ['hero_title', 'hero_subtitle', 'about_title', 'about_body', 'services_title', 'services_list', 'gallery_title', 'testimonials_title', 'testimonials_list', 'contact_title', 'contact_note'],
                 ],
             ],
             'required' => ['category', 'project_name', 'style_hint', 'content'],
@@ -672,6 +781,7 @@ class AiProjectAssistantService
   - about_title / about_body: عنوان قصير + فقرة من 3 لـ4 جمل عن النشاط.
   - services_title / services_list: عنوان + من 3 لـ6 خدمات قصيرة (كل خدمة كلمتين لـ6 كلمات).
   - gallery_title, testimonials_title, contact_title: عناوين أقسام قصيرة.
+  - testimonials_list: آراء عملاء حقيقية لو موجودة في الكلام المنسوخ (مراجعات جوجل مثلاً) بالصيغة "الكلام — الاسم الأول"، لحد 3. لو مفيش آراء حقيقية رجّع [] — ممنوع تألّف آراء.
   - contact_note: سطر واحد فيه المواعيد أو العنوان لو موجودين في الوصف، وإلا جملة تدعو للتواصل.
 
 قواعد:

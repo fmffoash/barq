@@ -27,6 +27,7 @@ class GeneratedSite extends Model
         'font_size_scale_override',
         'sections_override_json',
         'custom_blocks_json',
+        'photo_pool_json',
         'status',
         'exported_at',
         'last_generated_at',
@@ -44,6 +45,8 @@ class GeneratedSite extends Model
             'colors_override_json' => 'array',
             'sections_override_json' => 'array',
             'custom_blocks_json' => 'array',
+            // صور المشروع اللي فؤاد لزقها/رفعها (PhotoPoolService) — ["/storage/site-images/..", ...]
+            'photo_pool_json' => 'array',
             'font_size_scale_override' => 'decimal:2',
             'exported_at' => 'datetime',
             'last_generated_at' => 'datetime',

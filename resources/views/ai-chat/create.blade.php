@@ -41,6 +41,21 @@
             class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-amber-400"
         >{{ old('message') }}</textarea>
 
+        {{-- صور مع الرسالة (2026-10-08) — كوبي جوجل مابس بصوره، أو صور جاهزة بالسحب/الزرار/Ctrl+V.
+        resources/js/photo-tray.js بيعرضها ويبعتها (photos[] ملفات، photo_urls[] صور جوجل). --}}
+        <div class="mt-3 rounded-lg border border-dashed border-slate-800 p-3 transition data-[drag=true]:border-amber-400 data-[drag=true]:bg-amber-400/5" data-photo-tray>
+            <input type="file" name="photos[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" data-photo-input>
+            <div class="mb-3 flex flex-wrap items-center gap-2 empty:hidden" data-photo-list></div>
+            <div data-photo-urls></div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <button type="button" class="rounded-lg border border-slate-700 px-3 py-1.5 text-slate-300 transition hover:border-amber-400 hover:text-amber-400" data-photo-pick>
+                    📷 أضف صور
+                </button>
+                <span>أو الزق كوبي جوجل مابس بالصور (Ctrl+V)، أو اسحب صور هنا — أول صورة بتبقى صورة الغلاف.</span>
+            </div>
+            <p class="mt-2 text-xs text-amber-300/80" data-photo-hint></p>
+        </div>
+
         {{-- خيارات "حدد بنفسك" (اختيارية بالكامل، Phase 14 — 2026-09-21) — فؤاد طلب يقدر
         يحدد القالب/اللون/الخط بنفسه بدل ما يسيب الذكاء الاصطناعي يخمّن، خصوصاً إن التخمين
         ممكن يغلط أو يكرر نفس القالب. سايبها الذكاء الاصطناعي يخمّن لو محدّدش حاجة هنا. --}}

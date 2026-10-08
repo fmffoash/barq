@@ -53,14 +53,13 @@
             </p>
 
             @if ($project->contact_name || $project->contact_phone || $project->contact_email)
-                <p class="mt-2 text-sm text-slate-400">
-                    {{ $project->contact_name }}
-                    @if ($project->contact_phone)
-                        &middot; <span dir="ltr">{{ $project->contact_phone }}</span>
-                    @endif
-                    @if ($project->contact_email)
-                        &middot; <span dir="ltr">{{ $project->contact_email }}</span>
-                    @endif
+                {{-- النقطة الفاصلة بين العناصر الموجودة بس (مشروع الذكاء الاصطناعي بيبقى له تليفون من
+                غير اسم، فكانت النقطة بتظهر في الأول لوحدها). --}}
+                <p class="mt-2 flex flex-wrap gap-x-2 text-sm text-slate-400">
+                    @foreach (array_filter([$project->contact_name, $project->contact_phone, $project->contact_email]) as $i => $part)
+                        @if (! $loop->first)<span>&middot;</span>@endif
+                        <span @if ($part !== $project->contact_name) dir="ltr" @endif>{{ $part }}</span>
+                    @endforeach
                 </p>
             @endif
         </div>
@@ -212,6 +211,8 @@
             <p class="text-sm text-slate-500">مفيش موقع مربوط بالمشروع دا.</p>
         @endif
     </div>
+
+    @include('projects.partials.place-and-photos', ['project' => $project])
 
     {{-- شات الذكاء الاصطناعي — متاح لأي مشروع، اتعمل بالشات أو يدوي --}}
     <div class="mt-8">

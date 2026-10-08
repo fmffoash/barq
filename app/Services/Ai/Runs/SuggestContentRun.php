@@ -102,7 +102,8 @@ class SuggestContentRun implements RunHandler
         $filledCount = 0;
 
         foreach ($suggestions as $key => $value) {
-            if (! self::isEmpty($content[$key] ?? null)) {
+            // قايمة فاضية (آراء عملاء مالقاش منها حاجة حقيقية) مش "اقتراح" — الخانة تفضل زي ما هي.
+            if (! self::isEmpty($content[$key] ?? null) || self::isEmpty($value)) {
                 continue;
             }
 

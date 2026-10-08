@@ -410,9 +410,13 @@ class OllamaService
         $properties = [];
 
         foreach ($slots as $slot) {
-            $properties[$slot->key] = $slot->slot_type === 'list'
-                ? ['type' => 'array', 'items' => ['type' => 'string'], 'minItems' => 2, 'maxItems' => 8]
-                : ['type' => 'string'];
+            $properties[$slot->key] = match (true) {
+                // آراء العملاء: حقيقية من الوصف بس، فقايمة فاضية لازم تبقى مسموحة (وإلا النموذج
+                // مجبر يألّف آراء عشان يكمّل الشكل المطلوب).
+                self::isTestimonials($slot) => ['type' => 'array', 'items' => ['type' => 'string'], 'maxItems' => 3],
+                $slot->slot_type === 'list' => ['type' => 'array', 'items' => ['type' => 'string'], 'minItems' => 2, 'maxItems' => 8],
+                default => ['type' => 'string'],
+            };
         }
 
         return [
@@ -420,6 +424,12 @@ class OllamaService
             'properties' => $properties,
             'required' => array_keys($properties),
         ];
+    }
+
+    // خانة آراء العملاء (testimonials_list في المكتبة) — بتتعامل بحرص: حقيقية بس.
+    public static function isTestimonials(TemplateSlot $slot): bool
+    {
+        return $slot->slot_type === 'list' && str_contains($slot->key, 'testimonial');
     }
 
     /**
@@ -441,9 +451,10 @@ class OllamaService
             $lines[] = "قسم: {$sectionKey}";
 
             foreach ($sectionSlots as $slot) {
-                $typeHint = match ($slot->slot_type) {
-                    'list' => 'قايمة عناصر قصيرة',
-                    'textarea' => 'فقرة من جملتين لـ4 جمل',
+                $typeHint = match (true) {
+                    self::isTestimonials($slot) => 'آراء عملاء حقيقية من الوصف بس بالصيغة "الكلام — الاسم"، ولو مفيش رجّع [] (ممنوع تألّف)',
+                    $slot->slot_type === 'list' => 'قايمة عناصر قصيرة',
+                    $slot->slot_type === 'textarea' => 'فقرة من جملتين لـ4 جمل',
                     default => 'نص قصير (من 2 لـ8 كلمات)',
                 };
 

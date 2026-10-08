@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeneratedSiteController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SitePhotoController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateSlotController;
 use App\Http\Controllers\TemplateVariantController;
@@ -76,6 +77,13 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.live-edit');
     Route::post('projects/{project}/site/suggest', [GeneratedSiteController::class, 'suggest'])
         ->name('projects.site.suggest');
+    // مخزن صور المشروع (SitePhotoController) — إضافة صور، حط صورة في خانة، شيل صورة.
+    Route::post('projects/{project}/site/photos', [SitePhotoController::class, 'store'])
+        ->name('projects.site.photos.store');
+    Route::post('projects/{project}/site/photos/use', [SitePhotoController::class, 'use'])
+        ->name('projects.site.photos.use');
+    Route::delete('projects/{project}/site/photos', [SitePhotoController::class, 'destroy'])
+        ->name('projects.site.photos.destroy');
     Route::post('projects/{project}/site/publish', [GeneratedSiteController::class, 'publish'])
         ->name('projects.site.publish');
     Route::post('projects/{project}/site/unpublish', [GeneratedSiteController::class, 'unpublish'])

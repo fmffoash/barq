@@ -10,9 +10,9 @@ use App\Services\Ai\Runs\FollowUpRun;
 use App\Services\Ai\Runs\RunHandler;
 use App\Services\Ai\Runs\SuggestContentRun;
 use App\Services\OllamaService;
+use App\Services\PhotoPoolService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -158,15 +158,17 @@ class AiRunController extends Controller
         return response()->json($this->apply($run, $result));
     }
 
-    public function cancel(AiRun $run): JsonResponse
+    public function cancel(AiRun $run, PhotoPoolService $photos): JsonResponse
     {
         $cancelled = AiRun::whereKey($run->id)->where('status', AiRun::PENDING)
             ->update(['status' => AiRun::CANCELLED, 'finished_at' => now()]);
 
-        // صورة اترفعت مع رسالة اتلغت — مالهاش مكان تتحط فيه.
-        $image = $run->context_json['image_path'] ?? null;
-        if ($cancelled && is_string($image) && str_starts_with($image, '/storage/site-images/')) {
-            Storage::disk('public')->delete(substr($image, strlen('/storage/')));
+        // صور اترفعت مع طلب اتلغى — مالهاش مكان تتحط فيه.
+        if ($cancelled) {
+            $photos->discard(array_merge(
+                [$run->context_json['image_path'] ?? null],
+                (array) ($run->context_json['photos'] ?? []),
+            ));
         }
 
         return response()->json(['ok' => true]);
