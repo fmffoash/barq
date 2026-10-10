@@ -266,12 +266,12 @@ class SiteDesignSystemTest extends TestCase
         }
     }
 
-    public function test_owned_layouts_render_testimonials_as_cards_with_a_separate_name_and_only_real_stars(): void
+    public function test_every_layout_renders_testimonials_as_cards_with_a_separate_name_and_only_real_stars(): void
     {
-        foreach (SiteRenderer::LAYOUTS_WITH_TESTIMONIALS_KIND as $layout) {
+        foreach (Template::LAYOUTS as $layout) {
             $page = $this->show($this->site($this->libraryLikeTemplate($layout)));
 
-            $page->assertOk();
+            $page->assertOk("layout [{$layout}] failed to render");
             $page->assertSee('<figure data-slot="testimonials_list"', false);
             $page->assertSee('<blockquote class="', false);
             // الاسم بيتعرض لوحده مش لازق في الجملة.
@@ -283,17 +283,19 @@ class SiteDesignSystemTest extends TestCase
         }
     }
 
-    public function test_a_google_rating_in_the_testimonials_title_renders_a_rating_badge(): void
+    public function test_a_google_rating_in_the_testimonials_title_renders_a_rating_badge_in_every_layout(): void
     {
-        $site = $this->site($this->libraryLikeTemplate('classic'), [
-            'testimonials_title' => 'تقييمنا 4.7 ★ على جوجل من 437 تقييم',
-            'testimonials_list' => [],
-        ]);
+        foreach (Template::LAYOUTS as $layout) {
+            $site = $this->site($this->libraryLikeTemplate($layout), [
+                'testimonials_title' => 'تقييمنا 4.7 ★ على جوجل من 437 تقييم',
+                'testimonials_list' => [],
+            ]);
 
-        $page = $this->show($site);
-        $page->assertOk();
-        $page->assertSee('تقييمنا 4.7 ★ على جوجل من 437 تقييم');
-        $page->assertSee('aria-label="تقييم 4.7 من 5 على جوجل"', false);
+            $page = $this->show($site);
+            $page->assertOk("layout [{$layout}] failed to render");
+            $page->assertSee('تقييمنا 4.7 ★ على جوجل من 437 تقييم');
+            $page->assertSee('aria-label="تقييم 4.7 من 5 على جوجل"', false);
+        }
     }
 
     public function test_floating_whatsapp_button_shows_on_the_public_site_but_never_in_the_live_editor(): void
@@ -361,20 +363,5 @@ class SiteDesignSystemTest extends TestCase
         $variant->setAttribute('heading_font', 'amiri');
         $site->font_override = 'tajawal';
         $this->assertNull(app(SiteRenderer::class)->render($site)['headingFont']);
-    }
-
-    public function test_layouts_not_yet_supporting_the_testimonials_kind_keep_getting_a_list(): void
-    {
-        $unsupported = array_values(array_diff(Template::LAYOUTS, SiteRenderer::LAYOUTS_WITH_TESTIMONIALS_KIND));
-        if ($unsupported === []) {
-            $this->markTestSkipped('كل التصميمات بقت بتدعم قسم الآراء — امسح الشرط والاختبار ده.');
-        }
-
-        $site = $this->site($this->libraryLikeTemplate($unsupported[0]));
-        $data = app(SiteRenderer::class)->render($site->load('project.template.slots', 'project.variant'));
-        $section = $data['sections']->firstWhere('key', 'testimonials');
-
-        $this->assertSame('list', $section['kind']);
-        $this->assertSame('أحمد س.', $section['items']->firstWhere('slot.key', 'testimonials_list')['testimonials'][0]['name']);
     }
 }

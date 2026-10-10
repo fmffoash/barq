@@ -1,25 +1,43 @@
 {{--
-    "دوتون" — بوستر جريء: الصور بتترندر بتأثير ثنائي اللون (grayscale + طبقة لونية فوقها
-    بـ mix-blend-mode) بدل الصورة العادية، مع طباعة كبيرة وكتل لونية صلبة — طابع إعلاني قوي.
+    "دوتون" — بوستر إعلاني جريء: الصور بتأثير ثنائي اللون (أبيض وأسود + طبقة باللون الأساسي
+    بـ mix-blend-mode) ومعاها كتل لونية صلبة وطباعة ضخمة.
+    (2026-10-10) اتعاد تصميمه: الهيرو بقى "بوستر" نصّين (كتلة لونية بالعنوان الضخم جنب صورة
+    دوتون بطول الشاشة) بدل عنوان صغير فوق صورة باهتة، والخدمات كتل ألوان بأحجام مختلفة، المعرض
+    ألواح طولية بتاخد لونها الحقيقي لما الماوس يقف عليها، والآراء حزام بلون أساسي. النص فوق اللون
+    الأساسي دايماً --site-on-primary (كان لون الخلفية — فاتح على فاتح في بعض اللوحات).
+    قواعد المحرر المباشر: data-slot على كل عنصر خانة وكل <img>، position:relative على كل
+    <section>، صفر transform على <img> (التأثير filter، مش transform).
 --}}
 @php
-    $navSections = $sections->skip(1);
-    $navLabel = fn (string $key) => match ($key) {
-        'hero' => 'الرئيسية', 'about' => 'من نحن', 'services', 'menu' => 'خدماتنا',
-        'gallery' => 'معرض الصور', 'testimonials' => 'آراء العملاء', 'pricing' => 'الأسعار',
-        'faq' => 'الأسئلة الشائعة', 'contact', 'cta' => 'تواصل معنا',
-        default => \Illuminate\Support\Str::of($key)->replace(['_', '-'], ' ')->trim()->title()->toString(),
-    };
+    $onPrimaryBlock = 'background-color: var(--site-primary); color: var(--site-on-primary);';
+    $inkBlock = 'background-color: var(--site-text); color: var(--site-background);';
+    $surfaceBlock = 'background-color: var(--site-surface); color: var(--site-text);';
+    $invertButton = 'background-color: var(--site-on-primary); color: var(--site-primary);';
+    $primaryButton = 'background-color: var(--site-primary); color: var(--site-on-primary);';
+    // جوّه حزام بلون أساسي: أي حاجة بتستخدم --site-primary/--site-muted (البارشيالز المشتركة)
+    // بتاخد لون النص المقروء فوق الأساسي بدل ما تختفي.
+    $onPrimaryScope = '--site-primary: var(--site-on-primary); --site-muted: color-mix(in srgb, var(--site-on-primary) 82%, transparent); --site-surface: color-mix(in srgb, var(--site-on-primary) 12%, transparent);';
+    $navLinks = collect($siteMeta['nav'] ?? []);
+    $menuLinks = $contactAnchor ? $navLinks->reject(fn ($l) => $l['key'] === $contactAnchor)->values() : $navLinks;
+    $blockFills = [$onPrimaryBlock, $inkBlock, $surfaceBlock];
 @endphp
 
-@if ($navSections->isNotEmpty())
-    <nav class="flex items-center justify-between gap-4 px-6 py-6 sm:px-12" style="background-color: var(--site-primary);">
-        <a href="#{{ $sections->first()['key'] }}" class="text-xl font-black" style="color: var(--site-background);">{{ $project->name }}</a>
-        <ul class="hidden flex-wrap items-center gap-6 text-sm font-bold sm:flex" style="color: var(--site-background);">
-            @foreach ($navSections as $s)
-                <li><a href="#{{ $s['key'] }}" class="transition hover:opacity-70">{{ $navLabel($s['key']) }}</a></li>
-            @endforeach
-        </ul>
+@if ($navLinks->isNotEmpty())
+    <nav class="relative z-30" style="{{ $inkBlock }}">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-10">
+            <a href="#top" class="min-w-0 max-w-[55vw] truncate text-xl font-black sm:max-w-sm">{{ $project->name }}</a>
+            <ul class="hidden items-center gap-7 text-sm font-bold md:flex">
+                @foreach ($menuLinks as $link)
+                    <li><a href="#{{ $link['key'] }}" class="transition hover:opacity-70">{{ $link['label'] }}</a></li>
+                @endforeach
+            </ul>
+            <div class="flex shrink-0 items-center gap-2">
+                @if ($contactAnchor)
+                    <a href="#{{ $contactAnchor }}" class="px-4 py-2 text-sm font-black transition hover:opacity-85" style="{{ $primaryButton }}">تواصل معنا</a>
+                @endif
+                @include('site.partials.nav-menu', ['menu' => ['links' => $menuLinks->all(), 'hideAt' => 'md', 'sharp' => true, 'panelStyle' => $inkBlock]])
+            </div>
+        </div>
     </nav>
 @endif
 
@@ -27,113 +45,179 @@
     @php
         $textItems = $section['items']->whereIn('slot.slot_type', ['text', 'textarea']);
         $listItems = $section['items']->where('slot.slot_type', 'list');
-        $imageItems = $section['items']->where('slot.slot_type', 'image');
+        $imageItems = $section['items']->where('slot.slot_type', 'image')->values();
         $linkItems = $section['items']->where('slot.slot_type', 'link');
-        $heroImage = $imageItems->first();
 
         $heading = $textItems->firstWhere('slot.slot_type', 'text');
         $supportingItems = $textItems->reject(fn ($item) => $heading && $item['slot']->key === $heading['slot']->key);
+        $alt = trim(strip_tags((string) ($heading['value'] ?? ''))) ?: $project->name;
     @endphp
 
     @if ($section['kind'] === 'hero')
-        <section id="{{ $section['key'] }}" class="relative overflow-hidden px-6 py-24 text-center sm:px-10">
-            @if ($heroImage)
-                <div class="absolute inset-0">
-                    <img data-slot="{{ $heroImage['slot']->key }}" src="{{ $heroImage['value'] }}" alt="" class="h-full w-full object-cover grayscale contrast-125" aria-hidden="true">
-                    {{-- pointer-events-none إجباري (المرحلة 2) — من غيرها الطبقتين الزخرفيتين
-                    دول بيقفوا فوق الصورة في الترتيب ويمنعوا أي دوس عليها خالص. --}}
-                    <div class="pointer-events-none absolute inset-0 mix-blend-multiply" style="background-color: var(--site-primary);"></div>
-                    <div class="pointer-events-none absolute inset-0" style="background-color: color-mix(in srgb, var(--site-background) 35%, transparent);"></div>
-                </div>
-            @else
-                <div class="absolute inset-0" style="background-color: var(--site-primary);"></div>
-            @endif
-            {{-- pointer-events-none على الحاوية + pointer-events-auto على كل عنصر قابل
-            للتعديل فعلياً (المرحلة 2) — من غيرها مساحات الفراغ/الـgap جوّه الحاوية دي (اللي
-            بتظهر فيها صورة الهيرو تحتها) بتمنع الدوس على الصورة نفسها لأن الحاوية طالعة
-            فوقها بـz-10.
-            bq-free-position-boundary (المرحلة 3، 2026-09-24) — راجع نفس التعليق في
-            gallery-section.blade.php: الحاوية الضيقة دي offsetParent أي خانة جواها، فبتحصر
-            الترتيب الحر في مساحتها بس مش الـsection كله. --}}
-            <div class="bq-free-position-boundary relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-5" style="pointer-events: none;">
+        @php $heroImage = $imageItems->first(); @endphp
+        <section id="{{ $section['key'] }}" @class(['relative grid min-h-[82vh]', 'lg:grid-cols-2' => $heroImage])>
+            <div class="flex flex-col justify-center gap-7 px-6 py-16 sm:px-12 lg:px-16" style="{{ $onPrimaryBlock }}">
                 @if ($heading)
-                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-5xl font-black uppercase leading-[0.95] sm:text-7xl" style="color: var(--site-background); pointer-events: auto;">{!! $heading['value'] !!}</h1>
+                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-[clamp(2.8rem,6.4vw,5.6rem)] font-black leading-[1.1]">{!! $heading['value'] !!}</h1>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="text-lg font-medium" style="color: color-mix(in srgb, var(--site-background) 90%, transparent); pointer-events: auto;">{!! $item['value'] !!}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="max-w-xl text-xl font-medium leading-loose" style="opacity: .9;">{!! $item['value'] !!}</p>
                 @endforeach
-                @foreach ($linkItems as $item)
-                    <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-black transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary); pointer-events: auto;">{{ $item['slot']->label() }}</a>
-                @endforeach
+                <div class="flex flex-wrap gap-3">
+                    @foreach ($linkItems as $item)
+                        @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'px-10 py-4 text-lg font-black transition hover:opacity-90', 'style' => $invertButton]])
+                    @endforeach
+                    @if ($linkItems->isEmpty() && ($siteMeta['heroCta'] ?? null))
+                        @include('site.partials.link-button', ['btn' => $siteMeta['heroCta'] + ['class' => 'px-10 py-4 text-lg font-black transition hover:opacity-90', 'style' => $invertButton, 'icon' => 'arrow', 'iconClass' => 'order-last h-5 w-5']])
+                    @endif
+                </div>
             </div>
-        </section>
-    @elseif ($section['kind'] === 'gallery')
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
-            <div class="mx-auto max-w-5xl">
-                @if ($textItems->isNotEmpty())
-                    <div class="mb-8 text-center">
-                        @if ($heading)
-                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase">{!! $heading['value'] !!}</h2>
-                        @endif
-                        @foreach ($supportingItems as $item)
-                            <p data-slot="{{ $item['slot']->key }}" class="mt-2" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
-                        @endforeach
+            @if ($heroImage)
+                {{-- الصورة دوتون: أبيض وأسود (filter) + طبقة لون أساسي multiply — الطبقة
+                pointer-events-none عشان الدوس يوصل للصورة في المحرر المباشر. موبايل: فوق الكلام. --}}
+                <div class="relative order-first h-[46vh] overflow-hidden lg:order-none lg:h-auto">
+                    <div class="absolute inset-0">
+                        <img data-slot="{{ $heroImage['slot']->key }}" src="{{ $heroImage['value'] }}" alt="{{ $alt }}" class="h-full w-full object-cover grayscale contrast-125" loading="eager" fetchpriority="high">
                     </div>
-                @endif
-                <div class="grid gap-1 sm:grid-cols-3">
+                    <div class="pointer-events-none absolute inset-0 mix-blend-multiply" style="background-color: var(--site-primary);"></div>
+                    <div class="pointer-events-none absolute inset-0 mix-blend-screen" style="background-color: color-mix(in srgb, var(--site-primary) 18%, transparent);"></div>
+                </div>
+            @endif
+        </section>
+
+    @elseif ($section['kind'] === 'gallery')
+        {{-- ألواح طولية دوتون جنب بعض (بتاخد لونها الحقيقي لما الماوس يقف عليها). موبايل عمودين. --}}
+        <section id="{{ $section['key'] }}" class="relative px-5 py-16 sm:px-10 sm:py-24">
+            <div data-reveal class="mx-auto flex max-w-7xl flex-col gap-10">
+                <div class="flex flex-col items-start gap-3">
+                    @if (filled($section['eyebrow'] ?? null))
+                        <span class="px-3 py-1 text-sm font-black" style="{{ $onPrimaryBlock }}">{{ $section['eyebrow'] }}</span>
+                    @endif
+                    @if ($heading)
+                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-[clamp(2.2rem,5vw,4rem)] font-black leading-[1.15]">{!! $heading['value'] !!}</h2>
+                    @endif
+                    @foreach ($supportingItems as $item)
+                        <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-lg leading-loose" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
+                    @endforeach
+                </div>
+                <div class="grid grid-cols-2 gap-2 sm:flex sm:h-[28rem] sm:gap-2">
                     @foreach ($imageItems as $item)
-                        <div class="relative aspect-square overflow-hidden">
-                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $item['slot']->label() }}" class="h-full w-full object-cover grayscale contrast-125" loading="lazy">
-                            <div class="pointer-events-none absolute inset-0 mix-blend-multiply transition group-hover:opacity-0" style="background-color: var(--site-primary); opacity: .55;"></div>
+                        <div @class(['group relative aspect-[3/4] overflow-hidden sm:aspect-auto sm:h-full sm:flex-1', 'col-span-2' => $loop->last && $imageItems->count() % 2 === 1])>
+                            <div class="absolute inset-0">
+                                <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $alt }}" class="h-full w-full object-cover grayscale contrast-125 transition duration-500 group-hover:grayscale-0" loading="lazy">
+                            </div>
+                            <div class="pointer-events-none absolute inset-0 mix-blend-multiply transition duration-500 group-hover:opacity-0" style="background-color: var(--site-primary);"></div>
                         </div>
                     @endforeach
                 </div>
             </div>
         </section>
+
     @elseif ($section['kind'] === 'list')
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 text-center sm:px-10" style="background-color: var(--site-surface);">
-            <div class="mx-auto max-w-4xl">
-                @if ($textItems->isNotEmpty())
-                    <div class="mb-10">
-                        @if ($heading)
-                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase">{!! $heading['value'] !!}</h2>
-                        @endif
-                        @foreach ($supportingItems as $item)
-                            <p data-slot="{{ $item['slot']->key }}" class="mt-2" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
-                        @endforeach
-                    </div>
-                @endif
+        {{-- كتل ألوان صلبة بأحجام مختلفة (أنصاص وأتلات) بتملّي كل صف بالظبط. --}}
+        <section id="{{ $section['key'] }}" class="relative px-5 py-16 sm:px-10 sm:py-24">
+            <div data-reveal class="mx-auto flex max-w-7xl flex-col gap-10">
+                <div class="flex flex-col items-start gap-3">
+                    @if (filled($section['eyebrow'] ?? null))
+                        <span class="px-3 py-1 text-sm font-black" style="{{ $inkBlock }}">{{ $section['eyebrow'] }}</span>
+                    @endif
+                    @if ($heading)
+                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-[clamp(2.2rem,5vw,4rem)] font-black leading-[1.15]">{!! $heading['value'] !!}</h2>
+                    @endif
+                    @foreach ($supportingItems as $item)
+                        <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-lg leading-loose" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
+                    @endforeach
+                </div>
                 @foreach ($listItems as $item)
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        @foreach ((array) $item['value'] as $listItem)
-                            <div data-slot="{{ $item['slot']->key }}" class="p-6 text-xl font-black" style="background-color: var(--site-primary); color: var(--site-background);">{{ $listItem }}</div>
+                    @php $entries = (array) $item['value']; $spans = \App\Services\SiteRenderer::rowSpans(count($entries)); @endphp
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-6">
+                        @foreach ($entries as $i => $entry)
+                            @php $e = \App\Services\SiteRenderer::splitEntry($entry); @endphp
+                            <div data-slot="{{ $item['slot']->key }}" class="flex min-h-40 flex-col justify-between gap-6 p-6 sm:min-h-52 sm:p-8 {{ $spans[$i] }}" style="{{ $blockFills[$i % count($blockFills)] }}">
+                                <span class="text-5xl font-black leading-none" style="opacity: .35;">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="flex flex-col gap-2">
+                                    <span class="text-xl font-black leading-snug sm:text-2xl">{{ $e['title'] }}</span>
+                                    @if ($e['desc'])
+                                        <span class="text-base font-medium" style="opacity: .85;">{{ $e['desc'] }}</span>
+                                    @endif
+                                </span>
+                            </div>
                         @endforeach
                     </div>
                 @endforeach
+                @if ($linkItems->isNotEmpty())
+                    <div class="flex flex-wrap gap-3">
+                        @foreach ($linkItems as $item)
+                            @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'px-8 py-3.5 text-base font-black transition hover:opacity-90', 'style' => $primaryButton]])
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </section>
+
+    @elseif ($section['kind'] === 'testimonials')
+        <section id="{{ $section['key'] }}" class="relative px-5 py-16 sm:px-10 sm:py-24" style="{{ $onPrimaryBlock }}">
+            <div data-reveal class="mx-auto flex max-w-7xl flex-col gap-12" style="{{ $onPrimaryScope }}">
+                @include('site.partials.section-heading', ['head' => ['heading' => $heading, 'supporting' => $supportingItems, 'label' => $section['eyebrow'] ?? null, 'rating' => $section['rating'] ?? null, 'align' => 'start', 'h2Class' => 'text-[clamp(2.2rem,5vw,4rem)] font-black leading-[1.15]']])
+                @foreach ($listItems as $item)
+                    @if (isset($item['testimonials']))
+                        <div class="flex flex-wrap justify-center gap-x-10 gap-y-12">
+                            @foreach ($item['testimonials'] as $t)
+                                @include('site.partials.testimonial-card', ['card' => [
+                                    't' => $t,
+                                    'slotKey' => $item['slot']->key,
+                                    'theme' => 'editorial',
+                                    'class' => \App\Services\SiteRenderer::cardWidth(count($item['testimonials'])),
+                                ]])
+                            @endforeach
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </section>
+
     @elseif ($section['kind'] === 'cta')
-        <section id="{{ $section['key'] }}" class="relative px-6 py-20 text-center sm:px-10" style="background-color: var(--site-primary);">
-            <div class="mx-auto flex max-w-2xl flex-col items-center gap-4">
+        <section id="{{ $section['key'] }}" class="relative px-5 py-20 sm:px-10 sm:py-28" style="{{ $inkBlock }}">
+            <div data-reveal class="mx-auto flex max-w-7xl flex-col items-start gap-6">
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-black uppercase" style="color: var(--site-background);">{!! $heading['value'] !!}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="max-w-4xl text-[clamp(2.6rem,6.4vw,5.4rem)] font-black leading-[1.1]">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" style="color: color-mix(in srgb, var(--site-background) 85%, transparent);">{!! $item['value'] !!}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-xl leading-loose" style="opacity: .85;">{!! $item['value'] !!}</p>
                 @endforeach
-                @foreach ($linkItems as $item)
-                    <a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mt-2 inline-block px-10 py-4 text-base font-black transition hover:opacity-90" style="background-color: var(--site-background); color: var(--site-primary);">{{ $item['slot']->label() }}</a>
-                @endforeach
+                @if ($linkItems->isNotEmpty() || $contactAction)
+                    <div class="mt-2 flex flex-wrap gap-3">
+                        @foreach ($linkItems as $item)
+                            @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'px-10 py-4 text-lg font-black transition hover:opacity-90', 'style' => $primaryButton]])
+                        @endforeach
+                        @if ($linkItems->isEmpty() && $contactAction)
+                            @include('site.partials.link-button', ['btn' => $contactAction + ['class' => 'px-10 py-4 text-lg font-black transition hover:opacity-90', 'style' => $primaryButton]])
+                        @endif
+                    </div>
+                @endif
             </div>
         </section>
+
     @else
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 text-center sm:px-10">
-            <div class="mx-auto flex max-w-2xl flex-col gap-4">
-                @foreach ($section['items'] as $item)
-                    @if ($heading && $item['slot']->key === $heading['slot']->key)<h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-black uppercase">{!! $item['value'] !!}</h2>
-                    @elseif ($item['slot']->slot_type === 'link')<a data-slot="{{ $item['slot']->key }}" href="{{ $item['value'] }}" target="_blank" rel="noopener" class="mx-auto inline-block px-8 py-3 text-base font-black" style="background-color: var(--site-primary); color: var(--site-background);">{{ $item['slot']->label() }}</a>
-                    @else<p data-slot="{{ $item['slot']->key }}" style="color: var(--site-muted);">{!! $item['value'] !!}</p>@endif
+        {{-- نص عادي ("من نحن" وأي قسم مضاف): "جملة بوستر" — الفقرة نفسها بخط كبير وتخين. --}}
+        <section id="{{ $section['key'] }}" class="relative px-5 py-16 sm:px-10 sm:py-24">
+            <div data-reveal class="mx-auto flex max-w-5xl flex-col items-start gap-6">
+                @if (filled($section['eyebrow'] ?? null))
+                    <span class="px-3 py-1 text-sm font-black" style="{{ $onPrimaryBlock }}">{{ $section['eyebrow'] }}</span>
+                @endif
+                @if ($heading)
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-[clamp(2rem,4.4vw,3.4rem)] font-black leading-[1.2]">{!! $heading['value'] !!}</h2>
+                @endif
+                @foreach ($supportingItems as $item)
+                    <p data-slot="{{ $item['slot']->key }}" class="text-2xl font-bold leading-[1.9] sm:text-3xl sm:leading-[1.8]">{!! $item['value'] !!}</p>
                 @endforeach
+                @if ($linkItems->isNotEmpty())
+                    <div class="flex flex-wrap gap-3">
+                        @foreach ($linkItems as $item)
+                            @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'px-8 py-3.5 text-base font-black transition hover:opacity-90', 'style' => $primaryButton]])
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </section>
     @endif
@@ -145,7 +229,5 @@
 @endforelse
 
 @if ($sections->isNotEmpty())
-    <footer class="px-6 py-8 text-center text-sm font-bold" style="background-color: var(--site-primary); color: var(--site-background);">
-        © {{ now()->year }} {{ $project->name }}
-    </footer>
+    @include('site.partials.footer', ['footerTheme' => 'sharp'])
 @endif

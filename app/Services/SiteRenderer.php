@@ -18,15 +18,6 @@ use Illuminate\Support\Str;
 // خانات فاضية في آخر صف لأي عدد من 1 لـ6). أي تصميم بيقرا الجاهز ده بدل ما يعيد الحساب.
 class SiteRenderer
 {
-    // التصميمات اللي بترندر نوع القسم "testimonials" فعلاً. أي تصميم مش في القايمة دي بياخد
-    // قسم الآراء بنوعه القديم ("list") — عشان تصميم لسه متحدّثش ميوقعش (فرع النص العادي فيه
-    // بيطبع قيمة الخانة كنص، وقيمة خانة list مصفوفة = خطأ 500). بيانات الآراء المفككة
-    // (testimonials) موجودة على الخانة في الحالتين. لما الـ16 تصميم كلهم يدعموه، القايمة دي
-    // والشرط اللي بيستخدمها يتشالوا.
-    public const LAYOUTS_WITH_TESTIMONIALS_KIND = [
-        'classic', 'modern', 'gallery', 'split', 'magazine', 'bento', 'minimal', 'bold', 'glass', 'neon', 'framed', 'timeline', 'stack', 'diagonal',
-    ];
-
     public function render(GeneratedSite $site): array
     {
         $project = $site->project;
@@ -65,14 +56,9 @@ class SiteRenderer
         // خاناته — مش من اسم القسم نفسه (إلا الآراء والتواصل)، عشان يشتغل مع أي قالب من غير
         // ما نفرض تسميات أقسام معينة. التصميمات البصرية بتستخدم النوع ده عشان تقرر شكل العرض.
         $sectionCount = $sections->count();
-        $testimonialsKind = in_array($layout, self::LAYOUTS_WITH_TESTIMONIALS_KIND, true);
 
-        $sections = $sections->values()->map(function (array $section, int $index) use ($sectionCount, $testimonialsKind) {
+        $sections = $sections->values()->map(function (array $section, int $index) use ($sectionCount) {
             $kind = $this->classifySection($section, $index === 0, $index === $sectionCount - 1);
-
-            if ($kind === 'testimonials' && ! $testimonialsKind) {
-                $kind = $section['items']->contains(fn ($item) => $item['slot']->slot_type === 'list') ? 'list' : 'text';
-            }
 
             $label = self::navLabel($section['key']);
 
