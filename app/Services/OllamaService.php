@@ -7,6 +7,7 @@ use App\Models\Template;
 use App\Models\TemplateSlot;
 use App\Services\Ai\AiResult;
 use App\Services\Ai\AiStats;
+use App\Support\NdjsonEmitStream;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -46,6 +47,9 @@ class OllamaService
     // ملفات .env القديمة (أيام السيرفر) فيها OLLAMA_TIMEOUT=180 — قليلة جداً على جهاز من غير
     // كارت شاشة، وهي اللي كانت بتقطع الانتظار قبل ما الرد يوصل. ده أقل حد بنقبله.
     private const MIN_TIMEOUT = 600;
+
+    // أقل من حد Cloudflare (100 ثانية رد ساكت) بهامش كبير.
+    private const HEARTBEAT_SECONDS = 15;
 
     public function model(): string
     {
@@ -106,17 +110,26 @@ class OllamaService
     /**
      * نفس run() بس بجسم طلب جاهز (طلب اتجهّز قبل كده واتحفظ في ai_runs — AiRunController).
      *
+     * $heartbeat (اختياري): بتتنادى كل HEARTBEAT_SECONDS ثانية طول ما احنا مستنيين — على السيرفر
+     * Cloudflare بيقطع أي رد يفضل ساكت 100 ثانية (خطأ 524)، والنموذج على المعالج ممكن ياخد أكتر
+     * من كده قبل ما يخلص، فالكنترولر بيبعت مسافة فاضية (JSON بيتجاهلها) عشان الاتصال يفضل حي.
+     *
      * @param  array<string, mixed>  $body
+     * @param  (callable(): void)|null  $heartbeat
      */
-    public function runBody(array $body, string $task, int $promptChars = 0): AiResult
+    public function runBody(array $body, string $task, int $promptChars = 0, ?callable $heartbeat = null): AiResult
     {
         $body['stream'] = false;
         $this->extendTimeLimit();
 
+        $last = microtime(true);
+        $request = Http::timeout($this->timeout())->connectTimeout(5);
+        if ($heartbeat) {
+            $request = $request->withOptions(['progress' => $this->ticker($heartbeat, $last)]);
+        }
+
         try {
-            $response = Http::timeout($this->timeout())
-                ->connectTimeout(5)
-                ->post($this->baseUrl().'/api/generate', $body);
+            $response = $request->post($this->baseUrl().'/api/generate', $body);
         } catch (ConnectionException $e) {
             $timedOut = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28');
             Log::warning('Ollama request failed to complete.', ['message' => $e->getMessage()]);
@@ -146,62 +159,96 @@ class OllamaService
      * لما المتصفح مش قادر يكلّم Ollama بنفسه. أي فشل بيطلع سطر {"error": ..., "kind": ...} بدل
      * ما البث يقف ساكت.
      *
+     * (2026-10-10، الرجوع للسيرفر) الرد بيتكتب في NdjsonEmitStream أول بأول (curl بيسلّم كل جزء
+     * أول ما يوصل)، و$heartbeat بتتنادى كل HEARTBEAT_SECONDS ثانية من غير ولا كلمة — قبل أول كلمة
+     * (تحميل النموذج + قراية طلب طويل على المعالج) ممكن يعدّي أكتر من 100 ثانية، وCloudflare بيقطع
+     * أي رد ساكت المدة دي.
+     *
      * @param  array<string, mixed>  $body
      * @param  callable(string): void  $emit
+     * @param  (callable(): void)|null  $heartbeat
      */
-    public function stream(array $body, callable $emit): void
+    public function stream(array $body, callable $emit, ?callable $heartbeat = null): void
     {
         $body['stream'] = true;
         $this->extendTimeLimit();
 
+        $last = microtime(true);
+        $okStatus = null;
+        $firstLines = [];
+
+        // لو Ollama رد بخطأ (النموذج مش متسطّب مثلاً) جسم الخطأ مبيتبعتش للمتصفح زي ما هو —
+        // بيتجمع هنا وبيطلع سطر خطأ واحد بنوعه (model_missing...) تحت.
+        $sink = NdjsonEmitStream::open(function (string $line) use (&$okStatus, &$firstLines, &$last, $emit) {
+            if (count($firstLines) < 20) {
+                $firstLines[] = $line;
+            }
+            if ($okStatus === false) {
+                return;
+            }
+            $last = microtime(true);
+            $emit($line);
+        });
+
+        $options = [
+            'sink' => $sink,
+            'on_headers' => function ($response) use (&$okStatus) {
+                $okStatus = $response->getStatusCode() < 300;
+            },
+        ];
+        if ($heartbeat) {
+            $options['progress'] = $this->ticker($heartbeat, $last);
+        }
+
         try {
             $response = Http::timeout($this->timeout())
                 ->connectTimeout(5)
-                ->withOptions(['stream' => true])
+                ->withOptions($options)
                 ->post($this->baseUrl().'/api/generate', $body);
         } catch (ConnectionException $e) {
+            NdjsonEmitStream::finish($sink);
             $timedOut = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28');
             $emit($this->errorLine($timedOut ? AiResult::TIMEOUT : AiResult::DOWN, $e->getMessage()));
 
             return;
         } catch (Throwable $e) {
+            NdjsonEmitStream::finish($sink);
             $emit($this->errorLine(AiResult::DOWN, $e->getMessage()));
 
             return;
         }
 
+        $delivered = NdjsonEmitStream::lines($sink);
+        NdjsonEmitStream::finish($sink);
+
         if (! $response->successful()) {
-            $error = (string) ($response->json('error') ?? $response->body());
-            $emit($this->errorLine($response->status() === 404 && str_contains($error, 'not found') ? AiResult::MODEL_MISSING : AiResult::HTTP_ERROR, $error));
-
-            return;
-        }
-
-        $stream = $response->toPsrResponse()->getBody();
-        $buffer = '';
-
-        try {
-            while (! $stream->eof()) {
-                $buffer .= $stream->read(8192);
-
-                while (($newline = strpos($buffer, "\n")) !== false) {
-                    $line = trim(substr($buffer, 0, $newline));
-                    $buffer = substr($buffer, $newline + 1);
-
-                    if ($line !== '') {
-                        $emit($line);
-                    }
+            $error = '';
+            foreach ($firstLines as $line) {
+                $error = (string) (json_decode($line, true)['error'] ?? '');
+                if ($error !== '') {
+                    break;
                 }
             }
-        } catch (Throwable $e) {
-            $emit($this->errorLine(str_contains($e->getMessage(), 'timed out') ? AiResult::TIMEOUT : AiResult::DOWN, $e->getMessage()));
+            $emit($this->errorLine($response->status() === 404 && str_contains($error, 'not found') ? AiResult::MODEL_MISSING : AiResult::HTTP_ERROR, $error !== '' ? $error : 'HTTP '.$response->status()));
 
             return;
         }
 
-        if (trim($buffer) !== '') {
-            $emit(trim($buffer));
+        if ($delivered === 0) {
+            $emit($this->errorLine(AiResult::DOWN, 'Ollama رجّع رد فاضي.'));
         }
+    }
+
+    // كل كام ثانية من غير أي كلمة جديدة بتنادي $heartbeat (curl بينادي progress تقريباً كل ثانية
+    // حتى وهو مستني). $last بيتحدّث برّه مع كل سطر حقيقي، فالنبضات بتقف لوحدها وقت الكتابة.
+    private function ticker(callable $heartbeat, float &$last): \Closure
+    {
+        return function () use ($heartbeat, &$last) {
+            if (microtime(true) - $last >= self::HEARTBEAT_SECONDS) {
+                $last = microtime(true);
+                $heartbeat();
+            }
+        };
     }
 
     private function errorLine(string $kind, string $detail): string

@@ -330,8 +330,12 @@ async function readStream(url, init, eta, panel) {
         } catch {
             return null;
         }
+        // نبضة "لسه شغال" من السيرفر (عشان Cloudflare ميقطعش الاتصال الساكت) — مش رد حقيقي.
+        if (chunk.heartbeat) return null;
+        gotAnything = true;
         if (chunk.error) {
-            return { error: chunk.kind || 'http_error', detail: String(chunk.error) };
+            const kind = chunk.kind || (/not found/i.test(String(chunk.error)) ? 'model_missing' : 'http_error');
+            return { error: kind, detail: String(chunk.error) };
         }
         if (typeof chunk.response === 'string' && chunk.response !== '') {
             text += chunk.response;
@@ -349,7 +353,6 @@ async function readStream(url, init, eta, panel) {
         for (;;) {
             const { value, done } = await reader.read();
             if (done) break;
-            gotAnything = true;
             buffer += decoder.decode(value, { stream: true });
             let newline;
             while ((newline = buffer.indexOf('\n')) !== -1) {

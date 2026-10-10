@@ -217,6 +217,9 @@ class AiRunTest extends TestCase
         $content = $this->post(route('ai-runs.stream', $run))->assertOk()->streamedContent();
 
         $lines = array_values(array_filter(explode("\n", $content)));
+        // أول سطر نبضة "لسه شغال" فورية (Cloudflare على السيرفر بيقطع أي رد ساكت 100 ثانية).
+        $this->assertTrue(json_decode($lines[0], true)['heartbeat']);
+        $lines = array_values(array_filter($lines, fn ($line) => ! (json_decode($line, true)['heartbeat'] ?? false)));
         $this->assertCount(3, $lines);
         $this->assertTrue(json_decode($lines[2], true)['done']);
         Http::assertSent(fn ($request) => str_ends_with($request->url(), '/api/generate') && $request['stream'] === true);
@@ -228,7 +231,8 @@ class AiRunTest extends TestCase
         $this->fakeOllamaUp(generate: fn () => throw new ConnectionException('cURL error 7: Failed to connect'));
         $run = $this->postJson(route('ai-runs.start'), ['kind' => 'create', 'message' => 'عيادة أسنان'])->json('run');
 
-        $line = json_decode(trim($this->post(route('ai-runs.stream', $run))->streamedContent()), true);
+        $lines = array_filter(explode("\n", $this->post(route('ai-runs.stream', $run))->streamedContent()));
+        $line = json_decode(end($lines), true);
 
         $this->assertSame('down', $line['kind']);
     }

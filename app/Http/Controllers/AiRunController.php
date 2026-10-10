@@ -34,6 +34,8 @@ use Throwable;
  */
 class AiRunController extends Controller
 {
+    private const HEARTBEAT = '{"heartbeat":true}';
+
     private const HANDLERS = [
         'create' => CreateProjectRun::class,
         'follow_up' => FollowUpRun::class,
@@ -107,7 +109,7 @@ class AiRunController extends Controller
         }
 
         return response()->stream(function () use ($run, $ollama) {
-            $ollama->stream($run->body_json, function (string $line) {
+            $send = function (string $line) {
                 echo $line."\n";
 
                 // أي buffering في الطريق (output_buffering في php.ini) بيأخّر الكلام لحد الآخر
@@ -116,7 +118,12 @@ class AiRunController extends Controller
                     @ob_flush();
                 }
                 flush();
-            });
+            };
+
+            // نبضة فورية + نبضة كل 15 ثانية لحد أول كلمة (2026-10-10، السيرفر ورا Cloudflare
+            // بيقطع أي رد ساكت 100 ثانية). المتصفح بيتجاهل أي سطر مفيهوش response/done/error.
+            $send(self::HEARTBEAT);
+            $ollama->stream($run->body_json, $send, fn () => $send(self::HEARTBEAT));
         }, 200, [
             'Content-Type' => 'application/x-ndjson; charset=utf-8',
             'Cache-Control' => 'no-cache, no-transform',
@@ -125,15 +132,32 @@ class AiRunController extends Controller
     }
 
     // آخر حل: السيرفر بيستنى الرد كامل ويطبّقه (العدّاد بيمشي بالتقدير بس).
-    public function server(AiRun $run, OllamaService $ollama): JsonResponse
+    public function server(AiRun $run, OllamaService $ollama): StreamedResponse|JsonResponse
     {
         if ($run->status !== AiRun::PENDING) {
             return $this->alreadyHandled($run);
         }
 
-        $result = $ollama->runBody($run->body_json, $run->task, $run->prompt_chars);
+        // الرد بيتبعت JSON عادي في الآخر، بس قبله مسافات فاضية كل 15 ثانية (JSON بيتجاهل المسافات
+        // في أوله) — عشان Cloudflare ميقطعش الانتظار بعد 100 ثانية على السيرفر.
+        return response()->stream(function () use ($run, $ollama) {
+            $pulse = function () {
+                echo ' ';
+                if (ob_get_level() > 0) {
+                    @ob_flush();
+                }
+                flush();
+            };
 
-        return response()->json($this->apply($run, $result));
+            $pulse();
+            $result = $ollama->runBody($run->body_json, $run->task, $run->prompt_chars, $pulse);
+
+            echo json_encode($this->apply($run, $result), JSON_UNESCAPED_UNICODE);
+        }, 200, [
+            'Content-Type' => 'application/json; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-transform',
+            'X-Accel-Buffering' => 'no',
+        ]);
     }
 
     public function complete(Request $request, AiRun $run, OllamaService $ollama): JsonResponse

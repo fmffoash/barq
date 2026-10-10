@@ -1,7 +1,7 @@
 # دليل نشر برق على السيرفر — خطوات فعلية، مش تلقائية
 
 هذا الملف بيوثّق كل خطوة محتاجة تحصل فعلياً على سيرفر Hetzner (`138.199.220.217`، نفس
-السيرفر اللي شغّال عليه Tafra ERP) عشان برق يبقى شغّال حي على `barq.tafraos.com`. **الجلسة
+السيرفر اللي شغّال عليه Tafra ERP) عشان برق يبقى شغّال حي على `adamfoash.tafraos.com`. **الجلسة
 اللي كتبت الملف ده مالهاش أي وصول SSH فعلي للسيرفر** (صفر `ssh`/`scp` binary، صفر مفتاح
 جوّه `~/.ssh/`) — يعني كل الخطوات دي لازم تتنفّذ يدوياً من شخص أو جلسة عندها وصول حقيقي
 للسيرفر، مش تلقائي زي `tafra-deploy` بتاع مشروع الـ ERP.
@@ -9,6 +9,57 @@
 ⚠️ **قاعدة ثابتة تتطبّق على كل خطوة هنا:** صفر باسورد أو سر حقيقي يتكتب في أي ملف — أي
 مكان فيه `__PLACEHOLDER__` لازم يتحط بإيد الشخص اللي بينفّذ مباشرة على السيرفر وقت الحاجة،
 مش يتحط في هذا الملف ولا يتبعت في أي رسالة.
+
+## ⭐ الرجوع للسيرفر بعد فترة التشغيل المحلي (2026-10-10)
+
+فؤاد شغّل اللوحة على جهازه فترة (docs/LOCAL-SETUP.md) ورجع للسيرفر لأن التشغيل المحلي محتاج
+جهاز قوي. **مفيش بيانات مشاريع مهمة تتنقل** (كانت كلها تجارب)، فالسيرفر يبدأ نضيف. لو هتحتاج
+تنقل بيانات من جهاز تاني بعد كده: `barq:export-data` هناك ← ارفع الـzip ← `php artisan
+barq:import-data path.zip --force` هنا (استبدال كامل مش دمج) ← `chown` زي تحت.
+
+**لو مجلد `/var/www/barq` لسه موجود على السيرفر** (تحديث عادي):
+
+```bash
+cd /var/www/barq
+git fetch && git reset --hard origin/main
+chown -R www-data:www-data storage bootstrap/cache public/images
+npm ci && npm run build && chown -R www-data:www-data public/build
+composer install --no-dev --optimize-autoloader --quiet && chown -R www-data:www-data vendor
+# .env: راجع قسم "إعدادات برق الخاصة" في deploy/env.production.example وانسخ القيم الجديدة
+# (OLLAMA_TIMEOUT/OLLAMA_NUM_CTX/OLLAMA_KEEP_ALIVE/OLLAMA_BROWSER_DIRECT، وAPP_URL الصح).
+php artisan migrate --force
+php artisan barq:seed-template-library      # آمن على المشاريع الموجودة، وبيحدّث الـ300 قالب
+php artisan storage:link 2>/dev/null || true
+php artisan optimize:clear
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+cp deploy/nginx-barq.conf /etc/nginx/sites-enabled/barq && nginx -t
+curl -s http://localhost:11434/api/ps      # لازم models:[] قبل الريلود (Ollama مش شغال دلوقتي)
+systemctl reload nginx && systemctl reload php8.3-fpm
+chown -R www-data:www-data storage bootstrap/cache
+php artisan barq:doctor
+```
+
+**لو المجلد اتمسح** (اتشال برق من السيرفر وقت التشغيل المحلي): اتبع الخطوات من 4 لـ9 تحت كاملة
+(قاعدة البيانات، clone، `.env` من `deploy/env.production.example`، migrate، storage:link،
+`barq:create-admin`، `barq:seed-template-library`، الكاش والصلاحيات، nginx)، وبعدين خطوة 12
+(Ollama) و`php artisan barq:doctor`.
+
+**حدود رفع الصور في pool برق** (`/etc/php/8.3/fpm/pool.d/barq.conf`، مش متتبّع في الريبو) — لازم
+تطابق `client_max_body_size 64M` في nginx وتحقّق التطبيق (8 ميجا للصورة، لحد 10 صور مرة واحدة):
+
+```
+php_admin_value[upload_max_filesize] = 10M
+php_admin_value[post_max_size] = 64M
+php_admin_value[max_file_uploads] = 20
+```
+
+بعد تعديلها: `curl -s http://localhost:11434/api/ps` (لازم `models:[]`) ← `systemctl reload php8.3-fpm`.
+
+**الذكاء الاصطناعي على السيرفر:** المتصفح مش بيقدر يكلّم Ollama مباشرة هنا (مش ظاهر برّه)، فالرد
+بيعدّي من السيرفر نفسه كلمة بكلمة (`AiRunController::stream`) مع نبضة "لسه شغال" كل 15 ثانية —
+Cloudflare بيقطع أي رد ساكت 100 ثانية (خطأ 524)، والنموذج على المعالج ممكن ياخد أكتر من كده قبل
+أول كلمة. `fastcgi_read_timeout 600s` في nginx أمان إضافي. لو ظهر 524 رغم كده، راجع إن
+`X-Accel-Buffering: no` واصل (ممكن تأكد بـ`curl -N` على `/ai/runs/{id}/stream` من جوّه السيرفر).
 
 ## 0) الفرق عن مشروع Tafra ERP الموجود بالفعل
 
@@ -118,8 +169,8 @@ php artisan barq:create-admin
 php artisan barq:seed-template-library
 ```
 
-بيولّد مكتبة القوالب الأصلية (Phase 7-9) — 14 فئة نشاط × 3 قوالب موزّعة على الـ 15 تصميم
-البصري (42 قالب توتال) بمحتوى عربي افتراضي جاهز، من غير ما تحتاج تعمل أي قالب يدوي بإيدك
+بيولّد مكتبة القوالب الأصلية — 20 فئة نشاط × 15 قالب موزّعة على الـ 16 تصميم
+البصري (300 قالب توتال) بمحتوى عربي افتراضي جاهز، من غير ما تحتاج تعمل أي قالب يدوي بإيدك
 الأول. الأمر idempotent بالكامل — آمن تشغّله تاني وقت ما تحدّث الكود لاحقاً (هيحدّث
 القوالب الموجودة بدل ما يكرّرها).
 
@@ -165,7 +216,11 @@ systemctl reload nginx
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ollama pull qwen3:8b
+ollama --version   # لو هتجرّب نموذج من الأحدث (qwen3.5/gemma4) لازم 0.31.2 أو أحدث
 ```
+
+إعداداته في `.env` (شرحها في `deploy/env.production.example`): `OLLAMA_NUM_CTX=6144`،
+`OLLAMA_KEEP_ALIVE=5m` (الرام مشتركة مع Tafra ERP)، `OLLAMA_BROWSER_DIRECT=off`.
 
 ⚠️ ده استهلاك رام وقرص حقيقي على سيرفر أصلاً شغّال عليه Tafra ERP — قرّر بوعي هل السيرفر
 مستحمل الحمل الإضافي ده قبل ما تشغّله، مش افتراض إنه هيمشي لوحده. لو قررت تأجيلها، سيبها
@@ -184,15 +239,15 @@ ollama pull qwen3:8b
 
 بعد كل الخطوات فوق:
 
-1. `curl -I https://barq.tafraos.com/up` → المفروض يرجع `200`.
-2. افتح `https://barq.tafraos.com/login` في متصفح، وادخل بحساب الأدمن اللي عملته في خطوة 7.
-3. افتح `/templates` وتأكد إن الـ 42 قالب من `barq:seed-template-library` ظاهرين، وإن الخطوط
+1. `curl -I https://adamfoash.tafraos.com/up` → المفروض يرجع `200`.
+2. افتح `https://adamfoash.tafraos.com/login` في متصفح، وادخل بحساب الأدمن اللي عملته في خطوة 7.
+3. افتح `/templates` وتأكد إن الـ 300 قالب من `barq:seed-template-library` ظاهرين، وإن الخطوط
    (Cairo/Tajawal/...) بتظهر صح مش fallback نظام (لو الخط مش ظاهر، غالباً `npm run build`
    في خطوة 5 معملش أو `public/build` مش متزامن مع الكود الحالي).
 4. اعمل مشروع من أي قالب من المكتبة (أو قالب يدوي جديد)، واتأكد إنه بيظهر فعلاً على
-   `{slug}.barq.tafraos.com` بالتصميم والألوان الصح.
+   `https://adamfoash.tafraos.com/site/{slug}` بالتصميم والألوان الصح.
 5. امسح أي مشروع تجريبي زيادة عن مكتبة القوالب بعد التأكد — أي بيانات تجربة لازم تتمسح فوراً
-   (قاعدة ثابتة في `CLAUDE.md`). قوالب المكتبة نفسها (الـ 42) مش بيانات تجربة — سيبها زي
+   (قاعدة ثابتة في `CLAUDE.md`). قوالب المكتبة نفسها (الـ 300) مش بيانات تجربة — سيبها زي
    ما هي، دي جزء من المنتج.
 
 ## ملحوظة أخيرة

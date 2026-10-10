@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Template;
 use App\Models\User;
+use App\Services\OllamaService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -82,14 +83,18 @@ class Doctor extends Command
         try {
             DB::connection()->getPdo();
         } catch (Throwable $e) {
-            $this->report('fail', 'Database connection: '.$e->getMessage(), windows_os() ? 'Run local\\setup.bat again' : 'php artisan barq:local-setup');
+            $this->report('fail', 'Database connection: '.$e->getMessage(), match (true) {
+                windows_os() => 'Run local\\setup.bat again',
+                app()->isProduction() => 'Check DB_HOST/DB_DATABASE/DB_USERNAME/DB_PASSWORD in .env and that MySQL is running',
+                default => 'php artisan barq:local-setup',
+            });
 
             return false;
         }
 
         $migrator = app('migrator');
         if (! $migrator->repositoryExists()) {
-            $this->report('fail', 'Database is empty (no tables yet)', $this->artisan('migrate'));
+            $this->report('fail', 'Database is empty (no tables yet)', $this->artisan('migrate --force'));
 
             return false;
         }
@@ -99,7 +104,7 @@ class Doctor extends Command
         $this->report(
             $pending === [] ? 'ok' : 'fail',
             $pending === [] ? 'Database ('.DB::connection()->getDriverName().', up to date)' : count($pending).' pending migration(s)',
-            $this->artisan('migrate'),
+            $this->artisan('migrate --force'),
         );
 
         return $pending === [];
@@ -144,12 +149,30 @@ class Doctor extends Command
             'Uploaded images link (public/storage)',
             $this->artisan('storage:link'),
         );
+
+        // السيرفر (قاعدة الصيانة الأولى في CLAUDE.md): أي artisan بيتشغّل كـroot بيخلّي ملفات
+        // storage ملك root، وPHP-FPM (www-data) يفشل يكتب اللوج ← 500 على الموقع كله من غير سبب
+        // ظاهر. التحذير ده بيلقطها قبل ما تحصل.
+        if (! windows_os() && function_exists('posix_getpwnam') && ($www = posix_getpwnam('www-data'))) {
+            $log = storage_path('logs/laravel.log');
+            $owner = is_file($log) ? fileowner($log) : null;
+            if ($owner !== null && $owner !== $www['uid'] && app()->isProduction()) {
+                $this->report('warn', 'storage/logs/laravel.log is not owned by www-data (web requests may fail with 500)', 'chown -R www-data:www-data storage bootstrap/cache');
+            }
+        }
+
+        $this->report(
+            is_file(public_path('images/template-previews/manifest.json')) ? 'ok' : 'warn',
+            'Template card pictures (public/images/template-previews)',
+            'git pull (the pictures are part of the repository)',
+        );
     }
 
     private function checkOllama(): void
     {
-        $baseUrl = rtrim((string) config('services.ollama.base_url'), '/');
-        $model = (string) config('services.ollama.model');
+        $ollama = app(OllamaService::class);
+        $baseUrl = $ollama->baseUrl();
+        $model = $ollama->model();
 
         try {
             $response = Http::timeout(3)->get($baseUrl.'/api/tags');
@@ -159,18 +182,30 @@ class Doctor extends Command
         }
 
         if ($installed === null) {
-            $this->report('warn', "Ollama is not running at {$baseUrl} (AI features won't work)", 'Start the Ollama app (or run: ollama serve)');
+            $this->report('warn', "Ollama is not running at {$baseUrl} (AI features won't work)", windows_os() ? 'Start the Ollama app' : 'systemctl start ollama (or: ollama serve)');
 
             return;
         }
 
         // Ollama بيعرض الموديل من غير tag صريح باسم "name:latest".
         $wanted = str_contains($model, ':') ? $model : $model.':latest';
-        $this->report(
-            in_array($wanted, $installed, true) ? 'ok' : 'warn',
-            "Ollama model {$model}",
-            "ollama pull {$model}",
-        );
+        $hasModel = in_array($wanted, $installed, true);
+        $this->report($hasModel ? 'ok' : 'warn', "Ollama model {$model} (context {$ollama->numCtx()} tokens)", "ollama pull {$model}");
+
+        // نماذج "التفكير" الأحدث (qwen3.5/gemma4...) بتتجاهل شكل الرد المطلوب على إصدارات Ollama
+        // أقدم من 0.31.2 لما التفكير مقفول — والرد بيطلع مش مفهوم من غير أي رسالة.
+        if ($hasModel) {
+            try {
+                $version = (string) Http::timeout(3)->get($baseUrl.'/api/version')->json('version');
+                $capabilities = (array) Http::timeout(5)->post($baseUrl.'/api/show', ['model' => $model])->json('capabilities');
+            } catch (Throwable) {
+                return;
+            }
+
+            if ($version !== '' && in_array('thinking', $capabilities, true) && version_compare($version, '0.31.2', '<')) {
+                $this->report('warn', "Ollama {$version} is too old for {$model} (needs 0.31.2+ for reliable replies)", windows_os() ? 'Update Ollama from its tray icon' : 'curl -fsSL https://ollama.com/install.sh | sh');
+            }
+        }
     }
 
     // على ويندوز PHP الخاص بالتطبيق (.runtime) مش في الـPATH العام، فـ`php artisan` في شباك عادي

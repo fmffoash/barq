@@ -50,6 +50,8 @@ git fetch && git reset --hard origin/main
 chown -R www-data:www-data storage bootstrap/cache public/images
 npm run build && chown -R www-data:www-data public/build
 composer install --no-dev --quiet && chown -R www-data:www-data vendor
+php artisan migrate --force
+php artisan barq:seed-template-library   # آمن على المشاريع الموجودة (بيحدّث المكتبة بس)
 php artisan optimize:clear
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 # قبل الريلود: curl -s http://localhost:11434/api/ps → لازم models:[] (Ollama مش شغال)
