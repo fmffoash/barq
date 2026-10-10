@@ -24,7 +24,7 @@ class SiteRenderer
     // (testimonials) موجودة على الخانة في الحالتين. لما الـ16 تصميم كلهم يدعموه، القايمة دي
     // والشرط اللي بيستخدمها يتشالوا.
     public const LAYOUTS_WITH_TESTIMONIALS_KIND = [
-        'classic', 'modern', 'gallery', 'split', 'magazine', 'bento', 'minimal', 'bold',
+        'classic', 'modern', 'gallery', 'split', 'magazine', 'bento', 'minimal', 'bold', 'glass', 'neon',
     ];
 
     public function render(GeneratedSite $site): array
