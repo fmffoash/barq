@@ -1,12 +1,23 @@
+{{--
+    قسم واحد في تصميم "جاليري" — تصميم بيعتمد على الصور: هيرو بصورة بعرض الشاشة تحت النافبار،
+    ومعرض صور فسيفساء كبير، وباقي الأقسام هادية حواليه.
+    الهيرو: طبقة تعتيم سودا على كل اللوحات (الفاتحة كانت بتعمل الصورة "لبنية" والنص الرمادي
+    مايتقريش)، والنص أبيض دايماً فوقها.
+    قواعد المحرر المباشر: data-slot على كل عنصر خانة وكل <img>، position:relative على كل
+    <section>، bq-free-position-boundary + pointer-events على حاوية النص فوق صورة الهيرو، صفر
+    transform على <img>.
+--}}
 @php
     $textItems = $section['items']->whereIn('slot.slot_type', ['text', 'textarea']);
     $listItems = $section['items']->where('slot.slot_type', 'list');
-    $imageItems = $section['items']->where('slot.slot_type', 'image');
+    $imageItems = $section['items']->where('slot.slot_type', 'image')->values();
     $linkItems = $section['items']->where('slot.slot_type', 'link');
-    $imageOnRight = $index % 2 === 0;
 
     $heading = $textItems->firstWhere('slot.slot_type', 'text');
     $supportingItems = $textItems->reject(fn ($item) => $heading && $item['slot']->key === $heading['slot']->key);
+    $alt = trim(strip_tags((string) ($heading['value'] ?? ''))) ?: $project->name;
+    $softBand = 'background-color: color-mix(in srgb, var(--site-surface) 60%, var(--site-background));';
+    $primaryButton = 'background-color: var(--site-primary); color: var(--site-on-primary);';
 @endphp
 
 @switch($section['kind'])
@@ -14,176 +25,151 @@
         @php $heroImage = $imageItems->first(); @endphp
         <section
             id="{{ $section['key'] }}"
-            class="relative flex min-h-[70vh] flex-col items-center justify-center gap-5 overflow-hidden px-6 py-20 text-center sm:px-10"
-            style="{{ $heroImage ? '' : 'background-color: var(--site-surface);' }}"
+            @class([
+                'relative -mt-[4.5rem] flex min-h-[86vh] flex-col justify-end overflow-hidden px-6 pb-16 pt-32 sm:px-10 sm:pb-24',
+            ])
+            style="{{ $heroImage ? 'color: #ffffff;' : 'background-image: linear-gradient(160deg, var(--site-surface), var(--site-background));' }}"
         >
             @if ($heroImage)
-                {{-- صورة حقيقية (<img data-slot>) بدل background-image مباشر على الـsection —
-                عشان تكبير/تحريك الصورة (المرحلة 2) يشتغل، بنفس آلية overflow-hidden
-                الموجودة على الـsection أصلاً. --}}
+                {{-- صورة حقيقية (<img data-slot>) بدل background-image — عشان تكبير/تحريك الصورة
+                (المرحلة 2) يشتغل، بنفس آلية overflow-hidden على الـsection. --}}
                 <div class="absolute inset-0">
-                    <img data-slot="{{ $heroImage['slot']->key }}" src="{{ $heroImage['value'] }}" alt="" class="h-full w-full object-cover" aria-hidden="true">
-                    <div class="pointer-events-none absolute inset-0" style="background-image: linear-gradient(to top, color-mix(in srgb, var(--site-background) 85%, transparent), color-mix(in srgb, var(--site-background) 30%, transparent));"></div>
+                    <img data-slot="{{ $heroImage['slot']->key }}" src="{{ $heroImage['value'] }}" alt="{{ $alt }}" class="h-full w-full object-cover" loading="eager" fetchpriority="high">
+                    <div class="pointer-events-none absolute inset-0" style="background-image: linear-gradient(to top, rgb(0 0 0 / .78), rgb(0 0 0 / .38) 55%, rgb(0 0 0 / .18));"></div>
                 </div>
             @endif
-            {{-- pointer-events-none على الحاوية + pointer-events-auto على كل عنصر قابل
-            للتعديل فعلياً (المرحلة 2) — من غيرها مساحات الفراغ حوالين النص بتمنع الدوس على
-            صورة الهيرو تحتها لأن الحاوية طالعة فوقها بـz-10.
-            bq-free-position-boundary (المرحلة 3، 2026-09-24) — الحاوية الضيقة دي (max-w-3xl)
-            هي offsetParent أي خانة نص جواها، فالترتيب الحر كان بيتحسب نسبة لعرضها هي بس مش
-            عرض الـsection كله (فؤاد اشتكى منها حياً: "بيتحرك في مساحة كام سم مش حر"). الكلاس
-            ده بس marker — الفعلي (position:absolute+inset:0 opt-in لما فيه ترتيب حر شغال
-            فعلاً على خانة جواها) في document.blade.php المركزي، شوف التعليق هناك. --}}
-            <div class="bq-free-position-boundary relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-5" style="pointer-events: none;">
+            {{-- pointer-events-none على الحاوية + pointer-events-auto على كل عنصر قابل للتعديل
+            فعلياً (المرحلة 2) — من غيرها مساحات الفراغ حوالين النص بتمنع الدوس على صورة الهيرو
+            تحتها لأن الحاوية طالعة فوقها بـz-10.
+            bq-free-position-boundary (المرحلة 3) — الحاوية دي هي offsetParent أي خانة نص جواها،
+            فالترتيب الحر كان بيتحسب نسبة لعرضها هي بس؛ الكلاس marker بس، والفعلي (position:
+            absolute+inset:0 لما فيه ترتيب حر شغال فعلاً على خانة جواها) في document.blade.php. --}}
+            <div class="bq-free-position-boundary relative z-10 mx-auto flex w-full max-w-6xl flex-col items-start gap-5 text-start" style="pointer-events: none;">
                 @if ($heading)
-                    <h1 data-slot="{{ $heading['slot']->key }}" class="text-4xl font-extrabold drop-shadow-sm sm:text-5xl" style="pointer-events: auto;">{!! $heading['value'] !!}</h1>
+                    <h1 data-slot="{{ $heading['slot']->key }}" class="max-w-3xl text-[clamp(2.4rem,5.4vw,4.4rem)] font-extrabold leading-[1.2] drop-shadow-[0_2px_14px_rgb(0_0_0/.35)]" style="pointer-events: auto;">{!! $heading['value'] !!}</h1>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="text-lg leading-loose sm:text-xl" style="color: var(--site-muted); pointer-events: auto;">{!! $item['value'] !!}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-lg leading-loose sm:text-xl" style="{{ $heroImage ? 'color: rgb(255 255 255 / .9);' : 'color: var(--site-muted);' }} pointer-events: auto;">{!! $item['value'] !!}</p>
                 @endforeach
 
-                @foreach ($linkItems as $item)
-                    <a
-                        data-slot="{{ $item['slot']->key }}"
-                        href="{{ $item['value'] }}"
-                        target="_blank"
-                        rel="noopener"
-                        class="mt-2 inline-block rounded-full px-8 py-3.5 text-base font-semibold shadow-lg transition hover:opacity-90"
-                        style="background-color: var(--site-primary); color: var(--site-background); pointer-events: auto;"
-                    >
-                        {{ $item['slot']->label() }}
-                    </a>
-                @endforeach
+                <div class="mt-2 flex flex-wrap items-center gap-3" style="pointer-events: auto;">
+                    @foreach ($linkItems as $item)
+                        @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90', 'style' => $primaryButton]])
+                    @endforeach
+                    @if ($linkItems->isEmpty() && ($siteMeta['heroCta'] ?? null))
+                        @include('site.partials.link-button', ['btn' => $siteMeta['heroCta'] + ['class' => 'rounded-full px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90', 'style' => $primaryButton]])
+                    @endif
+                </div>
             </div>
         </section>
         @break
 
     @case('gallery')
-        @php $mainImage = $imageItems->first(); $restImages = $imageItems->skip(1); @endphp
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
-            <div class="mx-auto flex max-w-5xl flex-col items-center gap-10 lg:flex-row {{ $imageOnRight ? '' : 'lg:flex-row-reverse' }}">
-                @if ($mainImage)
-                    <div class="aspect-[4/3] w-full flex-1 overflow-hidden rounded-[1.75rem] shadow-2xl lg:w-1/2">
-                        <img
-                            data-slot="{{ $mainImage['slot']->key }}"
-                            src="{{ $mainImage['value'] }}"
-                            alt="{{ $mainImage['slot']->label() }}"
-                            class="h-full w-full object-cover"
-                            loading="lazy"
-                        >
-                    </div>
-                @endif
-
-                <div class="flex flex-1 flex-col gap-4 text-center lg:text-right">
-                    @if ($heading)
-                        <h2 data-slot="{{ $heading['slot']->key }}" class="text-3xl font-bold">{!! $heading['value'] !!}</h2>
+        @php $mosaic = \App\Services\SiteRenderer::mosaic($imageItems->count()); @endphp
+        <section id="{{ $section['key'] }}" class="relative px-4 py-16 sm:px-8 sm:py-24">
+            <div class="mx-auto flex max-w-6xl flex-col gap-10">
+                <div class="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-end">
+                    @include('site.partials.section-heading', ['head' => ['heading' => $heading, 'label' => $section['eyebrow'] ?? null, 'align' => 'start']])
+                    @if ($supportingItems->isNotEmpty())
+                        <div class="flex max-w-xl flex-col gap-3">
+                            @foreach ($supportingItems as $item)
+                                <p data-slot="{{ $item['slot']->key }}" class="text-lg leading-loose" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
+                            @endforeach
+                        </div>
                     @endif
-                    @foreach ($supportingItems as $item)
-                        <p data-slot="{{ $item['slot']->key }}" class="leading-loose" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
-                    @endforeach
                 </div>
-            </div>
 
-            @if ($restImages->isNotEmpty())
-                <div class="mx-auto mt-8 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($restImages as $item)
-                        <div class="aspect-square w-full overflow-hidden rounded-[1.5rem] shadow-lg">
-                            <img
-                                data-slot="{{ $item['slot']->key }}"
-                                src="{{ $item['value'] }}"
-                                alt="{{ $item['slot']->label() }}"
-                                class="h-full w-full object-cover"
-                                loading="lazy"
-                            >
+                <div data-reveal class="{{ $mosaic['grid'] }} auto-rows-[10rem] gap-2 sm:auto-rows-[13rem] sm:gap-3 lg:auto-rows-[16rem]">
+                    @foreach ($imageItems as $item)
+                        <div class="overflow-hidden rounded-[1.25rem] {{ $mosaic['items'][$loop->index] }}">
+                            <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $alt }}" class="h-full w-full object-cover" loading="lazy">
                         </div>
                     @endforeach
                 </div>
-            @endif
+            </div>
         </section>
         @break
 
     @case('list')
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
-            <div class="mx-auto flex max-w-4xl flex-col gap-8">
-                @if ($textItems->isNotEmpty())
-                    <div class="text-center">
-                        @if ($heading)
-                            <h2 data-slot="{{ $heading['slot']->key }}" class="text-3xl font-bold">{!! $heading['value'] !!}</h2>
-                        @endif
-                        @foreach ($supportingItems as $item)
-                            <p data-slot="{{ $item['slot']->key }}" class="mt-3 leading-loose" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
-                        @endforeach
-                    </div>
-                @endif
+    @case('testimonials')
+        <section id="{{ $section['key'] }}" class="relative px-4 py-16 sm:px-8 sm:py-24" style="{{ $softBand }}">
+            <div class="mx-auto flex max-w-6xl flex-col gap-10">
+                @include('site.partials.section-heading', ['head' => ['heading' => $heading, 'supporting' => $supportingItems, 'label' => $section['eyebrow'] ?? null, 'rating' => $section['rating'] ?? null]])
 
                 @foreach ($listItems as $item)
-                    <ul class="grid gap-4 sm:grid-cols-2">
-                        @foreach ((array) $item['value'] as $listItem)
-                            <li
-                                data-slot="{{ $item['slot']->key }}"
-                                class="flex items-start gap-3 rounded-[1.5rem] p-5 text-base leading-relaxed shadow-md"
-                                style="background-color: var(--site-surface);"
-                            >
-                                <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: var(--site-primary);"></span>
-                                <span>{{ $listItem }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
+                    @if ($section['kind'] === 'testimonials' && isset($item['testimonials']))
+                        <div class="flex flex-wrap justify-center gap-6">
+                            @foreach ($item['testimonials'] as $t)
+                                @include('site.partials.testimonial-card', ['card' => [
+                                    't' => $t,
+                                    'slotKey' => $item['slot']->key,
+                                    'class' => \App\Services\SiteRenderer::cardWidth(count($item['testimonials'])),
+                                    'style' => 'background-color: var(--site-background);',
+                                ]])
+                            @endforeach
+                        </div>
+                    @else
+                        @php $entries = (array) $item['value']; @endphp
+                        <ul class="flex flex-wrap justify-center gap-5">
+                            @foreach ($entries as $entry)
+                                @php $e = \App\Services\SiteRenderer::splitEntry($entry); @endphp
+                                <li
+                                    data-slot="{{ $item['slot']->key }}"
+                                    data-reveal
+                                    class="flex items-start gap-4 rounded-[1.25rem] p-5 {{ \App\Services\SiteRenderer::cardWidth(count($entries)) }}"
+                                    style="background-color: var(--site-background); box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-text) 7%, transparent);"
+                                >
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style="background-color: var(--site-primary); color: var(--site-on-primary);">@include('site.partials.icon', ['name' => 'check', 'class' => 'h-4 w-4'])</span>
+                                    <span class="flex flex-col gap-1 pt-1">
+                                        <span class="text-base font-bold leading-relaxed">{{ $e['title'] }}</span>
+                                        @if ($e['desc'])
+                                            <span class="text-sm leading-relaxed" style="color: var(--site-muted);">{{ $e['desc'] }}</span>
+                                        @endif
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 @endforeach
             </div>
         </section>
         @break
 
     @case('cta')
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
-            <div
-                class="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl"
-                style="background-image: linear-gradient(135deg, var(--site-primary), color-mix(in srgb, var(--site-primary) 55%, black));"
-            >
+        <section id="{{ $section['key'] }}" class="relative px-4 py-16 sm:px-8 sm:py-20">
+            <div data-reveal class="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-[2.5rem] px-8 py-14 text-center shadow-2xl sm:px-14" style="background-image: linear-gradient(135deg, var(--site-primary), var(--site-primary-deep)); color: var(--site-on-primary);">
                 @if ($heading)
-                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-3xl font-bold text-white">{!! $heading['value'] !!}</h2>
+                    <h2 data-slot="{{ $heading['slot']->key }}" class="text-[clamp(1.9rem,3.4vw,2.75rem)] font-extrabold leading-[1.3]">{!! $heading['value'] !!}</h2>
                 @endif
                 @foreach ($supportingItems as $item)
-                    <p data-slot="{{ $item['slot']->key }}" class="leading-loose" style="color: rgba(255,255,255,.85);">{!! $item['value'] !!}</p>
+                    <p data-slot="{{ $item['slot']->key }}" class="max-w-2xl text-lg leading-loose" style="color: color-mix(in srgb, var(--site-on-primary) 86%, transparent);">{!! $item['value'] !!}</p>
                 @endforeach
 
                 @foreach ($linkItems as $item)
-                    <a
-                        data-slot="{{ $item['slot']->key }}"
-                        href="{{ $item['value'] }}"
-                        target="_blank"
-                        rel="noopener"
-                        class="mt-2 inline-block rounded-full bg-white px-8 py-3.5 text-base font-bold shadow-lg transition hover:opacity-90"
-                        style="color: var(--site-primary);"
-                    >
-                        {{ $item['slot']->label() }}
-                    </a>
+                    @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'mt-3 rounded-full px-9 py-4 text-base font-bold shadow-lg transition hover:opacity-90', 'style' => 'background-color: var(--site-on-primary); color: var(--site-primary);']])
                 @endforeach
+                @if ($linkItems->isEmpty() && $contactAction)
+                    @include('site.partials.link-button', ['btn' => $contactAction + ['class' => 'mt-3 rounded-full px-9 py-4 text-base font-bold shadow-lg transition hover:opacity-90', 'style' => 'background-color: var(--site-on-primary); color: var(--site-primary);']])
+                @endif
             </div>
         </section>
         @break
 
     @default
-        <section id="{{ $section['key'] }}" class="relative px-6 py-16 sm:px-10">
-            <div class="mx-auto flex max-w-2xl flex-col gap-4 text-center">
-                @foreach ($section['items'] as $item)
-                    @if ($heading && $item['slot']->key === $heading['slot']->key)
-                        <h2 data-slot="{{ $item['slot']->key }}" class="text-3xl font-bold">{!! $item['value'] !!}</h2>
-                    @elseif ($item['slot']->slot_type === 'link')
-                        <a
-                            data-slot="{{ $item['slot']->key }}"
-                            href="{{ $item['value'] }}"
-                            target="_blank"
-                            rel="noopener"
-                            class="mx-auto inline-block rounded-full px-8 py-3 text-base font-semibold shadow-md transition hover:opacity-90"
-                            style="background-color: var(--site-primary); color: var(--site-background);"
-                        >
-                            {{ $item['slot']->label() }}
-                        </a>
-                    @else
-                        <p data-slot="{{ $item['slot']->key }}" class="leading-loose" style="color: var(--site-muted);">{!! $item['value'] !!}</p>
-                    @endif
-                @endforeach
+        {{-- نص عادي (زي "من نحن"): "بيان" بخط كبير مقروء في عمودين بدل فقرة متوسّطة طويلة. --}}
+        <section id="{{ $section['key'] }}" class="relative px-4 py-16 sm:px-8 sm:py-24">
+            <div data-reveal class="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_2fr] lg:gap-16">
+                @include('site.partials.section-heading', ['head' => ['heading' => $heading, 'label' => $section['eyebrow'] ?? null, 'align' => 'start']])
+                @if ($supportingItems->isNotEmpty() || $linkItems->isNotEmpty())
+                    <div class="flex flex-col items-start gap-5">
+                        @foreach ($supportingItems as $item)
+                            <p data-slot="{{ $item['slot']->key }}" class="text-xl leading-loose sm:text-2xl sm:leading-[1.9]">{!! $item['value'] !!}</p>
+                        @endforeach
+                        @foreach ($linkItems as $item)
+                            @include('site.partials.link-button', ['btn' => ['item' => $item, 'class' => 'rounded-full px-8 py-3 text-base font-bold shadow-md transition hover:opacity-90', 'style' => $primaryButton]])
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </section>
 @endswitch

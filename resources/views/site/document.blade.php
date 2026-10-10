@@ -29,6 +29,14 @@
     // مبيبعتهاش خالص فبترجع false افتراضياً — ده اللي بيمنع أي أثر لوضع التعديل على
     // الموقع العام (صفر سكريبت/CSS تعديل بيتحمّل هناك).
     $editable = $editable ?? false;
+
+    // (2026-10-10) بيانات العرض المشتركة من SiteRenderer — بقيم احتياطية لو الـview اترندر من
+    // مكان قديم مبيبعتهاش.
+    $onPrimary = $onPrimary ?? '#ffffff';
+    $headingFont = $headingFont ?? null;
+    $contactAction = $contactAction ?? null;
+    $contactAnchor = $contactAnchor ?? null;
+    $siteMeta = $siteMeta ?? ['nav' => [], 'tagline' => null, 'contactNote' => null, 'heroCta' => null];
 @endphp
 <!DOCTYPE html>
 {{-- حجم الخط العام (Phase 16) بيتحط هنا على <html> نفسه مش <body> — كل كلاسات Tailwind
@@ -39,6 +47,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $project->name }}</title>
+    @if (filled($siteMeta['tagline'] ?? null))
+        <meta name="description" content="{{ $siteMeta['tagline'] }}">
+        <meta property="og:description" content="{{ $siteMeta['tagline'] }}">
+    @endif
+    <meta property="og:title" content="{{ $project->name }}">
+    <meta name="theme-color" content="{{ $colors['primary'] }}">
     @if ($cssMode === 'export')
         <link rel="stylesheet" href="assets/app.css">
     @else
@@ -99,6 +113,12 @@
                 جوّاها — صفر تأثير على أي مشروع تاني مبيستخدمش المرحلة 3 خالص. :has() مدعومة
                 في كل المتصفحات الحديثة (Chrome/Safari/Firefox من 2023 تقريباً). --}}
                 @if (filled($style['posX'] ?? null) || filled($style['posY'] ?? null) || filled($style['width'] ?? null))
+                    {{-- حركة الظهور وقت التمرير (data-reveal) بتستخدم transform، وأي transform على
+                    حاوية بيخليها هي "الكنفاه" بتاع الخانة المترتبة حر بدل الـsection — فبنقفلها
+                    على أي حاوية فيها خانة مترتبة حر عشان المكان يفضل ثابت. --}}
+                    [data-reveal]:has([data-slot="{{ $slotKey }}"]) {
+                        animation: none !important;
+                    }
                     .bq-free-position-boundary:has([data-slot="{{ $slotKey }}"]) {
                         position: absolute;
                         inset: 0;
@@ -114,14 +134,22 @@
         </style>
     @endif
 </head>
+{{-- bq-site: نطاق CSS المواقع المنشورة في app.css (خط العناوين، scroll-padding للروابط
+الداخلية...). bq-reveal: ظهور الأقسام وقت التمرير (CSS بس، صفر JS) — مقفول في المحرر المباشر
+عشان مايبقاش فيه أي حركة/transform على العناصر اللي فؤاد بيعدّلها أو بيحرّكها.
+--site-on-primary: لون نص مقروء فوق اللون الأساسي (أبيض أو غامق، SiteRenderer::onColor). --}}
 <body
-    class="min-h-screen{{ $editable ? ' bq-live-editable' : '' }}"
+    id="top"
+    class="bq-site min-h-screen{{ $editable ? ' bq-live-editable' : ' bq-reveal' }}"
     style="
         --site-primary: {{ $colors['primary'] }};
         --site-background: {{ $colors['background'] }};
         --site-surface: {{ $colors['surface'] }};
         --site-text: {{ $colors['text'] }};
         --site-muted: {{ $colors['muted'] }};
+        --site-on-primary: {{ $onPrimary }};
+        --site-primary-deep: color-mix(in srgb, var(--site-primary) 62%, {{ $onPrimary === '#ffffff' ? '#000000' : '#ffffff' }});
+        --site-font-heading: var(--font-{{ $headingFont ?: ($font ?: 'cairo') }});
         background-color: var(--site-background);
         color: var(--site-text);
         font-family: var(--font-{{ $font ?: 'cairo' }});
@@ -130,6 +158,11 @@
     "
 >
     @include('site.layouts.'.($layout ?: 'classic'))
+
+    {{-- زرار واتساب/اتصال عائم لو رابط التواصل واتساب أو تليفون — مش في المحرر المباشر. --}}
+    @if (! $editable && $contactAction)
+        @include('site.partials.floating-contact', ['action' => $contactAction, 'raised' => isset($previewTemplate)])
+    @endif
 
     {{-- معاينة قالب قبل اختياره (templates.preview) — شريط صغير "استخدم القالب ده / رجوع"؛
     مش موجود في عرض الموقع الحقيقي ولا التصدير ولا لقطات صور الكروت. --}}
