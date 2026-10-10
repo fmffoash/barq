@@ -23,9 +23,18 @@ class Project extends Model
         'contact_name',
         'contact_phone',
         'contact_email',
+        'place_json',
         'status',
         'created_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            // بيانات المكان من كوبي جوجل مابس (PlaceParser) — تليفون/عنوان/مواعيد/تقييم...
+            'place_json' => 'array',
+        ];
+    }
 
     public function template(): BelongsTo
     {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Template;
+use App\Services\Ai\Runs\CreateProjectRun;
 use App\Services\AiProjectAssistantService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,20 +37,16 @@ class AiChatController extends Controller
         ]);
     }
 
-    public function store(Request $request, AiProjectAssistantService $assistant): RedirectResponse
+    public function store(Request $request, AiProjectAssistantService $assistant, CreateProjectRun $runner): RedirectResponse
     {
-        $data = $request->validate([
-            'message' => ['required', 'string', 'max:4000'],
-            'template_id' => ['nullable', 'integer', 'exists:templates,id'],
-            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'font' => ['nullable', 'string'],
-        ]);
+        $data = $request->validate(CreateProjectRun::rules());
 
         $result = $assistant->createFromMessage(
             $data['message'],
             $data['template_id'] ?? null,
             $data['color'] ?? null,
             $data['font'] ?? null,
+            $runner->collectPhotos($request, $data),
         );
 
         if (! $result['ok']) {
@@ -64,7 +61,7 @@ class AiChatController extends Controller
 
     public function show(Project $project): View
     {
-        $project->load(['template', 'variant', 'site', 'aiChatMessages']);
+        $project->load(['template.slots', 'variant', 'site', 'aiChatMessages']);
 
         return view('ai-chat.show', compact('project'));
     }
@@ -75,7 +72,7 @@ class AiChatController extends Controller
         // نفس قيود content_files.* في GeneratedSiteController::update() بالحرف (نوع/حجم
         // الملف، استبعاد svg عمداً لاحتمال سكريبت جواها).
         $data = $request->validate([
-            'message' => ['required', 'string', 'max:4000'],
+            'message' => ['required', 'string', 'max:30000'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
         ]);
 

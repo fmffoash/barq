@@ -28,7 +28,9 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('ai-chat.store') }}" id="ai-create-form" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+    {{-- data-ai-run: resources/js/ai-run.js بيبعته بالعدّاد (AiRunController)، والـaction العادي
+    للحالة اللي الجافاسكريبت مش شغال فيها. --}}
+    <form method="POST" action="{{ route('ai-chat.store') }}" id="ai-create-form" data-ai-run="create" data-ai-run-url="{{ route('ai-runs.start') }}" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         @csrf
         <textarea
             name="message"
@@ -38,6 +40,21 @@
             placeholder="مثال: عيادة أسنان في المهندسين اسمها د. أحمد، بنعمل تقويم وتبييض وحشو، التليفون 01012345678، شغالين من 10 الصبح لـ10 بالليل..."
             class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-amber-400"
         >{{ old('message') }}</textarea>
+
+        {{-- صور مع الرسالة (2026-10-08) — كوبي جوجل مابس بصوره، أو صور جاهزة بالسحب/الزرار/Ctrl+V.
+        resources/js/photo-tray.js بيعرضها ويبعتها (photos[] ملفات، photo_urls[] صور جوجل). --}}
+        <div class="mt-3 rounded-lg border border-dashed border-slate-800 p-3 transition data-[drag=true]:border-amber-400 data-[drag=true]:bg-amber-400/5" data-photo-tray>
+            <input type="file" name="photos[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" data-photo-input>
+            <div class="mb-3 flex flex-wrap items-center gap-2 empty:hidden" data-photo-list></div>
+            <div data-photo-urls></div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <button type="button" class="rounded-lg border border-slate-700 px-3 py-1.5 text-slate-300 transition hover:border-amber-400 hover:text-amber-400" data-photo-pick>
+                    📷 أضف صور
+                </button>
+                <span>أو الزق كوبي جوجل مابس بالصور (Ctrl+V)، أو اسحب صور هنا — أول صورة بتبقى صورة الغلاف.</span>
+            </div>
+            <p class="mt-2 text-xs text-amber-300/80" data-photo-hint></p>
+        </div>
 
         {{-- خيارات "حدد بنفسك" (اختيارية بالكامل، Phase 14 — 2026-09-21) — فؤاد طلب يقدر
         يحدد القالب/اللون/الخط بنفسه بدل ما يسيب الذكاء الاصطناعي يخمّن، خصوصاً إن التخمين
@@ -113,22 +130,14 @@
     </form>
 
     <p class="mt-3 text-xs text-slate-600">
-        ملحوظة: التوليد بياخد نص دقيقة تقريباً (النموذج شغال محلي على السيرفر، صفر بيانات بتتبعت لأي API خارجي).
+        ملحوظة: النموذج شغال محلي (صفر بيانات بتتبعت لأي API خارجي) — هتشوف عدّاد بالمرحلة والوقت الباقي وهو شغال.
     </p>
 @endsection
 
 @push('scripts')
-    <script id="ai-templates-data" type="application/json">{!! $templates->toJson() !!}</script>
+    {{-- @json بيهرّب < و > — اسم قالب فيه "</script>" مايقدرش يقفل الوسم ده. --}}
+    <script id="ai-templates-data" type="application/json">@json($templates)</script>
     <script>
-        document.addEventListener('submit', function (event) {
-            if (!event.target.contains(document.querySelector('[data-ai-submit]'))) return;
-            const btn = event.target.querySelector('[data-ai-submit]');
-            if (btn && event.submitter === btn) {
-                btn.disabled = true;
-                btn.textContent = 'بيفكر... (نص دقيقة تقريباً)';
-            }
-        });
-
         // فلترة القالب بالفئة المختارة (2026-09-21) — كل البيانات (300 قالب، id/name/category
         // بس) متحمّلة في الصفحة من الأول، فالفلترة بتحصل فوراً في المتصفح من غير أي نداء
         // تاني للسيرفر. لو الأدمن معملش أي اختيار هنا، القوايم دي بتفضل disabled فمش

@@ -26,5 +26,13 @@
         </div>
     </div>
 
+    @if (session('status'))
+        <div class="mb-6 rounded-lg border border-emerald-800 bg-emerald-950/50 px-4 py-3 text-sm text-emerald-300">
+            {{ session('status') }}
+        </div>
+    @endif
+
     @include('ai-chat._panel', ['project' => $project])
+
+    @include('projects.partials.place-and-photos', ['project' => $project])
 @endsection

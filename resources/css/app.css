@@ -6,11 +6,15 @@
    والباقي (Phase 8، اتوسّعت 2026-09-20 لأكبر تشكيلة ممكنة) اختياري لكل TemplateVariant عن
    طريق عمود "font". كل خط هنا بيستورد وزنين بس (400 عادي + وزن غامق) توفيراً لحجم الأصول،
    إلا الخطوط اللي أصلاً بوزن واحد بس متاح. */
+/* 300 و900 (2026-10-10): تصميم "مينيمال" بيعتمد على عناوين رفيعة (font-light) و"بولد" على
+   أتقل وزن (font-black) — من غيرهم المتصفح كان بيرجع لـ400/800 والشكل المميز بيضيع. */
+@import '@fontsource/cairo/300.css';
 @import '@fontsource/cairo/400.css';
 @import '@fontsource/cairo/500.css';
 @import '@fontsource/cairo/600.css';
 @import '@fontsource/cairo/700.css';
 @import '@fontsource/cairo/800.css';
+@import '@fontsource/cairo/900.css';
 
 @import '@fontsource/tajawal/400.css';
 @import '@fontsource/tajawal/500.css';
@@ -21,6 +25,7 @@
 @import '@fontsource/almarai/700.css';
 @import '@fontsource/almarai/800.css';
 
+@import '@fontsource/ibm-plex-sans-arabic/300.css';
 @import '@fontsource/ibm-plex-sans-arabic/400.css';
 @import '@fontsource/ibm-plex-sans-arabic/500.css';
 @import '@fontsource/ibm-plex-sans-arabic/600.css';
@@ -163,4 +168,96 @@
     --font-merriweather: 'Merriweather', serif;
     --font-oswald: 'Oswald', sans-serif;
     --font-bebas-neue: 'Bebas Neue', sans-serif;
+}
+
+/* ===================== المواقع المنشورة (site/document.blade.php) =====================
+   كله تحت body.bq-site بس — صفر تأثير على لوحة التحكم. جوّه @layer base عشان أي كلاس Tailwind
+   على العنصر نفسه (utilities) يغلبه، وتخصيص الخانة الواحدة (style في document، !important)
+   يغلب الاتنين. */
+@layer base {
+    /* الروابط الداخلية (#services...) ماتختفيش تحت النافبار الثابت. */
+    html:has(> body.bq-site) {
+        scroll-padding-top: 6rem;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        /* الموقع العام بس — المحرر المباشر (body من غير bq-reveal) يفضل تمريره فوري زي الأول. */
+        html:has(> body.bq-reveal) {
+            scroll-behavior: smooth;
+        }
+    }
+
+    /* خط العناوين (عقد 2: TemplateVariant.heading_font) — --site-font-heading بيرجع لخط الموقع
+       العام لو النسخة مالهاش خط عناوين. text-wrap: balance بيمنع كلمة يتيمة في سطر لوحدها. */
+    :where(.bq-site) :where(h1, h2, h3) {
+        font-family: var(--site-font-heading);
+        text-wrap: balance;
+    }
+
+    :where(.bq-site) :where(p, li, blockquote) {
+        text-wrap: pretty;
+    }
+
+    :where(.bq-site) summary {
+        list-style: none;
+    }
+
+    :where(.bq-site) summary::-webkit-details-marker {
+        display: none;
+    }
+
+    :where(.bq-site) :where(a, button, summary):focus-visible {
+        outline: 2px solid var(--site-primary);
+        outline-offset: 3px;
+    }
+}
+
+/* ظهور العناصر وقت التمرير — CSS بس (animation-timeline: view())، فبيشتغل كمان في التصدير
+   الثابت من غير سكريبت. مقفول لو الزائر طالب تقليل الحركة، وفي المحرر المباشر (body من غير
+   bq-reveal)، وعلى أي حاوية فيها خانة مترتبة حر (document.blade.php). متصفح مش بيدعمه = بيظهر
+   عادي من غير حركة. */
+@keyframes bq-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(1.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+        .bq-reveal [data-reveal] {
+            animation: bq-reveal linear both;
+            animation-timeline: view();
+            animation-range: entry 0% entry 55%;
+        }
+    }
+}
+
+/* شريط الخدمات المتحرك في تصميم "بولد" — نسختين من نفس المحتوى ورا بعض، والشريط بيتحرك نص
+   عرضه بالظبط فبيلف من غير قفزة. اتجاه RTL: بيتحرك ناحية اليمين. */
+@keyframes bq-marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(50%);
+    }
+}
+
+.bq-marquee-track {
+    animation: bq-marquee 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bq-marquee-track {
+        animation: none;
+    }
+}
+
+.bq-live-editable .bq-marquee-track {
+    animation: none;
 }

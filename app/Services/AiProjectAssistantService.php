@@ -2,13 +2,18 @@
 
 namespace App\Services;
 
-use App\Console\Commands\SeedTemplateLibrary;
 use App\Models\AiChatMessage;
 use App\Models\GeneratedSite;
 use App\Models\Project;
 use App\Models\Template;
 use App\Models\TemplateVariant;
+use App\Services\Ai\AiResult;
+use App\Support\CategoryGuesser;
+use App\Support\FollowUpIntent;
+use App\Support\PastedText;
+use App\Support\PlaceParser;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -25,105 +30,186 @@ use Illuminate\Support\Str;
  */
 class AiProjectAssistantService
 {
-    public function __construct(private readonly OllamaService $ollama) {}
+    public function __construct(
+        private readonly OllamaService $ollama,
+        private readonly PhotoPoolService $photos,
+        private readonly TemplatePicker $picker,
+    ) {}
 
     /**
      * أول رسالة — لسه معندناش مشروع. بتختار فئة وقالب مناسبين، تعمل المشروع، وتملّي محتواه.
      *
-     * $templateId اختياري (Phase 14، 2026-09-21) — لو فؤاد اختار القالب بنفسه يدوي (زرار
-     * "حدد بنفسك" في ai-chat.create بدل ما يسيب الذكاء الاصطناعي يخمّن)، بنستخدمه مباشرة
-     * بدل تخمين الفئة/القالب، ونستخدم suggestContent() العادي (نداء واحد أخف بدل النداء
-     * المدموج، مش محتاج يخمّن حاجة تانية غير المحتوى). $color/$font اختياريين كمان — لو
-     * فؤاد اختارهم من الفورم بنفسه، بيتطبّقوا على الموقع الناتج فوراً وقت الإنشاء.
+     * $templateId اختياري (Phase 14) — لو فؤاد اختار القالب بنفسه، بنستخدمه مباشرة ونطلب
+     * المحتوى بس. $color/$font اختياريين كمان — بيتطبّقوا على الموقع الناتج فوراً.
+     *
+     * (2026-10-06) اتقسمت لخطوتين — prepareCreate() بتجهّز الطلب (البرومبت + شكل الرد) و
+     * completeCreate() بتطبّق الرد — عشان المتصفح يقدر يستقبل الرد من Ollama كلمة بكلمة ويعرض
+     * عدّاد (AiRunController)، والسيرفر يطبّق بس. الدالة دي هي نفس الخطوتين على السيرفر مباشرة
+     * (المسار الاحتياطي + التستات).
+     *
+     * @return array{ok: bool, reply: string, project?: Project}
      */
-    public function createFromMessage(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null): array
+    public function createFromMessage(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null, array $photos = []): array
     {
+        $prepared = $this->prepareCreate($message, $templateId, $color, $font, $photos);
+
+        if (! $prepared['ok']) {
+            return $prepared;
+        }
+
+        // فحص سريع (ثانية واحدة) قبل الانتظار الطويل: Ollama شغال والنموذج متسطّب؟
+        $result = $this->ollama->preflight()
+            ?? $this->ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
+
+        return $this->completeCreate($prepared['context'], $result);
+    }
+
+    /**
+     * $photos: صور اتخزنت بالفعل (PhotoPoolService — ملزوقة من جوجل مابس أو مرفوعة) بتتوزّع
+     * على خانات الصور لما المشروع يتعمل.
+     *
+     * @param  list<string>  $photos
+     * @return array{ok: bool, reply?: string, context?: array<string, mixed>, ai?: array{prompt: string, schema: array<string, mixed>, task: string}}
+     */
+    public function prepareCreate(string $message, ?int $templateId = null, ?string $color = null, ?string $font = null, array $photos = []): array
+    {
+        $message = PastedText::clean($message);
+
+        if ($message === '') {
+            return ['ok' => false, 'reply' => 'اكتب وصف للنشاط الأول (أو الزق بياناته).'];
+        }
+
+        // بيانات المكان بالحرف (تليفون/عنوان/مواعيد/تقييم) — بتتحط في الموقع مباشرة وبتروح للنموذج
+        // كبيانات مؤكدة (PlaceParser).
+        $place = PlaceParser::parse($message);
+        $context = ['message' => $message, 'color' => $color, 'font' => $font, 'place' => $place, 'photos' => array_values($photos)];
+
         if ($templateId) {
-            $template = Template::where('is_active', true)->where('kind', 'landing')->find($templateId);
+            $template = Template::where('is_active', true)->where('kind', 'landing')->with('slots')->find($templateId);
 
             if (! $template) {
                 return ['ok' => false, 'reply' => 'القالب اللي اخترته مش موجود أو متعطّل — اختار قالب تاني من فوق.'];
             }
 
-            $category = $template->category;
-            $projectName = Str::limit($message, 40, '') ?: $template->name;
-            $content = $this->ollama->suggestContent($template, $message);
-        } else {
-            $categories = Template::query()
-                ->where('is_active', true)
-                ->whereNotNull('category')
-                ->distinct()
-                ->orderBy('category')
-                ->pluck('category');
+            $slots = $template->slots->whereIn('slot_type', ['text', 'textarea', 'list']);
 
-            if ($categories->isEmpty()) {
-                return ['ok' => false, 'reply' => 'مفيش قوالب متاحة خالص دلوقتي — لازم تتضاف فئات وقوالب الأول.'];
-            }
+            return [
+                'ok' => true,
+                'context' => $context + ['mode' => 'content', 'template_id' => $template->id],
+                'ai' => [
+                    'prompt' => $this->ollama->buildPrompt($slots, $this->promptMessage($message, $place)),
+                    'schema' => $this->ollama->contentSchema($slots),
+                    'task' => 'content',
+                ],
+            ];
+        }
 
-            // نداء واحد بس بيرجّع اختيار القالب والمحتوى مع بعض (بدل نداءين متتاليين) — كل
-            // نداء على قالب حقيقي (17 خانة) بياخد 26-49 ثانية لوحده في التجربة الحية
-            // (2026-09-20)، فنداءين ورا بعض كانوا بيخطّوا مهلة nginx (504 بعد 60 ثانية بالظبط).
-            $picked = $this->ollama->generateJson($this->buildCreatePrompt($message, $categories));
+        $categories = $this->activeCategories();
 
-            $category = is_array($picked) && in_array($picked['category'] ?? null, $categories->all(), true)
-                ? $picked['category']
-                : $categories->first();
+        if ($categories->isEmpty()) {
+            return ['ok' => false, 'reply' => 'مفيش قوالب متاحة خالص دلوقتي — لازم تتضاف فئات وقوالب الأول.'];
+        }
 
-            $styleHint = is_string($picked['style_hint'] ?? null) ? trim($picked['style_hint']) : '';
-            // Str::limit هنا إجباري حتى لو النموذج "المفروض" يرجّع اسم قصير نضيف — لو رسالة
-            // فؤاد الأصلية كانت نص طويل ملزوق (زي بيانات صفحة جوجل مابس بتاعة نشاطه: تقييم/
-            // عدد مراجعات/سعر...)، qwen3:8b ممكن يرجّع project_name فيه شوية من النص ده
-            // ملزوقة مع الاسم بدل الاسم النضيف بس (لوحظ فعلياً 2026-09-24: اسم مشروع طلع
-            // "مطعم خبز ولحم 4.2 (1,219)-٤٠٠-٢٠٠rس" بدل "مطعم خبز ولحم"). صفر تحقق كان موجود
-            // على المسار ده قبل كده (المسار الاحتياطي تحت بس كان بيعمل limit).
-            $projectName = is_string($picked['project_name'] ?? null) && trim($picked['project_name']) !== ''
-                ? Str::limit(trim($picked['project_name']), 60, '')
-                : Str::limit($message, 40, '');
+        $guess = CategoryGuesser::guess($message, $categories);
 
-            $template = $this->pickTemplateInCategory($category, $styleHint);
+        return [
+            'ok' => true,
+            'context' => $context + ['mode' => 'pick', 'guess' => $guess['category'] ?? null],
+            'ai' => [
+                'prompt' => $this->buildCreatePrompt($this->promptMessage($message, $place), $categories, $guess['category'] ?? null),
+                'schema' => $this->createSchema($categories),
+                'task' => 'create',
+            ],
+        ];
+    }
+
+    /**
+     * بتطبّق رد الذكاء الاصطناعي (أو فشله) وتعمل المشروع.
+     *
+     * @param  array<string, mixed>  $context  نفس اللي prepareCreate() رجّعته
+     * @return array{ok: bool, reply: string, project?: Project}
+     */
+    public function completeCreate(array $context, AiResult $result): array
+    {
+        $message = (string) $context['message'];
+        $aiNote = $result->ok ? '' : $result->message($this->ollama->model());
+        $place = is_array($context['place'] ?? null) ? $context['place'] : [];
+        $photos = array_values(array_filter((array) ($context['photos'] ?? []), 'is_string'));
+        $pickReason = null;
+
+        if (($context['mode'] ?? null) === 'content') {
+            $template = Template::with('slots')->find($context['template_id'] ?? 0);
 
             if (! $template) {
+                $this->photos->discard($photos);
+
+                return ['ok' => false, 'reply' => 'القالب اللي اخترته اتمسح في النص — اختار قالب تاني.'];
+            }
+
+            $category = (string) $template->category;
+            $projectName = $place['name'] ?? ($this->nameFromMessage($message) ?: $template->name);
+            $content = $result->ok
+                ? $this->ollama->filterToKnownKeys($template->slots, $result->data)
+                : [];
+        } else {
+            $categories = $this->activeCategories();
+            $picked = $result->ok ? $result->data : [];
+
+            // اختيار النموذج لو صالح، وإلا تخمين الكلام نفسه — ومفيش "أول فئة أبجدياً" تاني أبداً.
+            $category = in_array($picked['category'] ?? null, $categories->all(), true)
+                ? $picked['category']
+                : (in_array($context['guess'] ?? null, $categories->all(), true) ? $context['guess'] : null);
+
+            if ($category === null) {
+                $this->photos->discard($photos);
+
+                return [
+                    'ok' => false,
+                    'reply' => trim(($aiNote !== '' ? $aiNote."\n" : '').'معرفتش أحدد نوع النشاط من الكلام ده — اكتب نوعه صراحة في أول السطر (مثلاً: عيادة أسنان، مطعم مشويات، صالون حريمي) وجرّب تاني.'),
+                ];
+            }
+
+            // الاسم من جوجل مابس بالحرف أولى من اسم النموذج (ممكن يترجمه أو يزوّد عليه).
+            $projectName = $place['name'] ?? (is_string($picked['project_name'] ?? null) && trim($picked['project_name']) !== ''
+                ? Str::limit(PastedText::clean($picked['project_name']), 60, '')
+                : ($this->nameFromMessage($message) ?: $category));
+
+            // الطابع من النموذج + أي كلمة طابع في كلام فؤاد نفسه ("عايزه فخم").
+            $styleHint = trim((is_string($picked['style_hint'] ?? null) ? $picked['style_hint'] : '').' '.$message);
+            $choice = $this->picker->pick($category, $this->specialtyContext($message, $place, $projectName), $styleHint);
+            $template = $choice['template'] ?? null;
+            $pickReason = $choice['reason'] ?? null;
+
+            if (! $template) {
+                $this->photos->discard($photos);
+
                 return ['ok' => false, 'reply' => 'معرفتش ألاقي قالب مناسب — جرّب توصف النشاط بشكل مختلف شوية.'];
             }
 
             $template->loadMissing('slots');
-            $suggestableSlots = $template->slots->where('slot_type', '!=', 'image');
-            // أحياناً qwen3 بيرجّع "content" كـstring فيه JSON متكرر ترميزه (double-encoded)
-            // بدل object متداخل فعلي — رغم إن الـprompt طالب object بالحرف (تفاوت طبيعي لنموذج
-            // صغير مع JSON متداخل، لوحظ حياً 2026-09-20). نتعامل مع الحالتين بدل ما نسيب
-            // المشروع من غير محتوى خالص.
-            $rawContentField = $picked['content'] ?? null;
-            $rawContent = match (true) {
-                is_array($rawContentField) => $rawContentField,
-                is_string($rawContentField) => (array) (json_decode($rawContentField, true) ?? []),
-                default => [],
-            };
-            $content = $this->filterToKnownSlotKeys($suggestableSlots, $rawContent);
-
-            // fallback دفاعي: لو النداء المدموج فشل يرجّع محتوى (النموذج مش متاح، أو رجّع شكل
-            // غير متوقع) بس القالب اتحدد صح، نجرّب نداء suggestContent العادي لوحده كـPlan B
-            // بدل ما نسيب المشروع من غير محتوى خالص.
-            if ($content === [] && $picked !== null) {
-                $content = $this->ollama->suggestContent($template, $message);
-            }
+            $rawContent = is_array($picked['content'] ?? null) ? $picked['content'] : [];
+            $content = $this->ollama->filterToKnownKeys($template->slots->whereIn('slot_type', ['text', 'textarea', 'list']), $rawContent);
         }
 
         $variant = $template->defaultVariant();
+        $color = $context['color'] ?? null;
+        $font = $context['font'] ?? null;
 
-        // لون/خط مختارين يدوي (اختياريين) — بيتطبّقوا كتخصيص لهذا الموقع بس، زي بالظبط
-        // applyUpdateColors/applyUpdateFont لكن وقت الإنشاء مباشرة بدل رسالة تعديل تانية.
-        $colorsOverride = null;
-        if ($color !== null && preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
-            $colorsOverride = ['primary' => $color];
-        }
-        $fontOverride = ($font !== null && array_key_exists($font, TemplateVariant::FONTS)) ? $font : null;
+        $colorsOverride = is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) ? ['primary' => $color] : null;
+        $fontOverride = is_string($font) && array_key_exists($font, TemplateVariant::FONTS) ? $font : null;
 
-        $project = DB::transaction(function () use ($template, $variant, $projectName, $content, $colorsOverride, $fontOverride) {
+        $aiFilled = count($content);
+        [$content, $extras] = $this->finalizeContent($template, $content, $place, $photos);
+        $projectName = Str::limit(PastedText::clean($projectName), 60, '');
+
+        $project = DB::transaction(function () use ($template, $variant, $projectName, $content, $colorsOverride, $fontOverride, $place, $photos) {
             $project = Project::create([
                 'template_id' => $template->id,
                 'template_variant_id' => $variant?->id,
                 'name' => $projectName,
                 'slug' => $this->uniqueProjectSlug($projectName),
+                'contact_phone' => $place['phones'][0] ?? null,
+                'place_json' => $place ?: null,
                 'status' => 'draft',
             ]);
 
@@ -133,15 +219,19 @@ class AiProjectAssistantService
                 'content_json' => $content,
                 'colors_override_json' => $colorsOverride,
                 'font_override' => $fontOverride,
+                'photo_pool_json' => $photos ?: null,
             ]);
 
             return $project;
         });
 
-        $filledCount = count($content);
-        $reply = $filledCount > 0
-            ? "تمام! عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، ومليت {$filledCount} خانة بمحتوى مناسب. اتفرج عليه تحت، وقولي لو عايز تغيّر حاجة."
-            : "عملتلك مشروع \"{$projectName}\" بقالب \"{$template->name}\" (فئة {$category})، بس معرفتش أقترح محتوى دلوقتي — النموذج مش متاح، كمّل الخانات يدوي أو جرّب تاني بعد شوية.";
+        $extrasNote = $extras === [] ? '' : "\nومن البيانات اللي بعتها: ".implode('، ', $extras).'.';
+        $templateNote = "بقالب \"{$template->name}\" (فئة {$category}".($pickReason ? "، {$pickReason}" : '').')';
+        $reply = match (true) {
+            $aiFilled > 0 => "تمام! عملتلك مشروع \"{$projectName}\" {$templateNote}، ومليت {$aiFilled} خانة بمحتوى مناسب.{$extrasNote}\nاتفرج عليه، وقولي لو عايز تغيّر حاجة.",
+            $aiNote !== '' => "عملتلك مشروع \"{$projectName}\" {$templateNote} بالمحتوى الافتراضي للقالب.{$extrasNote}\n{$aiNote}\nلما تصلّحها اكتبلي هنا \"اكتب المحتوى من جديد\".",
+            default => "عملتلك مشروع \"{$projectName}\" {$templateNote}، بس الذكاء الاصطناعي مرجّعش محتوى — الخانات فيها المحتوى الافتراضي للقالب.{$extrasNote}\nجرّب تقولي \"اكتب المحتوى من جديد\".",
+        };
 
         $this->logMessages($project, $message, $reply);
 
@@ -149,46 +239,178 @@ class AiProjectAssistantService
     }
 
     /**
-     * رسالة تانية على مشروع موجود بالفعل — تفسير الطلب كفعل وتنفيذه. $image اختياري (المرحلة
-     * 4، 2026-09-24) — صورة جاهزة عند فؤاد بيرفقها مع رسالته ("ضيف الصورة دي في كذا")، شوف
-     * ai-chat/_panel.blade.php + AiChatController::message().
+     * رسالة تانية على مشروع موجود بالفعل — تفسير الطلب كفعل وتنفيذه. $image اختياري — صورة
+     * جاهزة عند فؤاد بيرفقها مع رسالته ("ضيف الصورة دي في كذا").
      */
     public function handleFollowUp(Project $project, string $message, ?UploadedFile $image = null): string
     {
-        $project->loadMissing(['template.slots', 'variant', 'site']);
-        $site = $project->site;
+        $prepared = $this->prepareFollowUp($project, $message, $image);
 
-        if (! $site) {
-            return 'المشروع ده مالوش موقع ناتج خالص — حاجة غريبة، راجع المشروع من صفحته العادية.';
+        // خطأ في الإدخال، أو طلب واضح اتنفّذ على طول من غير ذكاء اصطناعي (FollowUpIntent).
+        if (! $prepared['ok'] || ! isset($prepared['ai'])) {
+            return $prepared['reply'];
         }
 
-        $decision = $this->ollama->generateJson($this->buildFollowUpPrompt($project, $site, $message, $image !== null));
+        $result = $this->ollama->preflight()
+            ?? $this->ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
 
-        if (! is_array($decision)) {
-            $reply = 'معرفتش أفهم طلبك دلوقتي — النموذج مش متاح أو الرد مش واضح. جرّب تاني أو عدّل يدوي من صفحة المشروع.';
+        return $this->completeFollowUp($project, $prepared['context'], $result);
+    }
+
+    /**
+     * الصورة المرفقة بتتخزن هنا (قبل الذكاء الاصطناعي) عشان خطوة التطبيق متحتاجش الملف تاني.
+     *
+     * (2026-10-08) الطلبات الواضحة (FollowUpIntent — قالب/لون/خط/حجم الخط/رجوع للأصل/مكان الصورة)
+     * بتتنفّذ هنا على طول وبيرجع reply من غير ai — مفيش انتظار للنموذج خالص. "اكتب المحتوى من
+     * جديد" بيروح للنموذج كطلب محتوى مباشر، وأي حاجة تانية للنموذج بشكل رد محدد (followUpSchema).
+     *
+     * @return array{ok: bool, reply?: string, context?: array<string, mixed>, ai?: array{prompt: string, schema: array<string, mixed>|null, task: string}}
+     */
+    public function prepareFollowUp(Project $project, string $message, ?UploadedFile $image = null): array
+    {
+        $project->loadMissing(['template.slots', 'variant', 'site']);
+        $site = $project->site;
+        $message = PastedText::clean($message);
+
+        if (! $site) {
+            return ['ok' => false, 'reply' => 'المشروع ده مالوش موقع ناتج خالص — حاجة غريبة، راجع المشروع من صفحته العادية.'];
+        }
+
+        if ($message === '') {
+            return ['ok' => false, 'reply' => 'اكتب طلبك الأول.'];
+        }
+
+        $imagePath = $image ? '/storage/'.$image->store('site-images', 'public') : null;
+        $context = ['message' => $message, 'image_path' => $imagePath];
+        $intent = FollowUpIntent::detect($message, $imagePath !== null, $project, $site);
+
+        if ($intent !== null && $intent['action'] !== 'rewrite_content') {
+            return ['ok' => true, 'reply' => $this->completeFollowUp($project, $context, AiResult::success($intent, ''))];
+        }
+
+        if ($intent !== null) {
+            $slots = $this->rewritableSlots($project);
+            $firstMessage = (string) $project->aiChatMessages()->where('role', 'user')->value('content');
+            $description = trim($firstMessage."\n\nطلب جديد من صاحب المشروع: ".$message);
+
+            return [
+                'ok' => true,
+                'context' => $context + ['intent' => 'rewrite_content'],
+                'ai' => [
+                    'prompt' => $this->ollama->buildPrompt($slots, $this->promptMessage($description, $project->place_json ?? [])),
+                    'schema' => $this->ollama->contentSchema($slots),
+                    'task' => 'content',
+                ],
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'context' => $context,
+            'ai' => [
+                'prompt' => $this->buildFollowUpPrompt($project, $site, $this->promptMessage($message), $imagePath !== null),
+                'schema' => $this->followUpSchema($project),
+                'task' => 'follow_up',
+            ],
+        ];
+    }
+
+    /**
+     * الخانات اللي "اكتب المحتوى من جديد" بيكتبها: النصوص والقوايم — من غير آراء العملاء (حقيقية
+     * بس، مبتتألّفش) ولا ملاحظة التواصل لو جاية من بيانات المكان بالحرف.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\TemplateSlot>
+     */
+    private function rewritableSlots(Project $project)
+    {
+        $keepNote = PlaceParser::contactNote($project->place_json ?? []) !== null;
+
+        return $project->template->slots
+            ->whereIn('slot_type', ['text', 'textarea', 'list'])
+            ->reject(fn ($slot) => OllamaService::isTestimonials($slot)
+                || ($keepNote && $slot->key === 'contact_note')
+                || ($slot->section_key === 'testimonials'))
+            ->values();
+    }
+
+    /**
+     * شكل رد النموذج في رسايل التعديل — الفعل من القايمة بالحرف، و"changes" بمفاتيح خانات
+     * القالب الحقيقية بس (النموذج مايقدرش يخترع مفتاح)، والخط من الخطوط المتاحة.
+     *
+     * @return array<string, mixed>
+     */
+    private function followUpSchema(Project $project): array
+    {
+        $text = ['type' => 'string'];
+        $slotProperties = [];
+
+        foreach ($project->template->slots->whereIn('slot_type', ['text', 'textarea', 'list', 'link']) as $slot) {
+            $slotProperties[$slot->key] = $slot->slot_type === 'list' ? ['type' => 'array', 'items' => $text] : $text;
+        }
+
+        return [
+            'type' => 'object',
+            'properties' => [
+                'action' => ['type' => 'string', 'enum' => [
+                    'reset_to_default', 'update_image', 'add_custom_block', 'remove_custom_block',
+                    'change_template', 'update_colors', 'update_font', 'update_content', 'none',
+                ]],
+                'reply' => $text,
+                'changes' => ['type' => 'object', 'properties' => (object) $slotProperties],
+                'colors' => ['type' => 'object', 'properties' => [
+                    'primary' => $text, 'background' => $text, 'surface' => $text, 'text' => $text, 'muted' => $text,
+                ]],
+                'font' => ['type' => 'string', 'enum' => array_keys(TemplateVariant::FONTS)],
+                'category' => $text,
+                'style_hint' => $text,
+                'slot_key' => $text,
+                'block_type' => ['type' => 'string', 'enum' => ['text', 'image']],
+                'content' => $text,
+                'label' => $text,
+            ],
+            'required' => ['action', 'reply'],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function completeFollowUp(Project $project, array $context, AiResult $result): string
+    {
+        $project->loadMissing(['template.slots', 'variant', 'site']);
+        $site = $project->site;
+        $message = (string) $context['message'];
+        $imagePath = is_string($context['image_path'] ?? null) ? $context['image_path'] : null;
+
+        if (! $result->ok) {
+            $reply = $result->message($this->ollama->model());
             $this->logMessages($project, $message, $reply);
 
             return $reply;
         }
 
+        if (($context['intent'] ?? null) === 'rewrite_content') {
+            $reply = $this->applyRewriteContent($project, $site, $result->data ?? []);
+            $this->logMessages($project, $message, $reply);
+
+            return $reply;
+        }
+
+        $decision = $result->data;
         $action = $decision['action'] ?? 'none';
         $knownActions = [
-            'change_template', 'update_content', 'update_colors', 'update_font',
+            'change_template', 'update_content', 'update_colors', 'update_font', 'update_font_size',
             'reset_to_default', 'update_image', 'add_custom_block', 'remove_custom_block',
         ];
 
-        // شبكة أمان: نموذج صغير زي qwen3:8b أحياناً بيرجّع "none" أو قيمة action مش من
-        // القائمة المتفق عليها رغم إن الرسالة واضحة (لوحظ حياً 2026-09-20 — "غيّر القالب"
-        // اترفضت مرتين، مرة بـaction=none ومرة بـaction غريب مش في القايمة، رغم إن رد
-        // النموذج النصي نفسه فاهم المقصود صح). لو الرسالة فيها كلمة قالب/شكل/تصميم صريحة
-        // والفعل مش واحد من المعروفة، نصحّحه لـchange_template بدل رد "مش فاهم". نفس الفكرة
-        // لطلب الرجوع للأصل (فؤاد اشتكى منها حياً 2026-09-24 — كان بيرجّعله رد عام "مش فاهم"
-        // على طلب واضح).
-        if (! in_array($action, $knownActions, true) && preg_match('/قالب|شكل|تصميم|تخطيط/u', $message)) {
+        // شبكة أمان: نموذج صغير أحياناً بيرجّع "none" أو فعل مش من القايمة رغم إن الرسالة واضحة.
+        if (! in_array($action, $knownActions, true) && preg_match('/قالب|تصميم|تخطيط/u', $message)) {
             $action = 'change_template';
             $decision['category'] ??= $project->template->category;
         }
-        if (! in_array($action, $knownActions, true) && preg_match('/رجّع|رجع|الغ[يى]|امسح كل|ارجاع/u', $message)) {
+        // الرجوع الكامل بيمسح كل تعديل — بس لو الرسالة فيها "كل"/"التعديلات" صراحةً (كان أي
+        // "رجّع" لوحدها، فـ"رجّع العنوان زي ما كان" كانت ممكن تمسح كل حاجة).
+        if (! in_array($action, $knownActions, true) && preg_match('/(رجّع|رجع|الغ[يى]|ارجاع).*(كل|التعديلات|الموقع)|امسح كل التعديلات/u', $message)) {
             $action = 'reset_to_default';
         }
 
@@ -197,9 +419,10 @@ class AiProjectAssistantService
             'update_content' => $this->applyUpdateContent($project, $site, $decision),
             'update_colors' => $this->applyUpdateColors($site, $decision),
             'update_font' => $this->applyUpdateFont($site, $decision),
+            'update_font_size' => $this->applyUpdateFontSize($site, $decision),
             'reset_to_default' => $this->applyResetToDefault($site),
-            'update_image' => $this->applyUpdateImage($project, $site, $image, $decision),
-            'add_custom_block' => $this->applyAddCustomBlock($site, $image, $decision),
+            'update_image' => $this->applyUpdateImage($project, $site, $imagePath, $decision),
+            'add_custom_block' => $this->applyAddCustomBlock($site, $imagePath, $decision),
             'remove_custom_block' => $this->applyRemoveCustomBlock($site, $decision),
             default => is_string($decision['reply'] ?? null) && trim($decision['reply']) !== ''
                 ? $decision['reply']
@@ -211,6 +434,155 @@ class AiProjectAssistantService
         return $reply;
     }
 
+    /**
+     * بعد رد الذكاء الاصطناعي (أو فشله) — اللي جه من فؤاد نفسه بيتحط بالحرف:
+     * - زرار التواصل (واتساب/اتصال/الموقع) والمواعيد والعنوان من بيانات المكان (PlaceParser).
+     * - الصور اللي لزقها/رفعها بالترتيب في خانات الصور (PhotoPoolService::assign).
+     * - آراء العملاء: الافتراضية في المكتبة أسماء متألّفة — على موقع نشاط حقيقي ده كدب. لو
+     *   النموذج مالقاش آراء حقيقية في الكلام، القسم بيتشال (أو بيبقى سطر تقييم جوجل الحقيقي بس).
+     *
+     * @param  array<string, mixed>  $content
+     * @param  array<string, mixed>  $place
+     * @param  list<string>  $photos
+     * @return array{0: array<string, mixed>, 1: list<string>} المحتوى + وصف اللي اتحط (للرد)
+     */
+    private function finalizeContent(Template $template, array $content, array $place, array $photos): array
+    {
+        $template->loadMissing('slots');
+        $slots = $template->slots->keyBy('key');
+        $extras = [];
+
+        if ($link = PlaceParser::contactLink($place)) {
+            $filledLink = false;
+            foreach ($template->slots->where('slot_type', 'link') as $slot) {
+                if (empty($content[$slot->key])) {
+                    $content[$slot->key] = $link;
+                    $filledLink = true;
+                }
+            }
+            if ($filledLink) {
+                $extras[] = str_starts_with($link, 'https://wa.me/') ? 'زرار واتساب برقمه' : (str_starts_with($link, 'tel:') ? 'زرار اتصال برقمه' : 'لينك موقعه');
+            }
+        }
+
+        if (($note = PlaceParser::contactNote($place)) && $slots->has('contact_note')) {
+            $content['contact_note'] = RichTextSanitizer::clean($note);
+            $extras[] = 'المواعيد والعنوان';
+        }
+
+        foreach ($template->slots->where('slot_type', 'list') as $slot) {
+            if (! str_contains($slot->key, 'testimonial')) {
+                continue;
+            }
+
+            $titleKey = $template->slots->first(fn ($s) => $s->section_key === $slot->section_key && $s->slot_type === 'text')?->key;
+            $real = array_values(array_filter((array) ($content[$slot->key] ?? []), fn ($item) => is_string($item) && trim($item) !== ''));
+            $rating = PlaceParser::ratingLine($place);
+
+            $content[$slot->key] = $real;
+            if ($titleKey && $rating) {
+                $content[$titleKey] = $rating;
+                $extras[] = 'تقييم جوجل';
+            } elseif ($titleKey && $real === []) {
+                $content[$titleKey] = '';
+            }
+        }
+
+        $content = $this->photos->assign($template, $content, $photos);
+        $placed = count(array_filter($content, fn ($value) => is_string($value) && in_array($value, $photos, true)));
+        if ($placed > 0) {
+            $extras[] = self::photosLabel($placed).' في الموقع';
+        }
+        if (count($photos) > $placed) {
+            $extras[] = self::photosLabel(count($photos) - $placed).' زيادة في مخزن صور المشروع';
+        }
+
+        return [$content, $extras];
+    }
+
+    // "صورة واحدة / صورتين / 3 صور / 11 صورة" — زي ما بنتكلم.
+    private static function photosLabel(int $count): string
+    {
+        return match (true) {
+            $count === 1 => 'صورة واحدة',
+            $count === 2 => 'صورتين',
+            $count <= 10 => "{$count} صور",
+            default => "{$count} صورة",
+        };
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private function activeCategories()
+    {
+        return Template::query()
+            ->where('is_active', true)
+            ->where('kind', 'landing')
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+    }
+
+    // الكوبي الطويل جداً بيتقص قبل ما يروح للذكاء الاصطناعي (الأول بيبقى فيه الاسم والبيانات
+    // المهمة) — عشان الطلب كله يفضل جوّه مساحة القراية (num_ctx) ومتقصّش التعليمات. بيانات
+    // المكان المؤكدة (لو فيه) بتتحط فوق الكلام عشان النموذج يعتمد عليها.
+    private function promptMessage(string $message, array $place = []): string
+    {
+        $block = PlaceParser::promptBlock($place);
+
+        return ($block !== '' ? $block."\n\n" : '').Str::limit($message, 6000, ' …');
+    }
+
+    // أول سطر له معنى في الرسالة (في كوبي جوجل مابس أول سطر هو اسم المكان) كاسم مشروع لو
+    // الذكاء الاصطناعي مرجّعش اسم.
+    private function nameFromMessage(string $message): string
+    {
+        foreach (explode("\n", $message) as $line) {
+            $line = trim($line);
+            if (mb_strlen($line) >= 3) {
+                return Str::limit($line, 60, '');
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @param  Collection<int, string>  $categories
+     * @return array<string, mixed>
+     */
+    private function createSchema($categories): array
+    {
+        $text = ['type' => 'string'];
+        $list = ['type' => 'array', 'items' => ['type' => 'string'], 'minItems' => 3, 'maxItems' => 6];
+
+        return [
+            'type' => 'object',
+            'properties' => [
+                'category' => ['type' => 'string', 'enum' => $categories->values()->all()],
+                'project_name' => $text,
+                'style_hint' => $text,
+                'content' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'hero_title' => $text, 'hero_subtitle' => $text,
+                        'about_title' => $text, 'about_body' => $text,
+                        'services_title' => $text, 'services_list' => $list,
+                        'gallery_title' => $text, 'testimonials_title' => $text,
+                        // آراء حقيقية بس (من كوبي جوجل مثلاً) — قايمة فاضية مسموحة ومطلوبة لو مفيش.
+                        'testimonials_list' => ['type' => 'array', 'items' => ['type' => 'string'], 'maxItems' => 3],
+                        'contact_title' => $text, 'contact_note' => $text,
+                    ],
+                    'required' => ['hero_title', 'hero_subtitle', 'about_title', 'about_body', 'services_title', 'services_list', 'gallery_title', 'testimonials_title', 'testimonials_list', 'contact_title', 'contact_note'],
+                ],
+            ],
+            'required' => ['category', 'project_name', 'style_hint', 'content'],
+        ];
+    }
+
     private function applyChangeTemplate(Project $project, array $decision): string
     {
         $categories = Template::where('is_active', true)->distinct()->pluck('category');
@@ -220,7 +592,16 @@ class AiProjectAssistantService
 
         $styleHint = is_string($decision['style_hint'] ?? null) ? trim($decision['style_hint']) : '';
 
-        $newTemplate = $this->pickTemplateInCategory($category, $styleHint, exceptId: $project->template_id);
+        // نفس التخصص (من أول رسالة/بيانات المكان) بتصميم مختلف عن الحالي.
+        $firstMessage = (string) $project->aiChatMessages()->where('role', 'user')->value('content');
+        $choice = $this->picker->pick(
+            $category,
+            $this->specialtyContext($firstMessage, $project->place_json ?? [], $project->name),
+            $styleHint,
+            exceptId: $project->template_id,
+            avoidLayout: $category === $project->template->category ? $project->template->layout : null,
+        );
+        $newTemplate = $choice['template'] ?? null;
 
         if (! $newTemplate) {
             return 'معرفتش ألاقي قالب تاني مناسب في نفس الفئة — ممكن توضح أكتر عايز شكل إيه؟';
@@ -311,6 +692,50 @@ class AiProjectAssistantService
         return 'تمام، غيّرت الخط لـ"'.TemplateVariant::FONTS[$font].'".';
     }
 
+    // "كبّر/صغّر الخط" (2026-10-08) — نفس font_size_scale_override بتاع درج "تصميم الموقع"، خطوة
+    // 10% في كل مرة، وفي نفس الحدود اللي الفورم بيقبلها.
+    private function applyUpdateFontSize(GeneratedSite $site, array $decision): string
+    {
+        $scale = is_numeric($decision['scale'] ?? null) ? round(max(0.7, min(1.5, (float) $decision['scale'])), 2) : null;
+
+        if ($scale === null) {
+            return 'معرفتش أحدد حجم الخط — قول "كبّر الخط" أو "صغّر الخط".';
+        }
+
+        $site->update(['font_size_scale_override' => $scale == 1.0 ? null : $scale]);
+
+        return 'تمام، حجم الكلام في الموقع بقى '.(int) round($scale * 100).'% من الأصلي.';
+    }
+
+    /**
+     * "اكتب المحتوى من جديد" — النموذج كتب كل النصوص تاني، وبيتكتبوا فوق القديم (ده المطلوب).
+     * الخانات الفاضية في الرد (أو آراء العملاء) مابتمسحش اللي موجود.
+     *
+     * @param  array<mixed, mixed>  $data
+     */
+    private function applyRewriteContent(Project $project, GeneratedSite $site, array $data): string
+    {
+        $written = $this->ollama->filterToKnownKeys($this->rewritableSlots($project), $data);
+        $content = $site->content_json ?? [];
+        $count = 0;
+
+        foreach ($written as $key => $value) {
+            if ($value === '' || $value === []) {
+                continue;
+            }
+            $content[$key] = $value;
+            $count++;
+        }
+
+        if ($count === 0) {
+            return 'الذكاء الاصطناعي مرجّعش محتوى المرة دي — جرّب تاني.';
+        }
+
+        $site->update(['content_json' => $content]);
+
+        return "تمام، كتبت المحتوى من جديد ({$count} خانة) — اتفرج عليه.";
+    }
+
     // إلغاء كل التعديلات اليدوية ورجوع الموقع لشكل القالب الأصلي (المرحلة 4، 2026-09-24) —
     // فؤاد أوضح صراحة إن قصده بـ"رجّع" هو ده بالظبط: مسح كل تخصيص (محتوى/ألوان/خط/ترتيب/
     // عناصر مضافة) ورجوع كل خانة لقيمتها الافتراضية من القالب. **مفيش نسخة سابقة محفوظة فعلياً
@@ -337,9 +762,9 @@ class AiProjectAssistantService
     // gallery_image_1...) من كلام الرسالة، والصورة نفسها لازم تكون مرفقة فعلاً في نفس الرسالة
     // (المرحلة 4، 2026-09-24 — الذكاء الاصطناعي بيقرّر الخانة بس، هو مش شايف بايتات الصورة
     // خالص، التخزين الفعلي هنا في PHP زي أي رفع ملف عادي).
-    private function applyUpdateImage(Project $project, GeneratedSite $site, ?UploadedFile $image, array $decision): string
+    private function applyUpdateImage(Project $project, GeneratedSite $site, ?string $imagePath, array $decision): string
     {
-        if (! $image) {
+        if (! $imagePath) {
             return 'قولّي تحط الصورة فين، بس محتاج ترفق الصورة نفسها مع رسالتك (زرار إرفاق الصورة جنب مربع الكتابة).';
         }
 
@@ -350,9 +775,8 @@ class AiProjectAssistantService
             return 'مش متأكد عايز الصورة دي تحل محل إيه بالظبط — قولّي مثلاً "خليها الصورة الرئيسية" أو "خليها صورة المعرض التانية".';
         }
 
-        $path = $image->store('site-images', 'public');
         $content = $site->content_json ?? [];
-        $content[$slotKey] = '/storage/'.$path;
+        $content[$slotKey] = $imagePath;
         $site->update(['content_json' => $content]);
 
         $label = $imageSlots->firstWhere('key', $slotKey)?->label() ?? $slotKey;
@@ -364,15 +788,15 @@ class AiProjectAssistantService
     // section موجود، شوف SiteRenderer::render() وdocs/rich-text-and-image-editing-plan.md
     // للتفاصيل المعمارية). فؤاد بعدين يقدر يرتّب/يحرّك العنصر الجديد بالترتيب الحر العادي —
     // صفر UI جديد لموضعه، بيستخدم نفس الآلية الموجودة.
-    private function applyAddCustomBlock(GeneratedSite $site, ?UploadedFile $image, array $decision): string
+    private function applyAddCustomBlock(GeneratedSite $site, ?string $imagePath, array $decision): string
     {
         $type = in_array($decision['block_type'] ?? null, ['text', 'image'], true) ? $decision['block_type'] : null;
 
-        if ($type === 'image' && ! $image) {
+        if ($type === 'image' && ! $imagePath) {
             return 'عايز تضيف صورة جديدة — بس محتاج ترفق الصورة نفسها مع رسالتك.';
         }
         if ($type === null) {
-            $type = $image ? 'image' : 'text';
+            $type = $imagePath ? 'image' : 'text';
         }
 
         $content = $type === 'text'
@@ -384,8 +808,7 @@ class AiProjectAssistantService
         }
 
         if ($type === 'image') {
-            $path = $image->store('site-images', 'public');
-            $content = '/storage/'.$path;
+            $content = $imagePath;
         }
 
         $blocks = $site->custom_blocks_json ?? [];
@@ -429,151 +852,59 @@ class AiProjectAssistantService
     }
 
     /**
-     * بتدوّر على قالب داخل فئة معيّنة، بـ3 مستويات أولوية: (1) اسم القالب نفسه فيه كلمة
-     * الطابع المطلوب حرفياً (زي "فاخر" جوه "مطعم فاخر")، (2) طابع القالب (layout) شخصيته
-     * قريبة من الكلمة المطلوبة (بنستخدم نفس LAYOUT_KEYWORDS بتاعة SeedTemplateLibrary —
-     * بيغطي حالة إن النموذج رجّع كلمة زي "راقي" مش موجودة حرفياً في اسم القالب بس فعلاً
-     * بتوصف تصميم glass/framed/signature)، (3) عشوائي تماماً.
+     * الكلام اللي بيوصف تخصص النشاط (لاختيار القالب — TemplatePicker): الاسم + نوع النشاط على
+     * جوجل + رسالة فؤاد. (2026-10-08) اختيار القالب اتنقل كله لـTemplatePicker — قبله كان: اسم
+     * القالب فيه كلمة الطابع حرفياً، وإلا عشوائي. ⚠️ درس 2026-09-21 لسه سارٍ هناك: لو مفيش
+     * دليل، الاختيار مش "أول قالب أبجدياً" (كان "غيّر القالب" بيلف بين نفس القالبين).
      *
-     * ⚠️ (اتصلح 2026-09-21) المستوى الأخير **لازم يفضل عشوائي مش "أول قالب أبجدياً"** —
-     * كان قبل كده `$templates->first()` بعد استبعاد القالب الحالي بس، فلو تصنيف الطابع فشل
-     * (بيحصل مع نموذج صغير زي qwen3:8b)، "غيّر القالب" كان بيدور بين نفس القالبين بس كل
-     * مرة (الأول أبجدياً، وبعد استبعاده القالب اللي قبله يرجع الأول تاني) بدل ما يجرّب حاجة
-     * فعلاً مختلفة — لوحظ حياً: طلب "قالب فاخر" مرتين ورجع بينهم على نفس القالب الأصلي.
-     *
-     * $exceptId بيستبعد القالب الحالي (لما المستخدم يطلب "غيّر القالب" — الرد لازم يكون
-     * قالب مختلف فعلاً مش نفسه).
+     * @param  array<string, mixed>  $place
      */
-    private function pickTemplateInCategory(string $category, string $styleHint, ?int $exceptId = null): ?Template
+    private function specialtyContext(string $message, array $place, string $name): string
     {
-        $query = Template::where('is_active', true)->where('category', $category);
-
-        if ($exceptId) {
-            $query->where('id', '!=', $exceptId);
-        }
-
-        $templates = $query->with('variants')->get();
-
-        if ($templates->isEmpty()) {
-            return null;
-        }
-
-        if ($styleHint !== '') {
-            $match = $templates->first(fn (Template $t) => str_contains($t->name, $styleHint));
-            if ($match) {
-                return $match;
-            }
-
-            $byLayout = $templates->first(function (Template $t) use ($styleHint) {
-                foreach (SeedTemplateLibrary::LAYOUT_KEYWORDS[$t->layout] ?? [] as $keyword) {
-                    if (str_contains($keyword, $styleHint) || str_contains($styleHint, $keyword)) {
-                        return true;
-                    }
-                }
-
-                return false;
-            });
-
-            if ($byLayout) {
-                return $byLayout;
-            }
-        }
-
-        return $templates->random();
+        return implode("\n", array_filter([$name, (string) ($place['kind'] ?? ''), Str::limit($message, 2000, '')]));
     }
 
     /**
-     * نداء واحد بيرجّع اختيار الفئة/الاسم/الطابع **ومحتوى الموقع كله مع بعض** — بدل نداءين
-     * متتاليين (كانوا بيخطّوا مهلة nginx، شوف تعليق createFromMessage). خانات المحتوى هنا
-     * ثابتة (نفس الـ17 مفتاح المشتركة بين كل قوالب SeedTemplateLibrary بالحرف) بدل ما تتقرا
-     * من قالب محدد — أصلاً القالب لسه مش متحدد وقت بناء البرومبت ده.
+     * نداء واحد بيرجّع اختيار الفئة/الاسم/الطابع **ومحتوى الموقع كله مع بعض**. شكل الرد
+     * متحدد بالـJSON schema (createSchema) — الفئة لازم تكون واحدة من القايمة بالحرف.
+     * الجزء الثابت الأول والمتغيّر (كلام فؤاد) في الآخر: Ollama بيعيد استخدام قراية أول الطلب.
      *
-     * @param  \Illuminate\Support\Collection<int, string>  $categories
+     * @param  Collection<int, string>  $categories
      */
-    private function buildCreatePrompt(string $message, $categories): string
+    private function buildCreatePrompt(string $message, $categories, ?string $guess = null): string
     {
         $list = $categories->map(fn ($c) => "- {$c}")->implode("\n");
+        $hint = $guess ? "\nمن الكلمات اللي في الوصف، الأرجح إن الفئة \"{$guess}\" — اختارها إلا لو الوصف واضح إنه نشاط تاني.\n" : '';
 
         return <<<PROMPT
-انت بتساعد تنشئ موقع ويب لنشاط تجاري، بناءً على وصف ممكن يكون فيه بيانات مختلطة (اسم نشاط،
-تليفون، خدمات، أي حاجة صاحب المشروع كتبها من غير ترتيب معيّن).
+انت بتساعد تنشئ موقع ويب (صفحة هبوط) لنشاط تجاري، بناءً على وصف ممكن يكون فيه بيانات مختلطة
+(اسم نشاط، تليفون، خدمات، كلام منسوخ من جوجل مابس...).
 
-وصف/بيانات المشروع اللي كتبها الأدمن:
-{$message}
-
-الفئات المتاحة بالظبط (اختار واحدة منها بالحرف زي ما هي مكتوبة):
+الفئات المتاحة (اختار واحدة منها بالحرف):
 {$list}
 
-رجّع إجابتك في صورة JSON object واحد بس بالمفاتيح دي بالظبط:
-{
-  "category": "اسم الفئة بالحرف من القايمة فوق",
-  "project_name": "اسم قصير مناسب للمشروع (لو فيه اسم واضح في الوصف استخدمه، وإلا استنتج اسم مناسب من النشاط)",
-  "style_hint": "كلمة أو كلمتين تصف الطابع المطلوب لو واضح من الوصف زي فاخر أو بسيط أو عصري أو تقليدي، وإلا سيبها فاضية",
-  "content": {
-    "hero_title": "نص قصير جذاب",
-    "hero_subtitle": "فقرة نص متوسطة الطول",
-    "about_title": "نص قصير",
-    "about_body": "فقرة نص متوسطة الطول",
-    "services_title": "نص قصير",
-    "services_list": ["خدمة قصيرة", "خدمة قصيرة", "خدمة قصيرة"],
-    "gallery_title": "نص قصير",
-    "testimonials_title": "نص قصير",
-    "testimonials_list": ["رأي عميل قصير", "رأي عميل قصير"],
-    "contact_title": "نص قصير",
-    "contact_note": "نص قصير (مثلاً مواعيد العمل)"
-  }
-}
-استخدم أي بيانات حقيقية موجودة في وصف المشروع (زي اسم النشاط، الخدمات، المواعيد) بدل ما
-تخترع محتوى عام.
+رجّع JSON بالمفاتيح دي:
+- category: الفئة الأنسب من القايمة فوق.
+- project_name: اسم النشاط زي ما هو مكتوب في الوصف بالظبط (من غير تقييمات أو أرقام أو عنوان). لو مفيش اسم، استنتج اسم قصير.
+- style_hint: كلمة أو كلمتين للطابع (فاخر، بسيط، عصري، تقليدي، شبابي، هادي...) لو واضح، وإلا "".
+- content: محتوى الموقع:
+  - hero_title: عنوان رئيسي جذاب (من 3 لـ8 كلمات).
+  - hero_subtitle: جملة أو جملتين بتوضّح النشاط.
+  - about_title / about_body: عنوان قصير + فقرة من 3 لـ4 جمل عن النشاط.
+  - services_title / services_list: عنوان + من 3 لـ6 خدمات قصيرة (كل خدمة كلمتين لـ6 كلمات).
+  - gallery_title, testimonials_title, contact_title: عناوين أقسام قصيرة.
+  - testimonials_list: آراء عملاء حقيقية لو موجودة في الكلام المنسوخ (مراجعات جوجل مثلاً) بالصيغة "الكلام — الاسم الأول"، لحد 3. لو مفيش آراء حقيقية رجّع [] — ممنوع تألّف آراء.
+  - contact_note: سطر واحد فيه المواعيد أو العنوان لو موجودين في الوصف، وإلا جملة تدعو للتواصل.
 
-⚠️ لو الوصف فيه نسخ ولزق من مصدر تاني (زي صفحة جوجل ماب، تقييمات عملاء حقيقية، أزرار
-واجهة) هيكون فيه نصوص مالهاش لازمة (زي "الاتجاهات"، "حفظ"، "المواقع القريبة") ومراجعات
-عملاء فيها شكوى أو كلام سلبي — تجاهل النصوص اللي مالهاش لازمة تماماً، **ولـ"testimonials_list"
-بالذات: استخدم بس آراء العملاء الإيجابية بالكامل، ولو مفيش رأي إيجابي واضح في الوصف
-اخترع رأي إيجابي عام مناسب للنشاط بدل ما تستخدم رأي فيه شكوى أو نقد.**
-
-متكتبش أي حاجة برّه الـ JSON.
+قواعد:
+- اكتب بعربي بسيط وواضح بأسلوب تسويقي مناسب للسوق المصري.
+- استخدم البيانات الحقيقية اللي في الوصف (الاسم، الخدمات، المواعيد، المنطقة) بدل الكلام العام.
+- لو الوصف منسوخ من جوجل مابس، تجاهل كلام الواجهة (الاتجاهات، حفظ، مشاركة، المواقع القريبة، مرشد محلي، قبل شهر...).
+- متخترعش أرقام تليفونات أو عناوين أو آراء عملاء أو أسماء ناس.
+{$hint}
+الوصف/البيانات اللي كتبها صاحب المشروع:
+{$message}
 PROMPT;
-    }
-
-    /**
-     * نفس فلترة OllamaService::filterToKnownKeys بس نسخة محلية هنا — بتتأكد إن كل مفتاح
-     * راجع من الذكاء الاصطناعي فعلاً موجود كخانة حقيقية في القالب المختار قبل ما نحفظه،
-     * وبتحوّل القوايم لمصفوفة نضيفة (الذكاء الاصطناعي أحياناً بيرجّع نص واحد بدل array).
-     *
-     * @param  \Illuminate\Support\Collection<int, \App\Models\TemplateSlot>  $slots
-     * @param  array<mixed, mixed>  $raw
-     * @return array<string, string|array<int, string>>
-     */
-    private function filterToKnownSlotKeys($slots, array $raw): array
-    {
-        $slotsByKey = $slots->keyBy('key');
-        $filtered = [];
-
-        foreach ($raw as $key => $value) {
-            if (! is_string($key) || ! $slotsByKey->has($key)) {
-                continue;
-            }
-
-            $slot = $slotsByKey->get($key);
-
-            if ($slot->slot_type === 'list') {
-                $items = is_array($value) ? $value : explode("\n", (string) $value);
-                $filtered[$key] = collect($items)->map(fn ($v) => trim((string) $v))->filter()->values()->all();
-
-                continue;
-            }
-
-            $value = trim(is_array($value) ? implode(' ', array_map('strval', $value)) : (string) $value);
-
-            // خانات text/textarea بترندر بـ {!! !!} دلوقتي (المرحلة 1، RichTextSanitizer) —
-            // link مالوش معنى "تنسيق نص" فبيفضل URL خام زي ما هو.
-            $filtered[$key] = in_array($slot->slot_type, ['text', 'textarea'], true)
-                ? RichTextSanitizer::clean($value)
-                : $value;
-        }
-
-        return $filtered;
     }
 
     private function buildFollowUpPrompt(Project $project, GeneratedSite $site, string $message, bool $hasImage = false): string

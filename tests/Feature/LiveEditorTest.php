@@ -138,6 +138,45 @@ class LiveEditorTest extends TestCase
         $this->assertSame('tajawal', $site->styleFor('hero_title')['font']);
     }
 
+    // (2026-10-10) باج حقيقي: كل حفظ جزئي من المحرر المباشر (نص خانة واحدة) كان بيمسح تصميم
+    // الموقع كله (ألوان/خط/تخانة/ميل/حجم/ترتيب أقسام) — designOverrides() كانت بتقرا الحقول
+    // دي فاضية من الطلب الجزئي وتفسّرها "رجّع زي القالب".
+    public function test_a_content_only_save_keeps_the_sites_design_overrides(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->buildProjectWithSite();
+        $site = $project->site;
+        $design = [
+            'colors_override_json' => ['primary' => '#123456'],
+            'font_override' => 'tajawal',
+            'font_weight_override' => '600',
+            'font_style_override' => 'italic',
+            'font_size_scale_override' => 1.15,
+            'sections_override_json' => ['hero'],
+        ];
+        $site->update($design);
+
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'content' => ['hero_title' => 'عنوان جديد'],
+        ], ['Accept' => 'application/json']);
+
+        $site->refresh();
+        $this->assertSame('عنوان جديد', $site->content('hero_title'));
+        foreach ($design as $field => $value) {
+            $this->assertEquals($value, $site->{$field}, "{$field} was wiped by a content-only save");
+        }
+
+        // فورم "تصميم الموقع" نفسه لسه بيقدر يرجّع كل حاجة زي القالب.
+        $this->actingAs($user)->put(route('projects.site.update', $project), [
+            'design_form' => '1',
+            'font_override' => '',
+        ]);
+        $site->refresh();
+        $this->assertNull($site->font_override);
+        $this->assertNull($site->colors_override_json);
+        $this->assertNull($site->sections_override_json);
+    }
+
     // ---------------------------------------------------------------------
     // المرحلة 1: تنسيق نص جزئي (Bold/Italic/Underline/لون/تظليل/خط/حجم) —
     // docs/rich-text-and-image-editing-plan.md. RichTextSanitizer::clean() لوحده (يونيت)،

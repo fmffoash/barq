@@ -132,6 +132,7 @@ class OllamaContentSuggestionTest extends TestCase
 
     // التشغيل المحلي (2026-10-05): سيرفر PHP المدمج بيطبّق max_execution_time (30 ثانية
     // افتراضياً، ووقت فعلي على ويندوز) — من غير التمديد ده أي رد بطيء من Ollama كان بيوقع.
+    // (2026-10-06) ملفات .env القديمة فيها OLLAMA_TIMEOUT=180 — أقل مهلة فعلية بقت 600.
     public function test_it_extends_a_finite_php_time_limit_to_cover_the_ollama_timeout(): void
     {
         config(['services.ollama.timeout' => 180]);
@@ -142,7 +143,7 @@ class OllamaContentSuggestionTest extends TestCase
         try {
             (new OllamaService)->generateJson('أي طلب');
 
-            $this->assertSame('210', ini_get('max_execution_time'));
+            $this->assertSame('630', ini_get('max_execution_time'));
         } finally {
             set_time_limit(0);
         }

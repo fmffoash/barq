@@ -63,6 +63,8 @@ class TemplateVariant extends Model
         'slug',
         'colors_json',
         'font',
+        // خط العناوين (2026-10-10) — مفتاح من FONTS أو null (= نفس خط المتن).
+        'heading_font',
         'sections_json',
         'is_default',
     ];

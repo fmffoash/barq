@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', '')</title>
 
@@ -37,6 +38,13 @@
                     >
                         ✨ أنشئ بالذكاء الاصطناعي
                     </a>
+
+                    <a
+                        href="{{ route('ai-settings.show') }}"
+                        class="text-sm font-medium {{ request()->routeIs('ai-settings.*') ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400' }} transition"
+                    >
+                        ⚙️ إعدادات الذكاء الاصطناعي
+                    </a>
                 @endauth
             </div>
 
@@ -61,6 +69,10 @@
     <main class="px-6 py-8">
         @yield('content')
     </main>
+
+    @auth
+        @include('partials.ai-run-panel')
+    @endauth
 
     @stack('scripts')
 </body>

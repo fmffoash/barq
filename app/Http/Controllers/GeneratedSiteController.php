@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Template;
 use App\Models\TemplateVariant;
+use App\Services\Ai\Runs\RewriteSlotRun;
+use App\Services\Ai\Runs\SuggestContentRun;
 use App\Services\OllamaService;
 use App\Services\RichTextSanitizer;
 use App\Services\SiteExportService;
 use App\Services\SiteRenderer;
 use App\Services\WordPressService;
+use App\Support\LinkInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -199,6 +204,20 @@ class GeneratedSiteController extends Controller
 
             $value = $request->input("content.{$key}");
 
+            // رابط زرار (2026-10-10): رقم تليفون لوحده بيتحوّل لرابط واتساب، دومين من غير https
+            // بياخده، وأي حاجة مش رابط (javascript:...) بترجع خطأ بدل ما تتحط في href.
+            if ($slot->slot_type === 'link') {
+                $link = LinkInput::normalize(is_string($value) ? $value : null);
+                if ($link === null) {
+                    throw ValidationException::withMessages([
+                        "content.{$key}" => 'الرابط في "'.$slot->label().'" مش مفهوم — اكتب رقم واتساب (01xxxxxxxxx) أو رابط يبدأ بـ https://',
+                    ]);
+                }
+                $content[$key] = $link;
+
+                continue;
+            }
+
             if ($slot->slot_type === 'list') {
                 $content[$key] = collect(explode("\n", (string) $value))
                     ->map(fn ($line) => trim($line))
@@ -259,7 +278,10 @@ class GeneratedSiteController extends Controller
             'content_json' => $content,
             'style_overrides_json' => $styleOverrides === [] ? null : $styleOverrides,
             'custom_blocks_json' => $customBlocks === [] ? null : $customBlocks,
-            ...$this->designOverrides($request, $project),
+            // (2026-10-10) تصميم الموقع بيتلمس بس لما الطلب جاي من فورم تصميم فعلاً — الحفظ
+            // الجزئي من المحرر المباشر (نص خانة واحدة) كان بيمسح الألوان/الخط/ترتيب الأقسام كلهم
+            // لأنه مبيبعتش الحقول دي فكانت بتتقري فاضية = "زي القالب".
+            ...($this->isDesignSubmission($request) ? $this->designOverrides($request, $project) : []),
         ]);
 
         return redirect()
@@ -298,6 +320,13 @@ class GeneratedSiteController extends Controller
             : null;
 
         return ['posX' => $posX, 'posY' => $posY, 'width' => $width];
+    }
+
+    // فورم "تصميم الموقع" (درج المحرر المباشر أو صفحة تعبئة المحتوى) بيبعت design_form، وكمان
+    // دايماً colors_override/font_override (حقل مخفي + قايمة) — أي طلب من غيرهم مش طلب تصميم.
+    private function isDesignSubmission(Request $request): bool
+    {
+        return $request->has('design_form') || $request->hasAny(['colors_override', 'font_override', 'sections_override']);
     }
 
     // تخصيص شكل الموقع ده بالكامل (ألوان/خط/ترتيب أقسام) — مستقل عن نسخة القالب المشتركة،
@@ -359,57 +388,49 @@ class GeneratedSiteController extends Controller
 
     // بتاخد وصف قصير للنشاط وتقترح محتوى بالذكاء الاصطناعي (Ollama) للخانات الفاضية بس —
     // أي خانة اتكتب فيها حاجة يدوي بالفعل بتفضل زي ما هي، صفر دعس على محتوى الأدمن.
-    public function suggest(Request $request, Project $project): RedirectResponse
+    // (2026-10-08) المنطق نفسه في SuggestContentRun — نفس الكلاس اللي المتصفح بيشغّله بالعدّاد
+    // (AiRunController)، والمسار ده للحالة اللي الجافاسكريبت مش شغال فيها.
+    public function suggest(Request $request, Project $project, SuggestContentRun $suggester): RedirectResponse
     {
         $validated = $request->validate([
             'business_description' => ['required', 'string', 'max:500'],
         ]);
 
-        $project->loadMissing('template.slots');
+        $prepared = $suggester->prepareFor($project, $validated['business_description']);
 
-        $site = $project->site()->firstOrFail();
-        $content = $site->content_json ?? [];
-
-        $suggestions = app(OllamaService::class)->suggestContent(
-            $project->template,
-            $validated['business_description'],
-        );
-
-        if ($suggestions === []) {
-            return redirect()
-                ->route('projects.site.edit', $project)
-                ->with('status', 'معرفناش نقترح محتوى دلوقتي — النموذج مش متاح. كمّل الخانات يدوي.');
+        if (! isset($prepared['ai'])) {
+            return redirect()->route('projects.site.edit', $project)->with('status', $prepared['reply'] ?? '');
         }
 
-        $filledCount = 0;
+        $ollama = app(OllamaService::class);
+        $result = $ollama->preflight()
+            ?? $ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
 
-        foreach ($suggestions as $key => $value) {
-            if (! $this->slotIsEmpty($content[$key] ?? null)) {
-                continue;
-            }
-
-            // $value مطهّر بالفعل لخانات text/textarea (OllamaService::filterToKnownKeys بقى
-            // بينادي RichTextSanitizer::clean() مركزياً — المرحلة 1).
-            $content[$key] = $value;
-            $filledCount++;
-        }
-
-        $site->update(['content_json' => $content]);
-
-        $message = $filledCount > 0
-            ? "تم اقتراح محتوى لـ {$filledCount} خانة فاضية — راجعها وعدّل اللي محتاجه."
-            : 'كل الخانات معبّاة بالفعل — مفيش خانة فاضية تتقترح ليها محتوى.';
-
-        return redirect()->route('projects.site.edit', $project)->with('status', $message);
+        return redirect()->route('projects.site.edit', $project)->with('status', $suggester->apply($project, $result));
     }
 
-    private function slotIsEmpty(mixed $value): bool
+    // "✨ صياغة تانية" من غير جافاسكريبت — نفس RewriteSlotRun اللي العدّاد بيشغّله.
+    public function rewrite(Request $request, Project $project, RewriteSlotRun $rewriter): RedirectResponse
     {
-        if (is_array($value)) {
-            return $value === [];
+        $validated = $request->validate([
+            'slot_key' => ['required', 'string', 'max:100'],
+            'style' => ['required', 'string', Rule::in(array_keys(RewriteSlotRun::STYLES))],
+            'note' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $prepared = $rewriter->prepareFor($project, $validated['slot_key'], $validated['style'], $validated['note'] ?? null);
+
+        if (! isset($prepared['ai'])) {
+            return redirect()->route('projects.site.live-edit', $project)->with('status', $prepared['reply'] ?? '');
         }
 
-        return $value === null || trim((string) $value) === '';
+        $ollama = app(OllamaService::class);
+        $result = $ollama->preflight()
+            ?? $ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
+
+        [, $message] = $rewriter->apply($project, $validated['slot_key'], $result);
+
+        return redirect()->route('projects.site.live-edit', $project)->with('status', $message);
     }
 
     public function publish(Project $project): RedirectResponse

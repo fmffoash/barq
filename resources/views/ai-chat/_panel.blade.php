@@ -23,14 +23,15 @@
         @endforelse
     </div>
 
-    <form method="POST" action="{{ route('ai-chat.message', $project) }}" enctype="multipart/form-data" class="space-y-2 border-t border-slate-800 pt-4">
+    <form method="POST" action="{{ route('ai-chat.message', $project) }}" enctype="multipart/form-data" data-ai-run="follow_up" data-ai-run-url="{{ route('ai-runs.start') }}" data-ai-project="{{ $project->id }}" data-paste-image class="space-y-2 border-t border-slate-800 pt-4">
         @csrf
         {{-- صورة جاهزة اختيارية (المرحلة 4، 2026-09-24) — فؤاد يرفق صورة عنده ويقول في
         الرسالة "حطها في كذا" أو "ضيف صورة جديدة"، والذكاء الاصطناعي بيقرر الخانة المناسبة
         من كلام الرسالة (AiProjectAssistantService::applyUpdateImage/applyAddCustomBlock). --}}
         <label class="flex items-center gap-2 text-xs text-slate-400">
-            <span>📎 إرفاق صورة (اختياري — عشان تضيفها أو تستبدل بيها صورة موجودة)</span>
+            <span>📎 إرفاق صورة (اختياري — عشان تضيفها أو تستبدل بيها صورة موجودة، أو الزقها Ctrl+V)</span>
             <input type="file" name="image" accept="image/*" class="text-xs text-slate-400 file:mr-2 file:rounded file:border-0 file:bg-slate-800 file:px-2 file:py-1 file:text-slate-200">
+            <span data-paste-preview></span>
         </label>
         <div class="flex gap-2">
             <input
@@ -49,14 +50,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('submit', function (event) {
-            const btn = event.target.querySelector('[data-ai-submit]');
-            if (btn && event.submitter === btn) {
-                btn.disabled = true;
-                btn.textContent = 'بيفكر...';
-            }
-        });
-
+        // الإرسال نفسه (بالعدّاد) في resources/js/ai-run.js — الفورم عليه data-ai-run.
         const chatLog = document.getElementById('chat-log');
         if (chatLog) chatLog.scrollTop = chatLog.scrollHeight;
     </script>

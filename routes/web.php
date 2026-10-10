@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AiRunController;
+use App\Http\Controllers\AiSettingsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeneratedSiteController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SitePhotoController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateSlotController;
 use App\Http\Controllers\TemplateVariantController;
@@ -49,6 +52,20 @@ Route::middleware('auth')->group(function () {
     Route::get('projects/{project}/ai', [AiChatController::class, 'show'])->name('ai-chat.show');
     Route::post('projects/{project}/ai', [AiChatController::class, 'message'])->name('ai-chat.message');
 
+    // طلبات الذكاء الاصطناعي بالعدّاد والبث (AiRunController) — نفس الأفعال اللي فوق بالظبط،
+    // بس المتصفح بيشوف الرد وهو بيتكتب والوقت الباقي. الفورمز اللي فوق فاضلة للحالة اللي
+    // الجافاسكريبت مش شغال فيها.
+    Route::post('ai/runs', [AiRunController::class, 'start'])->name('ai-runs.start');
+    Route::post('ai/runs/{run}/stream', [AiRunController::class, 'stream'])->name('ai-runs.stream');
+    Route::post('ai/runs/{run}/server', [AiRunController::class, 'server'])->name('ai-runs.server');
+    Route::post('ai/runs/{run}/complete', [AiRunController::class, 'complete'])->name('ai-runs.complete');
+    Route::post('ai/runs/{run}/cancel', [AiRunController::class, 'cancel'])->name('ai-runs.cancel');
+
+    // إعدادات الذكاء الاصطناعي (2026-10-10): الحالة، النموذج، حجم السياق، السرعة الحقيقية.
+    Route::get('settings/ai', [AiSettingsController::class, 'show'])->name('ai-settings.show');
+    Route::put('settings/ai', [AiSettingsController::class, 'update'])->name('ai-settings.update');
+    Route::post('settings/ai/benchmark', [AiSettingsController::class, 'benchmark'])->name('ai-settings.benchmark');
+
     Route::resource('projects', ProjectController::class);
     Route::post('projects/{project}/deliver', [ProjectController::class, 'deliver'])
         ->name('projects.deliver');
@@ -66,6 +83,17 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.live-edit');
     Route::post('projects/{project}/site/suggest', [GeneratedSiteController::class, 'suggest'])
         ->name('projects.site.suggest');
+    // "✨ صياغة تانية" لخانة نص واحدة من المحرر المباشر — المسار ده للحالة اللي الجافاسكريبت
+    // مش شغال فيها (العادي: AiRunController بنوع rewrite بالعدّاد).
+    Route::post('projects/{project}/site/rewrite', [GeneratedSiteController::class, 'rewrite'])
+        ->name('projects.site.rewrite');
+    // مخزن صور المشروع (SitePhotoController) — إضافة صور، حط صورة في خانة، شيل صورة.
+    Route::post('projects/{project}/site/photos', [SitePhotoController::class, 'store'])
+        ->name('projects.site.photos.store');
+    Route::post('projects/{project}/site/photos/use', [SitePhotoController::class, 'use'])
+        ->name('projects.site.photos.use');
+    Route::delete('projects/{project}/site/photos', [SitePhotoController::class, 'destroy'])
+        ->name('projects.site.photos.destroy');
     Route::post('projects/{project}/site/publish', [GeneratedSiteController::class, 'publish'])
         ->name('projects.site.publish');
     Route::post('projects/{project}/site/unpublish', [GeneratedSiteController::class, 'unpublish'])
