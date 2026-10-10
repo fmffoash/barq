@@ -65,6 +65,7 @@
         <form method="POST" action="{{ route('projects.site.update', $project) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
+            <input type="hidden" name="design_form" value="1">
 
             @php
                 $variant = $project->variant;

@@ -260,7 +260,10 @@ class GeneratedSiteController extends Controller
             'content_json' => $content,
             'style_overrides_json' => $styleOverrides === [] ? null : $styleOverrides,
             'custom_blocks_json' => $customBlocks === [] ? null : $customBlocks,
-            ...$this->designOverrides($request, $project),
+            // (2026-10-10) تصميم الموقع بيتلمس بس لما الطلب جاي من فورم تصميم فعلاً — الحفظ
+            // الجزئي من المحرر المباشر (نص خانة واحدة) كان بيمسح الألوان/الخط/ترتيب الأقسام كلهم
+            // لأنه مبيبعتش الحقول دي فكانت بتتقري فاضية = "زي القالب".
+            ...($this->isDesignSubmission($request) ? $this->designOverrides($request, $project) : []),
         ]);
 
         return redirect()
@@ -299,6 +302,13 @@ class GeneratedSiteController extends Controller
             : null;
 
         return ['posX' => $posX, 'posY' => $posY, 'width' => $width];
+    }
+
+    // فورم "تصميم الموقع" (درج المحرر المباشر أو صفحة تعبئة المحتوى) بيبعت design_form، وكمان
+    // دايماً colors_override/font_override (حقل مخفي + قايمة) — أي طلب من غيرهم مش طلب تصميم.
+    private function isDesignSubmission(Request $request): bool
+    {
+        return $request->has('design_form') || $request->hasAny(['colors_override', 'font_override', 'sections_override']);
     }
 
     // تخصيص شكل الموقع ده بالكامل (ألوان/خط/ترتيب أقسام) — مستقل عن نسخة القالب المشتركة،

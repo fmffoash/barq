@@ -47,6 +47,7 @@
     </div>
 
     <form id="bq-design-form" class="bq-drawer-body">
+        <input type="hidden" name="design_form" value="1">
         @if ($sameCategoryTemplates->isNotEmpty())
             {{-- تغيير القالب (2026-09-21) — قوالب تانية بس من نفس فئة القالب الحالي، عشان
             المحتوى (نفس الـ17 مفتاح) ينتقل صح للقالب الجديد. الاختيار الافتراضي "نفس القالب
