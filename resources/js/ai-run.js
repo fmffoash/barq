@@ -21,6 +21,7 @@ const TITLES = {
     follow_up: 'بينفّذ طلبك',
     suggest: 'بيكتب محتوى الخانات',
     rewrite: 'بيعيد صياغة النص',
+    benchmark: 'بيقيس سرعة الجهاز',
 };
 
 const MODE_TEXT = {

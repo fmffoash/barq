@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AiRun;
 use App\Services\Ai\AiResult;
 use App\Services\Ai\AiStats;
+use App\Services\Ai\Runs\BenchmarkRun;
 use App\Services\Ai\Runs\CreateProjectRun;
 use App\Services\Ai\Runs\FollowUpRun;
 use App\Services\Ai\Runs\RewriteSlotRun;
@@ -42,6 +43,7 @@ class AiRunController extends Controller
         'follow_up' => FollowUpRun::class,
         'suggest' => SuggestContentRun::class,
         'rewrite' => RewriteSlotRun::class,
+        'benchmark' => BenchmarkRun::class,
     ];
 
     public function start(Request $request, OllamaService $ollama): JsonResponse

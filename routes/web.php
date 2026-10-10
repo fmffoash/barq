@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AiRunController;
+use App\Http\Controllers\AiSettingsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeneratedSiteController;
@@ -59,6 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::post('ai/runs/{run}/server', [AiRunController::class, 'server'])->name('ai-runs.server');
     Route::post('ai/runs/{run}/complete', [AiRunController::class, 'complete'])->name('ai-runs.complete');
     Route::post('ai/runs/{run}/cancel', [AiRunController::class, 'cancel'])->name('ai-runs.cancel');
+
+    // إعدادات الذكاء الاصطناعي (2026-10-10): الحالة، النموذج، حجم السياق، السرعة الحقيقية.
+    Route::get('settings/ai', [AiSettingsController::class, 'show'])->name('ai-settings.show');
+    Route::put('settings/ai', [AiSettingsController::class, 'update'])->name('ai-settings.update');
+    Route::post('settings/ai/benchmark', [AiSettingsController::class, 'benchmark'])->name('ai-settings.benchmark');
 
     Route::resource('projects', ProjectController::class);
     Route::post('projects/{project}/deliver', [ProjectController::class, 'deliver'])
