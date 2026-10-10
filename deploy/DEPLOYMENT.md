@@ -39,6 +39,10 @@ chown -R www-data:www-data storage bootstrap/cache
 php artisan barq:doctor
 ```
 
+**بعد الديبلوي:** افتح "⚙️ إعدادات الذكاء الاصطناعي" (`/settings/ai`) — لازم يبان Ollama "✓ شغال"
+والنموذج "✓ متسطّب"، وبعدين دوس "⏱️ اختبار السرعة" مرة (أقل من دقيقة غالباً) عشان عدّاد الوقت
+الباقي يبقى دقيق على السيرفر من أول طلب حقيقي.
+
 **لو المجلد اتمسح** (اتشال برق من السيرفر وقت التشغيل المحلي): اتبع الخطوات من 4 لـ9 تحت كاملة
 (قاعدة البيانات، clone، `.env` من `deploy/env.production.example`، migrate، storage:link،
 `barq:create-admin`، `barq:seed-template-library`، الكاش والصلاحيات، nginx)، وبعدين خطوة 12
