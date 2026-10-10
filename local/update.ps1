@@ -32,6 +32,8 @@ Run 'npm' @('run', 'build')
 Say 'Database and caches'
 Run 'php' @('artisan', 'optimize:clear')
 Run 'php' @('artisan', 'migrate', '--force')
+# Library updates (new template copy/colors/fonts) - safe for existing projects, skipped when up to date.
+Run 'php' @('artisan', 'barq:seed-template-library', '--if-outdated')
 
 Remove-Item (Join-Path $Root '.runtime\downloads') -Recurse -Force -ErrorAction SilentlyContinue
 

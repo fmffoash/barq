@@ -110,8 +110,9 @@ class LocalMachineSetupTest extends TestCase
         $this->fakeOllamaWithModels(['qwen3:8b']);
 
         try {
+            // (2026-10-10) المكتبة بتتحدّث لو نسختها قديمة (--if-outdated) بدل ما تتخطّى لمجرد إن فيه قوالب.
             $this->artisan('barq:local-setup')
-                ->expectsOutputToContain('Template library already present')
+                ->expectsOutputToContain('Checking the template library')
                 ->expectsQuestion('Name / الاسم', 'فؤاد')
                 ->expectsQuestion('Email / البريد الإلكتروني', 'owner@example.com')
                 ->expectsQuestion('Password, 8+ characters / كلمة المرور (٨ حروف على الأقل)', 'local-pass-123')
@@ -120,7 +121,7 @@ class LocalMachineSetupTest extends TestCase
                 ->assertSuccessful();
 
             $this->assertSame(['owner@example.com'], User::pluck('email')->all());
-            $this->assertSame(1, Template::count());
+            $this->assertSame(301, Template::count(), 'the existing template stays, the 300 library templates are added');
             $this->assertTrue(file_exists($linkDir.'/storage'));
         } finally {
             File::deleteDirectory($linkDir);
@@ -133,7 +134,7 @@ class LocalMachineSetupTest extends TestCase
         config(['filesystems.links' => []]);
 
         $this->artisan('barq:local-setup', ['--skip-admin' => true])
-            ->expectsOutputToContain('Template library already present')
+            ->expectsOutputToContain('Checking the template library')
             ->doesntExpectOutputToContain('Health check')
             ->assertSuccessful();
 

@@ -19,6 +19,8 @@ npm run build
 say "Database and caches"
 php artisan optimize:clear
 php artisan migrate --force
+# تحديثات مكتبة القوالب (نصوص/ألوان/خطوط جديدة) — آمنة على المشاريع الموجودة، وبتتخطّى لو المكتبة على آخر نسخة.
+php artisan barq:seed-template-library --if-outdated
 
 php artisan barq:doctor || true
 
