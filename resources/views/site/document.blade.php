@@ -66,6 +66,8 @@
         باين رغم إن الملف على السيرفر كان صح فعلاً). query string بقيمة وقت آخر تعديل فعلي
         للملف بيغيّر الـURL تلقائي كل مرة نعدّل فيها، فـCloudflare بيعتبره طلب جديد. --}}
         <link rel="stylesheet" href="{{ asset('css/live-editor.css') }}?v={{ filemtime(public_path('css/live-editor.css')) }}">
+        {{-- عدّاد الذكاء الاصطناعي ("✨ صياغة تانية") — نفس سكريبت لوحة التحكم. --}}
+        @vite(['resources/js/app.js'])
     @endif
     @if ($slotStyles->isNotEmpty())
         <style>

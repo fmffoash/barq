@@ -77,6 +77,10 @@ Route::middleware('auth')->group(function () {
         ->name('projects.site.live-edit');
     Route::post('projects/{project}/site/suggest', [GeneratedSiteController::class, 'suggest'])
         ->name('projects.site.suggest');
+    // "✨ صياغة تانية" لخانة نص واحدة من المحرر المباشر — المسار ده للحالة اللي الجافاسكريبت
+    // مش شغال فيها (العادي: AiRunController بنوع rewrite بالعدّاد).
+    Route::post('projects/{project}/site/rewrite', [GeneratedSiteController::class, 'rewrite'])
+        ->name('projects.site.rewrite');
     // مخزن صور المشروع (SitePhotoController) — إضافة صور، حط صورة في خانة، شيل صورة.
     Route::post('projects/{project}/site/photos', [SitePhotoController::class, 'store'])
         ->name('projects.site.photos.store');

@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Template;
 use App\Models\TemplateVariant;
+use App\Services\Ai\Runs\RewriteSlotRun;
 use App\Services\Ai\Runs\SuggestContentRun;
 use App\Services\OllamaService;
 use App\Services\RichTextSanitizer;
 use App\Services\SiteExportService;
 use App\Services\SiteRenderer;
 use App\Services\WordPressService;
+use App\Support\LinkInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -199,6 +203,20 @@ class GeneratedSiteController extends Controller
             }
 
             $value = $request->input("content.{$key}");
+
+            // رابط زرار (2026-10-10): رقم تليفون لوحده بيتحوّل لرابط واتساب، دومين من غير https
+            // بياخده، وأي حاجة مش رابط (javascript:...) بترجع خطأ بدل ما تتحط في href.
+            if ($slot->slot_type === 'link') {
+                $link = LinkInput::normalize(is_string($value) ? $value : null);
+                if ($link === null) {
+                    throw ValidationException::withMessages([
+                        "content.{$key}" => 'الرابط في "'.$slot->label().'" مش مفهوم — اكتب رقم واتساب (01xxxxxxxxx) أو رابط يبدأ بـ https://',
+                    ]);
+                }
+                $content[$key] = $link;
+
+                continue;
+            }
 
             if ($slot->slot_type === 'list') {
                 $content[$key] = collect(explode("\n", (string) $value))
@@ -389,6 +407,30 @@ class GeneratedSiteController extends Controller
             ?? $ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
 
         return redirect()->route('projects.site.edit', $project)->with('status', $suggester->apply($project, $result));
+    }
+
+    // "✨ صياغة تانية" من غير جافاسكريبت — نفس RewriteSlotRun اللي العدّاد بيشغّله.
+    public function rewrite(Request $request, Project $project, RewriteSlotRun $rewriter): RedirectResponse
+    {
+        $validated = $request->validate([
+            'slot_key' => ['required', 'string', 'max:100'],
+            'style' => ['required', 'string', Rule::in(array_keys(RewriteSlotRun::STYLES))],
+            'note' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $prepared = $rewriter->prepareFor($project, $validated['slot_key'], $validated['style'], $validated['note'] ?? null);
+
+        if (! isset($prepared['ai'])) {
+            return redirect()->route('projects.site.live-edit', $project)->with('status', $prepared['reply'] ?? '');
+        }
+
+        $ollama = app(OllamaService::class);
+        $result = $ollama->preflight()
+            ?? $ollama->run($prepared['ai']['prompt'], $prepared['ai']['schema'], $prepared['ai']['task']);
+
+        [, $message] = $rewriter->apply($project, $validated['slot_key'], $result);
+
+        return redirect()->route('projects.site.live-edit', $project)->with('status', $message);
     }
 
     public function publish(Project $project): RedirectResponse

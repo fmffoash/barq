@@ -7,6 +7,7 @@ use App\Services\Ai\AiResult;
 use App\Services\Ai\AiStats;
 use App\Services\Ai\Runs\CreateProjectRun;
 use App\Services\Ai\Runs\FollowUpRun;
+use App\Services\Ai\Runs\RewriteSlotRun;
 use App\Services\Ai\Runs\RunHandler;
 use App\Services\Ai\Runs\SuggestContentRun;
 use App\Services\OllamaService;
@@ -40,6 +41,7 @@ class AiRunController extends Controller
         'create' => CreateProjectRun::class,
         'follow_up' => FollowUpRun::class,
         'suggest' => SuggestContentRun::class,
+        'rewrite' => RewriteSlotRun::class,
     ];
 
     public function start(Request $request, OllamaService $ollama): JsonResponse

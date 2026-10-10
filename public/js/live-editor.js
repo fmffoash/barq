@@ -1,6 +1,7 @@
 // المحرر البصري المباشر (WYSIWYG click-to-edit) — docs/wysiwyg-editor-plan.md.
-// صفر مكتبة خارجية عمداً (زي باقي سكريبتات المشروع). النص/الفقرة بس دلوقتي (أولوية
-// الخطة) — القوائم/الروابط/الصور لسه بتترندر عادي، تعديلهم لسه من فورم "تعبئة المحتوى".
+// صفر مكتبة خارجية عمداً (زي باقي سكريبتات المشروع). النص/الفقرة بالدوس عليه مباشرة،
+// والصور (زوم/تحريك/صورة تانية)، والقوايم وأزرار التواصل والصياغة بالذكاء الاصطناعي و"تراجع"
+// (2026-10-10) — كلهم من الصفحة نفسها.
 (function () {
     'use strict';
 
@@ -49,6 +50,17 @@
             credentials: 'same-origin',
         })
             .then(function (res) {
+                if (res.status === 422) {
+                    // رسالة السيرفر نفسها (رابط مش مفهوم مثلاً) بدل "حصل خطأ" عامة.
+                    return res.json().catch(function () { return {}; }).then(function (json) {
+                        var messages = [];
+                        Object.keys(json.errors || {}).forEach(function (field) {
+                            messages = messages.concat(json.errors[field]);
+                        });
+                        toast(messages[0] || json.message || 'البيانات مش مظبوطة', true);
+                        return false;
+                    });
+                }
                 if (!res.ok) {
                     throw new Error('save failed: ' + res.status);
                 }
@@ -59,6 +71,49 @@
                 toast('حصل خطأ وقت الحفظ — حاول تاني', true);
                 return false;
             });
+    }
+
+    // ---------- تراجع (2026-10-10) ----------
+    // آخر 20 تعديل محتوى (نص/قايمة/رابط/صورة) بقيمتهم القديمة في sessionStorage — بيفضلوا بعد
+    // الريلود اللي بيحصل بعد أغلب التعديلات. "↩ تراجع" بيرجّع آخر واحد بس. الألوان/الخط/الزوم
+    // ليهم "إزالة التخصيص" بتاعتهم ومش هنا.
+    var undoKey = 'bq-undo-' + config.projectId;
+    var undoBtn = document.getElementById('bq-undo');
+
+    function readUndo() {
+        try {
+            var stack = JSON.parse(window.sessionStorage.getItem(undoKey) || '[]');
+            return Array.isArray(stack) ? stack : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function writeUndo(stack) {
+        try {
+            window.sessionStorage.setItem(undoKey, JSON.stringify(stack.slice(-20)));
+        } catch (e) {
+            // تخزين المتصفح مقفول — التراجع بس اللي مش هيشتغل.
+        }
+        refreshUndoButton();
+    }
+
+    function pushUndo(entry) {
+        var stack = readUndo();
+        stack.push(entry);
+        writeUndo(stack);
+    }
+
+    function refreshUndoButton() {
+        if (!undoBtn) {
+            return;
+        }
+        var stack = readUndo();
+        undoBtn.hidden = stack.length === 0;
+        if (stack.length) {
+            var last = stack[stack.length - 1];
+            undoBtn.textContent = '↩ تراجع (' + (config.slotLabels[last.key] || last.key) + ')';
+        }
     }
 
     // ---------- Text/textarea click-to-edit ----------
@@ -489,6 +544,7 @@
 
         el.appendChild(colorLabel);
         el.appendChild(fontLabel);
+        el.appendChild(buildRewriteControl());
         el.appendChild(resetBtn);
         el.appendChild(doneBtn);
         document.body.appendChild(el);
@@ -549,9 +605,10 @@
         active = null;
     }
 
-    function commitActive() {
+    function commitActive(opts) {
+        opts = opts || {};
         if (!active) {
-            return;
+            return Promise.resolve(true);
         }
 
         var entries = [];
@@ -581,16 +638,24 @@
             entries.push(['style[' + active.key + '][font]', active.pendingFont]);
         }
 
+        var undoEntry = entries.some(function (entry) { return entry[0] === 'content[' + active.key + ']'; })
+            ? { key: active.key, kind: 'content', value: active.originalHTML }
+            : null;
+
         closeActive(true);
 
         if (entries.length === 0) {
-            return;
+            return Promise.resolve(true);
         }
 
-        save(entries).then(function (ok) {
-            if (ok && styleTouched) {
+        return save(entries).then(function (ok) {
+            if (ok && undoEntry) {
+                pushUndo(undoEntry);
+            }
+            if (ok && styleTouched && !opts.noReload) {
                 window.location.reload();
             }
+            return ok;
         });
     }
 
@@ -776,7 +841,19 @@
         doneBtn.textContent = 'تم';
         doneBtn.addEventListener('click', commitImageEditor);
 
+        var swapBtn = document.createElement('button');
+        swapBtn.type = 'button';
+        swapBtn.className = 'bq-toolbar-swap';
+        swapBtn.textContent = '🖼️ صورة تانية';
+        swapBtn.addEventListener('click', function () {
+            var swapKey = activeImage.key;
+            var currentSrc = activeImage.el.getAttribute('src') || '';
+            closeImageEditor(false);
+            openImagePicker(swapKey, currentSrc);
+        });
+
         controlsBar.appendChild(zoomLabel);
+        controlsBar.appendChild(swapBtn);
         controlsBar.appendChild(resetBtn);
         controlsBar.appendChild(doneBtn);
         document.body.appendChild(controlsBar);
@@ -822,6 +899,11 @@
             return;
         }
 
+        // جوّه نافذة تعديل (قايمة/روابط/صور) — ملهاش علاقة بالخانات اللي ورا.
+        if (event.target.closest('.bq-modal-backdrop')) {
+            return;
+        }
+
         var target = event.target.closest('[data-bq-editable="1"]');
         if (target) {
             if (active && active.el === target) {
@@ -836,6 +918,26 @@
         if (imageTarget) {
             event.preventDefault();
             openImageEditor(imageTarget);
+            return;
+        }
+
+        // زرار رابط حقيقي (واتساب/اتصال/موقع) — بدل ما يفتح الرابط، بيفتح تعديله.
+        var linkTarget = event.target.closest('a[data-bq-link-editable="1"]');
+        if (linkTarget) {
+            event.preventDefault();
+            commitActive();
+            closeImageEditor(false);
+            openLinksEditor(linkTarget.dataset.slot);
+            return;
+        }
+
+        // أي عنصر من قايمة (خدمة/رأي عميل) — بيفتح القايمة كلها للتعديل.
+        var listTarget = event.target.closest('[data-bq-list-editable="1"]');
+        if (listTarget) {
+            event.preventDefault();
+            commitActive();
+            closeImageEditor(false);
+            openListEditor(listTarget.dataset.slot);
             return;
         }
 
@@ -1423,6 +1525,494 @@
 
     if (freePositionBtn) {
         freePositionBtn.addEventListener('click', toggleFreePositionMode);
+    }
+
+
+    // =====================================================================
+    // (2026-10-10) تعديل القوايم والروابط والصور والصياغة بالذكاء الاصطناعي من المحرر نفسه —
+    // قبل كده كانوا من فورم "تعبئة المحتوى" القديم بس. كله بيتحفظ بنفس saveUrl (أو مسارات صور
+    // المشروع) وبعدها ريلود، وكل تعديل محتوى بيتسجّل في "↩ تراجع".
+    // =====================================================================
+
+    document.querySelectorAll('[data-slot]').forEach(function (el) {
+        var type = config.slotTypes[el.dataset.slot];
+        if (type === 'list') {
+            el.setAttribute('data-bq-list-editable', '1');
+        } else if (type === 'link' && el.tagName === 'A') {
+            el.setAttribute('data-bq-link-editable', '1');
+        }
+    });
+
+    // ---------- نافذة عامة ----------
+    function openModal(title, body, primaryLabel, onPrimary) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'bq-modal-backdrop';
+        var modal = document.createElement('div');
+        modal.className = 'bq-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+
+        var header = document.createElement('div');
+        header.className = 'bq-modal-header';
+        var heading = document.createElement('strong');
+        heading.textContent = title;
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'bq-modal-close';
+        closeBtn.setAttribute('aria-label', 'قفل');
+        closeBtn.textContent = '✕';
+        header.appendChild(heading);
+        header.appendChild(closeBtn);
+
+        var content = document.createElement('div');
+        content.className = 'bq-modal-body';
+        content.appendChild(body);
+
+        modal.appendChild(header);
+        modal.appendChild(content);
+
+        var primary = null;
+        if (primaryLabel) {
+            var footer = document.createElement('div');
+            footer.className = 'bq-modal-footer';
+            primary = document.createElement('button');
+            primary.type = 'button';
+            primary.className = 'bq-drawer-save';
+            primary.textContent = primaryLabel;
+            footer.appendChild(primary);
+            modal.appendChild(footer);
+        }
+
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+
+        function close() {
+            document.removeEventListener('keydown', onKey, true);
+            backdrop.remove();
+        }
+        function onKey(event) {
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+                close();
+            }
+        }
+        document.addEventListener('keydown', onKey, true);
+        closeBtn.addEventListener('click', close);
+        backdrop.addEventListener('mousedown', function (event) {
+            if (event.target === backdrop) {
+                close();
+            }
+        });
+        if (primary) {
+            primary.addEventListener('click', function () {
+                primary.disabled = true;
+                Promise.resolve(onPrimary()).then(function (keepOpen) {
+                    primary.disabled = false;
+                    if (!keepOpen) {
+                        close();
+                    }
+                });
+            });
+        }
+
+        return { close: close, el: modal };
+    }
+
+    function hint(text) {
+        var p = document.createElement('p');
+        p.className = 'bq-hint';
+        p.textContent = text;
+        return p;
+    }
+
+    function reloadSoon() {
+        setTimeout(function () {
+            window.location.reload();
+        }, 350);
+    }
+
+    // ---------- القوايم (خدمات / آراء عملاء) ----------
+    function openListEditor(key) {
+        var isTestimonials = key.indexOf('testimonial') !== -1;
+        var old = (config.listValues[key] || []).slice();
+        var body = document.createElement('div');
+        var textarea = document.createElement('textarea');
+        textarea.className = 'bq-modal-textarea';
+        textarea.rows = Math.min(14, Math.max(6, old.length + 2));
+        textarea.value = old.join('\n');
+        body.appendChild(hint(isTestimonials
+            ? 'كل رأي في سطر لوحده: الرأي — اسم العميل ★5 (النجوم اختيارية، من 1 لـ5).'
+            : 'كل عنصر في سطر لوحده. ممكن تضيف وصف قصير أو سعر بعد " — " (مثال: قص شعر — 150 جنيه).'));
+        body.appendChild(textarea);
+
+        openModal('تعديل: ' + (config.slotLabels[key] || key), body, 'حفظ القايمة', function () {
+            var value = textarea.value.split('\n').map(function (line) { return line.trim(); }).filter(Boolean).join('\n');
+            if (value === old.join('\n')) {
+                return false;
+            }
+            return save([['content[' + key + ']', value]], '✓ اتحفظت القايمة').then(function (ok) {
+                if (!ok) {
+                    return true;
+                }
+                pushUndo({ key: key, kind: 'list', value: old });
+                reloadSoon();
+                return false;
+            });
+        });
+        textarea.focus();
+    }
+
+    // ---------- أزرار التواصل (روابط) ----------
+    function describeLink(value) {
+        value = (value || '').trim();
+        var wa = /^(?:https?:\/\/)?(?:wa\.me\/|api\.whatsapp\.com\/send\/?\?phone=)(\d+)/i.exec(value);
+        if (wa) {
+            var digits = wa[1];
+            // 2010xxxxxxxx ← 010xxxxxxxx (الشكل اللي فؤاد بيكتبه).
+            return { type: 'whatsapp', input: /^20(1\d{9})$/.test(digits) ? '0' + digits.slice(2) : digits };
+        }
+        if (/^tel:/i.test(value)) {
+            var tel = value.replace(/^tel:/i, '');
+            return { type: 'phone', input: /^\+?20(1\d{9})$/.test(tel) ? '0' + tel.replace(/^\+?20/, '') : tel };
+        }
+        if (/^mailto:/i.test(value)) {
+            return { type: 'email', input: value.replace(/^mailto:/i, '') };
+        }
+        if (value === '') {
+            return { type: 'none', input: '' };
+        }
+        return { type: 'web', input: value };
+    }
+
+    function buildLink(type, input) {
+        input = (input || '').trim();
+        if (type === 'none' || input === '') {
+            return '';
+        }
+        if (type === 'phone') {
+            var digits = input.replace(/[^\d+]/g, '');
+            if (/^01\d{9}$/.test(digits)) {
+                digits = '+20' + digits.slice(1);
+            }
+            return 'tel:' + digits;
+        }
+        if (type === 'email') {
+            return 'mailto:' + input;
+        }
+        // واتساب: الرقم زي ما هو — السيرفر بيحوّله لـ wa.me (LinkInput). رابط: السيرفر بيكمّل https.
+        return input;
+    }
+
+    var LINK_TYPES = [
+        ['whatsapp', 'واتساب'],
+        ['phone', 'اتصال'],
+        ['web', 'رابط موقع/صفحة'],
+        ['email', 'إيميل'],
+        ['none', 'من غير زرار'],
+    ];
+    var LINK_PLACEHOLDERS = {
+        whatsapp: 'رقم الواتساب — مثال: 01012345678',
+        phone: 'رقم التليفون — مثال: 01012345678',
+        web: 'مثال: https://facebook.com/...',
+        email: 'مثال: name@gmail.com',
+        none: '',
+    };
+
+    function openLinksEditor(focusKey) {
+        if (!config.linkSlots || config.linkSlots.length === 0) {
+            toast('القالب ده مفيهوش أزرار روابط', true);
+            return;
+        }
+        var body = document.createElement('div');
+        body.appendChild(hint('الزرار اللي فيه واتساب أو اتصال بيظهر كمان كزرار عائم في ركن الموقع للزوار.'));
+        var rows = [];
+        config.linkSlots.forEach(function (slot) {
+            var current = describeLink(slot.value);
+            var row = document.createElement('div');
+            row.className = 'bq-link-row';
+            var label = document.createElement('label');
+            label.textContent = slot.label;
+            var select = document.createElement('select');
+            LINK_TYPES.forEach(function (pair) {
+                var opt = document.createElement('option');
+                opt.value = pair[0];
+                opt.textContent = pair[1];
+                if (pair[0] === current.type) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.dir = 'ltr';
+            input.value = current.input;
+            input.placeholder = LINK_PLACEHOLDERS[current.type];
+            input.disabled = current.type === 'none';
+            select.addEventListener('change', function () {
+                input.placeholder = LINK_PLACEHOLDERS[select.value];
+                input.disabled = select.value === 'none';
+            });
+            row.appendChild(label);
+            row.appendChild(select);
+            row.appendChild(input);
+            body.appendChild(row);
+            rows.push({ slot: slot, select: select, input: input });
+            if (slot.key === focusKey) {
+                setTimeout(function () { input.focus(); }, 0);
+            }
+        });
+
+        openModal('أزرار التواصل', body, 'حفظ الأزرار', function () {
+            var entries = [];
+            var undo = [];
+            rows.forEach(function (row) {
+                var value = buildLink(row.select.value, row.input.value);
+                if (value !== (row.slot.value || '')) {
+                    entries.push(['content[' + row.slot.key + ']', value]);
+                    undo.push({ key: row.slot.key, kind: 'content', value: row.slot.value || '' });
+                }
+            });
+            if (entries.length === 0) {
+                return false;
+            }
+            return save(entries, '✓ اتحفظت الأزرار').then(function (ok) {
+                if (!ok) {
+                    return true;
+                }
+                undo.forEach(pushUndo);
+                reloadSoon();
+                return false;
+            });
+        });
+    }
+
+    var linksOpenBtn = document.getElementById('bq-links-open');
+    if (linksOpenBtn) {
+        linksOpenBtn.addEventListener('click', function () {
+            commitActive();
+            closeImageEditor(false);
+            openLinksEditor(null);
+        });
+    }
+
+    // ---------- صورة تانية (صور المشروع / صور القالب / رفع) ----------
+    function postForm(url, formData, successMessage) {
+        formData.append('_token', config.csrfToken);
+        return fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        }).then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (json) {
+                if (!res.ok) {
+                    var errors = [];
+                    Object.keys(json.errors || {}).forEach(function (field) {
+                        errors = errors.concat(json.errors[field]);
+                    });
+                    toast(errors[0] || json.message || 'حصل خطأ — حاول تاني', true);
+                    return false;
+                }
+                toast(successMessage || json.message || '✓ اتحفظ');
+                return true;
+            });
+        }).catch(function () {
+            toast('حصل خطأ في الاتصال — حاول تاني', true);
+            return false;
+        });
+    }
+
+    function openImagePicker(key, currentSrc) {
+        var body = document.createElement('div');
+        var modalRef = null;
+        var photos = [];
+        (config.photoPool || []).concat(config.templatePhotos || []).forEach(function (path) {
+            if (photos.indexOf(path) === -1) {
+                photos.push(path);
+            }
+        });
+
+        function remember() {
+            if (currentSrc && currentSrc.charAt(0) === '/') {
+                pushUndo({ key: key, kind: 'image', value: currentSrc });
+            }
+        }
+
+        var upload = document.createElement('label');
+        upload.className = 'bq-upload';
+        upload.textContent = '⬆️ ارفع صورة من جهازك';
+        var file = document.createElement('input');
+        file.type = 'file';
+        file.accept = 'image/jpeg,image/png,image/webp,image/gif';
+        file.hidden = true;
+        upload.appendChild(file);
+        file.addEventListener('change', function () {
+            if (!file.files || !file.files[0]) {
+                return;
+            }
+            upload.textContent = '⏳ بيرفع الصورة...';
+            var fd = new FormData();
+            fd.append('photos[]', file.files[0]);
+            fd.append('slot_key', key);
+            postForm(config.photoUploadUrl, fd, '✓ اترفعت الصورة واتحطت مكانها').then(function (ok) {
+                if (ok) {
+                    remember();
+                    reloadSoon();
+                } else {
+                    upload.textContent = '⬆️ ارفع صورة من جهازك';
+                }
+            });
+        });
+        body.appendChild(upload);
+
+        if (photos.length) {
+            body.appendChild(hint((config.photoPool || []).length
+                ? 'صور المشروع (اللي لزقتها أو رفعتها) وبعدها صور القالب — دوس على أي صورة.'
+                : 'صور القالب — دوس على أي صورة، أو ارفع صورة من جهازك.'));
+            var grid = document.createElement('div');
+            grid.className = 'bq-photo-grid';
+            photos.forEach(function (path) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bq-photo-option' + (path === currentSrc ? ' bq-photo-current' : '');
+                var img = document.createElement('img');
+                img.src = path;
+                img.alt = '';
+                img.loading = 'lazy';
+                btn.appendChild(img);
+                btn.addEventListener('click', function () {
+                    if (path === currentSrc) {
+                        modalRef.close();
+                        return;
+                    }
+                    var fd = new FormData();
+                    fd.append('photo', path);
+                    fd.append('slot_key', key);
+                    postForm(config.photoUseUrl, fd, '✓ اتغيّرت الصورة').then(function (ok) {
+                        if (ok) {
+                            remember();
+                            reloadSoon();
+                        }
+                    });
+                });
+                grid.appendChild(btn);
+            });
+            body.appendChild(grid);
+        }
+
+        modalRef = openModal('صورة تانية: ' + (config.slotLabels[key] || key), body);
+    }
+
+    // ---------- ✨ صياغة تانية بالذكاء الاصطناعي ----------
+    function buildRewriteControl() {
+        var wrap = document.createElement('div');
+        wrap.className = 'bq-toolbar-rewrite';
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'bq-toolbar-rewrite-toggle';
+        toggle.textContent = '✨ صياغة تانية';
+        var menu = document.createElement('div');
+        menu.className = 'bq-toolbar-rewrite-menu';
+        menu.hidden = true;
+
+        var note = document.createElement('input');
+        note.type = 'text';
+        note.maxLength = 200;
+        note.placeholder = 'ملاحظة اختيارية (مثلاً: اذكر التوصيل المجاني)';
+
+        Object.keys(config.rewriteStyles || {}).forEach(function (style) {
+            var opt = document.createElement('button');
+            opt.type = 'button';
+            opt.className = 'bq-toolbar-rewrite-option';
+            opt.textContent = config.rewriteStyles[style];
+            opt.addEventListener('click', function () {
+                startRewrite(style, note.value);
+            });
+            menu.appendChild(opt);
+        });
+        menu.appendChild(note);
+
+        // mousedown بدل click: الدوس على الزرار مايسيبش التحديد/التعديل.
+        toggle.addEventListener('mousedown', function (event) {
+            event.preventDefault();
+        });
+        toggle.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            menu.hidden = !menu.hidden;
+            if (!menu.hidden) {
+                menu.classList.remove('bq-open-up');
+                if (menu.getBoundingClientRect().bottom > window.innerHeight - 8) {
+                    menu.classList.add('bq-open-up');
+                }
+            }
+        });
+
+        wrap.appendChild(toggle);
+        wrap.appendChild(menu);
+        return wrap;
+    }
+
+    function startRewrite(style, note) {
+        if (!active) {
+            return;
+        }
+        var form = document.getElementById('bq-rewrite-form');
+        if (!form) {
+            return;
+        }
+        var key = active.key;
+        var el = active.el;
+
+        // أي كتابة لسه مش محفوظة بتتحفظ الأول — الصياغة الجديدة بتتعمل على النص اللي قدامك.
+        commitActive({ noReload: true }).then(function (ok) {
+            if (!ok) {
+                return;
+            }
+            pushUndo({ key: key, kind: 'content', value: el.innerHTML });
+            form.querySelector('[name="slot_key"]').value = key;
+            form.querySelector('[name="style"]').value = style;
+            form.querySelector('[name="note"]').value = note || '';
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        });
+    }
+
+    // ---------- تنفيذ "↩ تراجع" ----------
+    if (undoBtn) {
+        refreshUndoButton();
+        undoBtn.addEventListener('click', function () {
+            var stack = readUndo();
+            var last = stack.pop();
+            if (!last) {
+                return;
+            }
+            commitActive({ noReload: true });
+            closeImageEditor(false);
+            undoBtn.disabled = true;
+
+            var done = function (ok) {
+                undoBtn.disabled = false;
+                if (ok) {
+                    writeUndo(stack);
+                    reloadSoon();
+                }
+            };
+
+            if (last.kind === 'image') {
+                var fd = new FormData();
+                fd.append('photo', last.value);
+                fd.append('slot_key', last.key);
+                postForm(config.photoUseUrl, fd, '↩ رجعت الصورة القديمة').then(done);
+                return;
+            }
+
+            var value = last.kind === 'list' ? (last.value || []).join('\n') : String(last.value || '');
+            save([['content[' + last.key + ']', value]], '↩ رجع زي ما كان').then(done);
+        });
     }
 
     window.addEventListener('resize', function () {

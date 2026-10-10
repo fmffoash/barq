@@ -20,6 +20,7 @@ const TITLES = {
     create: 'بيعمل موقعك',
     follow_up: 'بينفّذ طلبك',
     suggest: 'بيكتب محتوى الخانات',
+    rewrite: 'بيعيد صياغة النص',
 };
 
 const MODE_TEXT = {

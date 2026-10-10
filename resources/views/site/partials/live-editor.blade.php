@@ -17,6 +17,19 @@
             $slotTypes[$item['slot']->key] = $item['slot']->slot_type;
         }
     }
+
+    // (2026-10-10) بيانات تعديل القوايم والروابط والصور من المحرر نفسه — من خانات القالب كلها
+    // (مش اللي اترندرت بس): زرار تواصل لسه فاضي مبيترندرش، فلازم يبان في "روابط التواصل".
+    $allSlots = $slotsBySection->flatten(1);
+    $slotLabels = $allSlots->mapWithKeys(fn ($slot) => [$slot->key => $slot->label()])->all();
+    $listValues = $allSlots->where('slot_type', 'list')
+        ->mapWithKeys(fn ($slot) => [$slot->key => array_values((array) $site->content($slot->key, $slot->default_value))])
+        ->all();
+    $linkSlots = $allSlots->where('slot_type', 'link')
+        ->map(fn ($slot) => ['key' => $slot->key, 'label' => $slot->label(), 'value' => (string) $site->content($slot->key, $slot->default_value)])
+        ->values()
+        ->all();
+    $templatePhotos = $allSlots->where('slot_type', 'image')->pluck('default_value')->filter()->unique()->values()->all();
 @endphp
 
 <script id="live-editor-config" type="application/json">
@@ -27,11 +40,35 @@
     'slotTypes' => $slotTypes,
     'styleOverrides' => $site->style_overrides_json ?? [],
     'fonts' => \App\Models\TemplateVariant::FONTS,
-]) !!}
+    'projectId' => $project->id,
+    'slotLabels' => $slotLabels,
+    'listValues' => $listValues,
+    'linkSlots' => $linkSlots,
+    'photoPool' => array_values($site->photo_pool_json ?? []),
+    'templatePhotos' => $templatePhotos,
+    'photoUseUrl' => route('projects.site.photos.use', $project),
+    'photoUploadUrl' => route('projects.site.photos.store', $project),
+    'rewriteStyles' => \App\Services\Ai\Runs\RewriteSlotRun::STYLES,
+], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
 </script>
 
+{{-- "✨ صياغة تانية": الجافاسكريبت بيملّي الخانات ويبعت الفورم — ai-run.js بيمسكه ويشغّله بالعدّاد
+(نفس لوحة الإنشاء/الشات)، ولو مش شغال بيتبعت عادي للمسار المتزامن. --}}
+<form id="bq-rewrite-form" method="POST" action="{{ route('projects.site.rewrite', $project) }}" data-ai-run="rewrite" data-ai-run-url="{{ route('ai-runs.start') }}" data-ai-project="{{ $project->id }}" hidden>
+    @csrf
+    <input type="hidden" name="slot_key" value="">
+    <input type="hidden" name="style" value="">
+    <input type="hidden" name="note" value="">
+</form>
+{{-- لوحة العدّاد فوق شريط المحرر (z-index المحرر أعلى من z-[100] بتاعة اللوحة). --}}
+<div style="position: relative; z-index: 2147483600;">
+    @include('partials.ai-run-panel')
+</div>
+
 <div class="bq-bar">
-    <span class="bq-bar-label">🖊️ وضع التعديل المباشر — دوس على أي نص عشان تعدّله في مكانه</span>
+    <span class="bq-bar-label">🖊️ دوس على أي نص أو صورة أو قايمة عشان تعدّلها في مكانها</span>
+    <button type="button" id="bq-undo" class="bq-bar-toggle" hidden>↩ تراجع</button>
+    <button type="button" id="bq-links-open" class="bq-bar-toggle">🔗 أزرار التواصل</button>
     <button type="button" id="bq-free-position-toggle" class="bq-bar-toggle">📐 ترتيب حر</button>
     <a href="{{ route('projects.show', $project) }}" class="bq-bar-back">رجوع للمشروع</a>
 </div>
@@ -50,7 +87,7 @@
         <input type="hidden" name="design_form" value="1">
         @if ($sameCategoryTemplates->isNotEmpty())
             {{-- تغيير القالب (2026-09-21) — قوالب تانية بس من نفس فئة القالب الحالي، عشان
-            المحتوى (نفس الـ17 مفتاح) ينتقل صح للقالب الجديد. الاختيار الافتراضي "نفس القالب
+            المحتوى (نفس المفاتيح في كل قوالب المكتبة) ينتقل صح للقالب الجديد. الاختيار الافتراضي "نفس القالب
             الحالي" عشان الحفظ العادي (ألوان/خط) ميغيّرش القالب من غير قصد. --}}
             <div class="bq-drawer-section">
                 <label class="bq-checkbox-label" style="display: block; margin-bottom: 6px;">🔄 غيّر القالب</label>
