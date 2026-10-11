@@ -111,10 +111,16 @@ class AiProjectAssistantService
         }
 
         $guess = CategoryGuesser::guess($message, $categories);
+        // (2026-10-11) نوع النشاط المكتوب من جوجل نفسه («متجر لمنتجات الألبان») أدق من الكلام كله (اللي فيه
+        // مراجعات وأماكن قريبة) ومن اختيار النموذج — لو بيحدد فئة، هو اللي بيكسب
+        $kindGuess = filled($place['kind'] ?? null) ? CategoryGuesser::guess((string) $place['kind'], $categories, 1) : null;
+        if ($kindGuess) {
+            $guess = $kindGuess;
+        }
 
         return [
             'ok' => true,
-            'context' => $context + ['mode' => 'pick', 'guess' => $guess['category'] ?? null],
+            'context' => $context + ['mode' => 'pick', 'guess' => $guess['category'] ?? null, 'kind_guess' => $kindGuess['category'] ?? null],
             'ai' => [
                 'prompt' => $this->buildCreatePrompt($this->promptMessage($message, $place), $categories, $guess['category'] ?? null),
                 'schema' => $this->createSchema($categories),
@@ -155,8 +161,9 @@ class AiProjectAssistantService
             $categories = $this->activeCategories();
             $picked = $result->ok ? $result->data : [];
 
-            // اختيار النموذج لو صالح، وإلا تخمين الكلام نفسه — ومفيش "أول فئة أبجدياً" تاني أبداً.
-            $category = in_array($picked['category'] ?? null, $categories->all(), true)
+            // نوع النشاط من جوجل الأول، وبعده اختيار النموذج لو صالح، وإلا تخمين الكلام — ومفيش "أول فئة أبجدياً" أبداً.
+            $category = in_array($context['kind_guess'] ?? null, $categories->all(), true) ? $context['kind_guess'] : null;
+            $category ??= in_array($picked['category'] ?? null, $categories->all(), true)
                 ? $picked['category']
                 : (in_array($context['guess'] ?? null, $categories->all(), true) ? $context['guess'] : null);
 

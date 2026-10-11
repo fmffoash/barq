@@ -111,4 +111,17 @@ TXT;
         $this->assertSame(['0501234567'], PlaceParser::phones('050 123 4567'));
         $this->assertSame(['+966501234567'], PlaceParser::phones('+966 50 123 4567'));
     }
+
+    // (2026-10-11 — يوزر حقيقي) كوبي جوجل مابس بيبدأ بـ «عرض الصور» — كان بيطلع اسم المشروع، والفئة كافيهات
+    public function test_view_photos_button_is_not_the_name_and_kind_decides_the_category(): void
+    {
+        $paste = "عرض الصور\nريماس لاند لمنتجات الألبان\n4.3\n(271)\nمتجر لمنتجات الألبان\n\nنظرة عامة\n\nالمراجعات\n\nلمحة\n\nالاتجاهات\n\nحفظ\n\nالمواقع القريبة\n\nإرسال إلى هاتف\n\nمشاركة\n\n·\n\nخدمة التوصيل\n\n61 قناة السويس، المنصورة (قسم 2)، المنصورة، محافظة الدقهلية";
+        $place = PlaceParser::parse($paste);
+
+        $this->assertSame('ريماس لاند لمنتجات الألبان', $place['name']);
+        $this->assertSame('متجر لمنتجات الألبان', $place['kind']);
+        $this->assertSame(4.3, $place['rating']);
+        $this->assertSame(271, $place['reviews']);
+        $this->assertSame('متاجر إلكترونية', \App\Support\CategoryGuesser::guess($place['kind'], ['مطاعم وكافيهات', 'متاجر إلكترونية', 'مخابز وحلويات'], 1)['category']);
+    }
 }

@@ -66,7 +66,7 @@
 </div>
 
 <div class="bq-bar">
-    <span class="bq-bar-label">🖊️ دوس على أي نص أو صورة أو قايمة عشان تعدّلها في مكانها</span>
+    <span class="bq-bar-label">🖊️ دوس على أي نص أو صورة أو قايمة عشان تعدّلها في مكانها — والحفظ بـ Enter أو بالدوس برّه الخانة</span>
     <button type="button" id="bq-undo" class="bq-bar-toggle" hidden>↩ تراجع</button>
     <button type="button" id="bq-links-open" class="bq-bar-toggle">🔗 أزرار التواصل</button>
     <button type="button" id="bq-free-position-toggle" class="bq-bar-toggle">📐 ترتيب حر</button>

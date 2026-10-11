@@ -25,6 +25,10 @@ class PlaceParser
         'Overview', 'Reviews', 'About', 'Directions', 'Save', 'Nearby', 'Send to phone', 'Share',
         'Claim this business', 'Suggest an edit', 'Add photos', 'Write a review', 'Photos', 'Menu',
         'Website', 'Call', 'Book online', 'Local Guide', 'Updates', 'Q&A',
+        // (2026-10-11) «عرض الصور» كانت بتطلع اسم المشروع (أول سطر في كوبي جوجل مابس)
+        'عرض الصور', 'عرض كل الصور', 'المواقع القريبة', 'المواقع المجاورة', 'إرسال إلى هاتف', 'ارسال الي هاتف',
+        'الإرسال إلى الهاتف', 'الاتجاهات', 'حفظ المكان', 'See photos', 'View photos', 'All photos', 'Send to your phone',
+        'عرض الكل', 'المزيد', 'See all', 'More',
     ];
 
     private const HOURS_WORDS = '/(مفتوح|مغلق|يفتح|يغلق|يُغلق|يُفتح|على مدار ٢٤|على مدار 24|24 ساعة|٢٤ ساعة|\bopen\b|\bclosed\b|\bcloses\b|\bopens\b|open 24 hours)/iu';

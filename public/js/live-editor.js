@@ -2020,4 +2020,55 @@
             positionResizeHandle((freeDrag || freeResize).el);
         }
     });
+
+    // ---------- مايضيعش تعديل لو الصفحة اتقفلت (2026-10-11) ----------
+    // التعديل بيتحفظ بـ Enter أو دوس برّه الخانة. لو اليوزر داس «رجوع للمشروع» أو قفل التاب/عمل ريفريش
+    // والخانة لسه مفتوحة، التعديل كان بيضيع من غير ولا طلب حفظ (اتشاف في سجل السيرفر).
+    function pendingEntries() {
+        if (!active) {
+            return [];
+        }
+        var entries = [];
+        var value = active.formatTouched ? active.el.innerHTML.trim() : active.el.innerText.trim();
+        var original = active.formatTouched ? active.originalHTML.trim() : active.originalText.trim();
+        if (value !== original) {
+            entries.push(['content[' + active.key + ']', value]);
+        }
+        if (active.colorTouched) {
+            entries.push(['style[' + active.key + '][color]', active.pendingColor]);
+        }
+        if (active.fontTouched) {
+            entries.push(['style[' + active.key + '][font]', active.pendingFont]);
+        }
+        return entries;
+    }
+
+    // «رجوع للمشروع»: احفظ الأول وبعدين اخرج
+    document.querySelectorAll('.bq-bar-back').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            if (!active) {
+                return;
+            }
+            event.preventDefault();
+            commitActive({ noReload: true }).then(function () {
+                window.location.href = link.href;
+            });
+        });
+    });
+
+    // قفل التاب / ريفريش: إرسال في الخلفية (sendBeacon بيكمّل حتى بعد ما الصفحة تتقفل)
+    window.addEventListener('pagehide', function () {
+        var entries = pendingEntries();
+        if (entries.length === 0 || !navigator.sendBeacon) {
+            return;
+        }
+        var formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('_token', config.csrfToken);
+        entries.forEach(function (entry) {
+            formData.append(entry[0], entry[1]);
+        });
+        navigator.sendBeacon(config.saveUrl, formData);
+        active = null;
+    });
 })();
