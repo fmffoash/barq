@@ -35,9 +35,11 @@
         <h2 class="text-lg font-semibold text-slate-100">آخر المشاريع</h2>
 
         <div class="flex gap-2">
+            @if (auth()->user()->is_admin)
             <a href="{{ route('templates.create') }}" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:border-amber-400 hover:text-amber-400">
                 + قالب جديد
             </a>
+            @endif
             <a href="{{ route('projects.create') }}" class="rounded-lg bg-amber-400 px-3 py-1.5 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
                 + مشروع جديد
             </a>

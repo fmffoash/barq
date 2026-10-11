@@ -219,8 +219,8 @@
         @include('ai-chat._panel', ['project' => $project])
     </div>
 
-    {{-- حفظ كقالب جديد --}}
-    @if ($project->template)
+    {{-- حفظ كقالب جديد (الأدمن بس) --}}
+    @if ($project->template && auth()->user()->is_admin)
         <div class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
             <h2 class="mb-1 text-lg font-semibold text-slate-100">احفظ كقالب جديد</h2>
             <p class="mb-4 text-sm text-slate-500">

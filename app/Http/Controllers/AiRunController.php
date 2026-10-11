@@ -71,6 +71,7 @@ class AiRunController extends Controller
         $run = AiRun::create([
             'kind' => $kind,
             'project_id' => $prepared['project_id'] ?? null,
+            'user_id' => auth()->id(),
             'status' => AiRun::PENDING,
             'task' => $ai['task'],
             'context_json' => $prepared['context'] ?? [],

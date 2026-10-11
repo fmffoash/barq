@@ -13,7 +13,7 @@ use App\Http\Controllers\TemplateSlotController;
 use App\Http\Controllers\TemplateVariantController;
 use Illuminate\Support\Facades\Route;
 
-// أداة داخلية بمستخدم واحد بس — صفحة الدخول والخروج، والصفحة الرئيسية بعد الدخول
+// (2026-10-11) أدمن + يوزرات عادية (كل يوزر مشاريعه بس) — صفحة الدخول والخروج، والصفحة الرئيسية بعد الدخول
 // هي لوحة التحكم مباشرة (مفيش صفحة تسويقية عامة).
 
 Route::middleware('guest')->group(function () {
@@ -21,30 +21,38 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'store'])
         ->middleware('throttle:5,1')
         ->name('login.store');
+    // (2026-10-11) خطوة كود الإيميل للأدمن
+    Route::get('/login/code', [AuthController::class, 'code'])->name('login.code');
+    Route::post('/login/code', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1')->name('login.code.verify');
+    Route::post('/login/code/resend', [AuthController::class, 'resendCode'])->middleware('throttle:3,10')->name('login.code.resend');
 });
 
-Route::middleware('auth')->group(function () {
+// session.valid: قفل بعد ربع ساعة خمول + طرد المحظور/الموقوف (2026-10-11)
+Route::middleware(['auth', 'session.valid'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
-    Route::resource('templates', TemplateController::class);
+    // (2026-10-11) القوالب: أي يوزر يشوفها ويختار منها، والتعديل للأدمن بس (تحت)
+    // الإنشاء/التعديل متسجّل الأول عشان templates/create ماتتلقطش كـ show
+    Route::middleware('admin')->group(fn () => Route::resource('templates', TemplateController::class)->except(['index', 'show']));
+    Route::resource('templates', TemplateController::class)->only(['index', 'show']);
     // معاينة كاملة لشكل القالب الحقيقي قبل اختياره (TemplatePreviewService) — صفحة واحدة بس
     // وقت ما فؤاد يدوس "معاينة"، مش iframe لكل كارت (شوف CLAUDE.md).
     Route::get('templates/{template}/preview', [TemplateController::class, 'preview'])
         ->name('templates.preview');
 
-    Route::post('templates/{template}/variants', [TemplateVariantController::class, 'store'])
+    Route::middleware('admin')->post('templates/{template}/variants', [TemplateVariantController::class, 'store'])
         ->name('templates.variants.store');
-    Route::put('template-variants/{variant}', [TemplateVariantController::class, 'update'])
+    Route::middleware('admin')->put('template-variants/{variant}', [TemplateVariantController::class, 'update'])
         ->name('template-variants.update');
-    Route::delete('template-variants/{variant}', [TemplateVariantController::class, 'destroy'])
+    Route::middleware('admin')->delete('template-variants/{variant}', [TemplateVariantController::class, 'destroy'])
         ->name('template-variants.destroy');
 
-    Route::post('templates/{template}/slots', [TemplateSlotController::class, 'store'])
+    Route::middleware('admin')->post('templates/{template}/slots', [TemplateSlotController::class, 'store'])
         ->name('templates.slots.store');
-    Route::put('template-slots/{slot}', [TemplateSlotController::class, 'update'])
+    Route::middleware('admin')->put('template-slots/{slot}', [TemplateSlotController::class, 'update'])
         ->name('template-slots.update');
-    Route::delete('template-slots/{slot}', [TemplateSlotController::class, 'destroy'])
+    Route::middleware('admin')->delete('template-slots/{slot}', [TemplateSlotController::class, 'destroy'])
         ->name('template-slots.destroy');
 
     Route::get('ai', [AiChatController::class, 'create'])->name('ai-chat.create');
@@ -62,14 +70,23 @@ Route::middleware('auth')->group(function () {
     Route::post('ai/runs/{run}/cancel', [AiRunController::class, 'cancel'])->name('ai-runs.cancel');
 
     // إعدادات الذكاء الاصطناعي (2026-10-10): الحالة، النموذج، حجم السياق، السرعة الحقيقية.
-    Route::get('settings/ai', [AiSettingsController::class, 'show'])->name('ai-settings.show');
-    Route::put('settings/ai', [AiSettingsController::class, 'update'])->name('ai-settings.update');
-    Route::post('settings/ai/benchmark', [AiSettingsController::class, 'benchmark'])->name('ai-settings.benchmark');
+    // إدارة اليوزرات (2026-10-11) — الأدمن بس
+    Route::middleware('admin')->group(function (): void {
+        Route::get('users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+        Route::post('users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+        Route::put('users/{user}/password', [\App\Http\Controllers\UserController::class, 'password'])->name('users.password');
+        Route::put('users/{user}/status', [\App\Http\Controllers\UserController::class, 'status'])->name('users.status');
+        Route::delete('users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    Route::middleware('admin')->get('settings/ai', [AiSettingsController::class, 'show'])->name('ai-settings.show');
+    Route::middleware('admin')->put('settings/ai', [AiSettingsController::class, 'update'])->name('ai-settings.update');
+    Route::middleware('admin')->post('settings/ai/benchmark', [AiSettingsController::class, 'benchmark'])->name('ai-settings.benchmark');
 
     Route::resource('projects', ProjectController::class);
     Route::post('projects/{project}/deliver', [ProjectController::class, 'deliver'])
         ->name('projects.deliver');
-    Route::post('projects/{project}/save-as-template', [TemplateController::class, 'storeFromProject'])
+    Route::middleware('admin')->post('projects/{project}/save-as-template', [TemplateController::class, 'storeFromProject'])
         ->name('templates.store-from-project');
 
     Route::get('projects/{project}/site', [GeneratedSiteController::class, 'edit'])

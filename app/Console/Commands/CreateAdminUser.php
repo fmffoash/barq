@@ -94,6 +94,9 @@ class CreateAdminUser extends Command
             ],
         );
 
+        // (2026-10-11) أدمن شغال (لو كان محظور أو موقوف، الأمر ده بيرجّعه — باب الطوارئ من الطرفية)
+        $user->forceFill(['is_admin' => true, 'status' => User::ACTIVE, 'suspended_until' => null])->save();
+
         $this->info("تم حفظ حساب الأدمن بنجاح: {$user->email}");
 
         return self::SUCCESS;

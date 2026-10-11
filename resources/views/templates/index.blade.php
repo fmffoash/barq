@@ -6,12 +6,14 @@
     <div class="mb-6 flex items-center justify-between">
         <h1 class="text-2xl font-bold text-slate-100">القوالب</h1>
 
+        @if (auth()->user()->is_admin)
         <a
             href="{{ route('templates.create') }}"
             class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
         >
             + قالب جديد
         </a>
+        @endif
     </div>
 
     @if (session('status'))

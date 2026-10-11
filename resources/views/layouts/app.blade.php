@@ -39,12 +39,21 @@
                         ✨ أنشئ بالذكاء الاصطناعي
                     </a>
 
+                    @if (auth()->user()->is_admin)
+                    <a
+                        href="{{ route('users.index') }}"
+                        class="text-sm font-medium {{ request()->routeIs('users.*') ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400' }} transition"
+                    >
+                        👥 اليوزرات
+                    </a>
+
                     <a
                         href="{{ route('ai-settings.show') }}"
                         class="text-sm font-medium {{ request()->routeIs('ai-settings.*') ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400' }} transition"
                     >
                         ⚙️ إعدادات الذكاء الاصطناعي
                     </a>
+                    @endif
                 @endauth
             </div>
 

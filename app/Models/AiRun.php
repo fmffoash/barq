@@ -25,6 +25,7 @@ class AiRun extends Model
     protected $fillable = [
         'kind',
         'project_id',
+        'user_id', // (2026-10-11) صاحب الطلب — محدش غيره يوصله
         'status',
         'task',
         'context_json',

@@ -15,9 +15,11 @@ class DashboardController extends Controller
     {
         return view('dashboard', [
             'templatesCount' => Template::count(),
-            'projectsCount' => Project::count(),
-            'publishedSitesCount' => GeneratedSite::where('status', 'published')->count(),
-            'recentProjects' => Project::with(['template', 'variant', 'site'])
+            // (2026-10-11) اليوزر العادي بيشوف أرقام مشاريعه هو بس
+            'projectsCount' => Project::visibleTo(auth()->user())->count(),
+            'publishedSitesCount' => GeneratedSite::where('status', 'published')
+                ->whereHas('project', fn ($q) => $q->visibleTo(auth()->user()))->count(),
+            'recentProjects' => Project::visibleTo(auth()->user())->with(['template', 'variant', 'site'])
                 ->latest()
                 ->take(5)
                 ->get(),

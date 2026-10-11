@@ -51,7 +51,7 @@
                         مفيش قوالب مطابقة للفلترة دي.
                     @else
                         لسه مفيش أي قالب متاح.
-                        <a href="{{ route('templates.create') }}" class="text-amber-400 hover:underline">ضيف قالب الأول</a>.
+                        @if (auth()->user()->is_admin)<a href="{{ route('templates.create') }}" class="text-amber-400 hover:underline">ضيف قالب الأول</a>.@endif
                     @endif
                 </div>
             @else

@@ -26,9 +26,10 @@ class AuthenticationTest extends TestCase
         $response->assertSee('تسجيل الدخول');
     }
 
+    // (2026-10-11) الأدمن بعد الباسورد بيروح لخطوة كود الإيميل (AdminLoginCodeTest)، واليوزر العادي بيدخل على طول
     public function test_admin_can_login_with_correct_credentials(): void
     {
-        $user = User::factory()->create([
+        $user = User::factory()->member()->create([
             'password' => Hash::make('correct-password'),
         ]);
 

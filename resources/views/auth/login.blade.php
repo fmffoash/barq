@@ -44,11 +44,6 @@
             >
         </div>
 
-        <label class="flex items-center gap-2 text-sm text-slate-400">
-            <input type="checkbox" name="remember" class="rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-amber-400">
-            تذكرني
-        </label>
-
         <button
             type="submit"
             class="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-900"

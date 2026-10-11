@@ -32,9 +32,11 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    // (2026-10-11) ربع ساعة خمول = خروج (EnsureSessionValid بيفرضها فعلياً)
+    'lifetime' => (int) env('SESSION_LIFETIME', 15),
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    // (2026-10-11) قفل المتصفح = خروج
+    'expire_on_close' => (bool) env('SESSION_EXPIRE_ON_CLOSE', true),
 
     /*
     |--------------------------------------------------------------------------

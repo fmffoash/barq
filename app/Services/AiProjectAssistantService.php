@@ -211,6 +211,7 @@ class AiProjectAssistantService
                 'contact_phone' => $place['phones'][0] ?? null,
                 'place_json' => $place ?: null,
                 'status' => 'draft',
+                'created_by' => auth()->id(), // (2026-10-11) صاحب المشروع
             ]);
 
             GeneratedSite::create([

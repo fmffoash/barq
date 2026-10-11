@@ -19,7 +19,7 @@ class ProjectController extends Controller
 {
     public function index(): View
     {
-        $projects = Project::with(['template', 'variant', 'site'])
+        $projects = Project::visibleTo(auth()->user())->with(['template', 'variant', 'site', 'creator'])
             ->latest()
             ->get();
 
@@ -95,6 +95,7 @@ class ProjectController extends Controller
                 'contact_phone' => $data['contact_phone'] ?? null,
                 'contact_email' => $data['contact_email'] ?? null,
                 'status' => 'draft',
+                'created_by' => auth()->id(), // (2026-10-11) صاحب المشروع
             ]);
 
             GeneratedSite::create([

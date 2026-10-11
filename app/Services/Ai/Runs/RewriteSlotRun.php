@@ -39,7 +39,7 @@ class RewriteSlotRun implements RunHandler
             'note' => ['nullable', 'string', 'max:200'],
         ]);
 
-        $project = Project::findOrFail($data['project_id']);
+        $project = Project::visibleTo(auth()->user())->findOrFail($data['project_id']); // (2026-10-11) مشاريع اليوزر بس
 
         return $this->prepareFor($project, $data['slot_key'], $data['style'], $data['note'] ?? null) + ['project_id' => $project->id];
     }

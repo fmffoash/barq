@@ -51,6 +51,19 @@ class Project extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * (2026-10-11) المشاريع اللي اليوزر يشوفها: الأدمن الكل، وأي يوزر تاني مشاريعه هو بس (created_by).
+     * كل رابط فيه {project} بيعدّي على ده مركزياً (AppServiceProvider)، ومشروع مش بتاعه = 404.
+     */
+    public function scopeVisibleTo($query, ?User $user)
+    {
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $user->is_admin ? $query : $query->where('created_by', $user->id);
+    }
+
     public function site(): HasOne
     {
         return $this->hasOne(GeneratedSite::class);

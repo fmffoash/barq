@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // للوجين تلقائي، وأي حد داخل بالفعل بيتوجّه للوحة التحكم لو حاول يفتح صفحة زوّار.
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
+
+        // (2026-10-11) قفل الجلسة بعد ربع ساعة خمول + طرد اليوزر المحظور/الموقوف وهو داخل
+        $middleware->alias(['admin' => \App\Http\Middleware\EnsureAdmin::class, 'session.valid' => \App\Http\Middleware\EnsureSessionValid::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

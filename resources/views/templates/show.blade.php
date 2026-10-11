@@ -66,6 +66,7 @@
             @endif
         </div>
 
+        @if (auth()->user()->is_admin) {{-- (2026-10-11) التعديل للأدمن بس --}}
         <div class="flex shrink-0 gap-2">
             <a
                 href="{{ route('templates.edit', $template) }}"
@@ -86,8 +87,10 @@
                 </button>
             </form>
         </div>
+        @endif
     </div>
 
+    @if (auth()->user()->is_admin) {{-- نسخ القالب وخاناته (إدارة) — للأدمن بس --}}
     <div class="grid gap-8 lg:grid-cols-2">
         {{-- النسخ --}}
         <section>
@@ -460,4 +463,5 @@
             </div>
         </section>
     </div>
+    @endif
 @endsection

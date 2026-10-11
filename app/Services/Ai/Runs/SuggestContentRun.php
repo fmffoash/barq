@@ -27,7 +27,7 @@ class SuggestContentRun implements RunHandler
             'business_description' => ['required', 'string', 'max:500'],
         ]);
 
-        $project = Project::findOrFail($data['project_id']);
+        $project = Project::visibleTo(auth()->user())->findOrFail($data['project_id']); // (2026-10-11) مشاريع اليوزر بس
 
         return $this->prepareFor($project, $data['business_description']) + ['project_id' => $project->id];
     }

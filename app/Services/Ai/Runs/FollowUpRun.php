@@ -23,7 +23,7 @@ class FollowUpRun implements RunHandler
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
         ]);
 
-        $project = Project::findOrFail($data['project_id']);
+        $project = Project::visibleTo(auth()->user())->findOrFail($data['project_id']); // (2026-10-11) مشاريع اليوزر بس
         $prepared = $this->assistant->prepareFollowUp($project, $data['message'], $request->file('image'));
 
         return $prepared + ['project_id' => $project->id, 'redirect' => null];
