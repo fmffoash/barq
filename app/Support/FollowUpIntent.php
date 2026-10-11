@@ -169,7 +169,10 @@ class FollowUpIntent
     }
 
     /** كلمات عامة في أسماء القوالب مابتميّزش قالب عن التاني */
-    private const GENERIC_NAME_WORDS = ['عياده', 'مركز', 'طبي', 'صغير', 'فاخر', 'شامل', 'قالب', 'محل', 'شركه', 'مكتب', 'استوديو', 'و'];
+    private const GENERIC_NAME_WORDS = ['عياده', 'مركز', 'طبي', 'صغير', 'فاخر', 'شامل', 'قالب', 'محل', 'شركه', 'مكتب', 'استوديو', 'و',
+        // (2026-10-11) حروف وكلمات كلام عادي — «على» كانت بتطابق «حضانة على مدار اليوم»، و«التصميم» «استوديو تصميم داخلي»
+        'علي', 'الي', 'في', 'من', 'عن', 'مع', 'ده', 'دي', 'دا', 'تاع', 'بتاع', 'زي', 'حاجه', 'اللي', 'عايز',
+        'تصميم', 'شكل', 'ستايل', 'موقع', 'صفحه', 'جديد', 'تاني', 'حلو'];
 
     /**
      * قالب متسمّي بالاسم في الرسالة (2026-10-11): بيقارن كلمات التخصص في اسم كل قالب (الجزء قبل
@@ -196,7 +199,9 @@ class FollowUpIntent
 
         $messageWords = [];
         foreach (preg_split('/[^\p{L}\p{N}]+/u', $normalized, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $w) {
-            $messageWords[$base($w)] = true;
+            if (! in_array($base($w), self::GENERIC_NAME_WORDS, true)) {
+                $messageWords[$base($w)] = true;
+            }
         }
 
         // كلمات تخصص القالب الحالي = كلام فؤاد عن مشروعه هو ("طبّقه على عيادة الأسنان")، مش القالب المطلوب
@@ -210,11 +215,9 @@ class FollowUpIntent
         $matches = fn (string $token, array $pool) => isset($pool[$token])
             || (mb_strlen($token) >= 4 && collect(array_keys($pool))->contains(fn ($w) => mb_strlen($w) >= 4 && (str_starts_with($w, $token) || str_starts_with($token, $w))));
 
-        $best = null;
-        $bestScore = 0;
-        $tie = false;
+        $scored = [];
 
-        foreach (Template::where('is_active', true)->where('kind', $project->template->kind ?? 'landing')->where('id', '!=', $project->template_id)->get(['id', 'name', 'kind']) as $template) {
+        foreach (Template::where('is_active', true)->where('kind', $project->template->kind ?? 'landing')->where('id', '!=', $project->template_id)->get(['id', 'name', 'kind', 'category']) as $template) {
             $head = PastedText::normalizeArabic(trim(explode('—', (string) $template->name)[0]));
             $tokens = array_values(array_filter(
                 array_map($base, preg_split('/[^\p{L}\p{N}]+/u', $head, -1, PREG_SPLIT_NO_EMPTY) ?: []),
@@ -225,14 +228,22 @@ class FollowUpIntent
             }
 
             $score = collect($tokens)->filter(fn ($t) => $matches($t, array_diff_key($messageWords, $negated)))->count();
-            if ($score > $bestScore) {
-                [$best, $bestScore, $tie] = [$template, $score, false];
-            } elseif ($score > 0 && $score === $bestScore) {
-                $tie = true;
+            if ($score > 0) {
+                $scored[] = [$template, $score];
             }
         }
 
-        return $bestScore > 0 && ! $tie ? $best : null;
+        if (! $scored) {
+            return null;
+        }
+        $top = max(array_column($scored, 1));
+        $winners = array_values(array_filter($scored, fn ($s) => $s[1] === $top));
+        // تعادل: القالب اللي في نفس فئة المشروع («عيادة الأطفال» لعيادة مش «متجر أطفال»)
+        if (count($winners) > 1) {
+            $winners = array_values(array_filter($winners, fn ($s) => $s[0]->category === $project->template->category));
+        }
+
+        return count($winners) === 1 ? $winners[0][0] : null;
     }
 
     public static function heroImageSlot(Template $template): ?string

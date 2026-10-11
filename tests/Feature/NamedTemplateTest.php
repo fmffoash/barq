@@ -32,6 +32,11 @@ class NamedTemplateTest extends TestCase
         $derma = $this->template('عيادة جلدية — عناية راقية', 'glass');
         $this->template('مركز تخسيس وتغذية — تحدي ونتائج حقيقية', 'bold');
         $this->template('عيادة عيون — تقنية متطورة', 'duotone');
+        // قوالب من فئات تانية عملت لخبطة على المكتبة الحقيقية (2026-10-11)
+        $kids = $this->template('عيادة أطفال — أجواء مريحة', 'stack');
+        foreach (['حضانة على مدار اليوم — وقتك محسوب' => 'حضانات', 'استوديو تصميم داخلي — تفاصيل ساحرة' => 'تصميم', 'متجر أطفال — أمان من أول لعبة' => 'متاجر'] as $name => $category) {
+            Template::factory()->create(['kind' => 'landing', 'category' => $category, 'name' => $name, 'layout' => 'classic', 'is_active' => true]);
+        }
 
         $project = Project::factory()->for($dental)->create(['name' => 'عيادة دكتور احمد']);
         GeneratedSite::factory()->for($project)->create(['content_json' => ['hero_title' => 'ابتسامتك']]);
@@ -46,6 +51,11 @@ class NamedTemplateTest extends TestCase
             $this->assertSame('change_template', $decision['action'], $message);
             $this->assertSame($derma->id, $decision['template_id'] ?? null, $message);
         }
+
+        // تعادل «أطفال» بين فئتين: يكسب اللي في فئة المشروع
+        $this->assertSame($kids->id, FollowUpIntent::detect('هات قالب عيادة الاطفال', false, $project, $project->site)['template_id'] ?? null);
+        // «التصميم» كلمة عامة مش اسم قالب
+        $this->assertArrayNotHasKey('template_id', FollowUpIntent::detect('خلي التصميم زي قالب الصيدلية', false, $project, $project->site));
 
         // من غير اسم قالب: الاختيار العادي (مفيش template_id)
         $plain = FollowUpIntent::detect('غيّر القالب لحاجة أفخم', false, $project, $project->site);
