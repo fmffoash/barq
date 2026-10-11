@@ -172,7 +172,7 @@ class TemplateLibrarySeedTest extends TestCase
                 }
             }
             $waveOneTwo = array_column(array_slice($plans, 0, 25), 'layout');
-            foreach (['brew', 'helix', 'gloss', 'forge', 'skyline', 'parcel', 'scholar', 'verdict', 'blocks', 'torque', 'festive', 'globe', 'cubic', 'canvas', 'atelier'] as $layout) {
+            foreach (['brew', 'helix', 'gloss', 'forge', 'skyline', 'parcel', 'scholar', 'verdict', 'blocks', 'torque', 'festive', 'globe', 'cubic', 'canvas', 'atelier', 'bakery', 'nursery', 'shutter', 'essence', 'pawprint'] as $layout) {
                 $this->assertNotContains($layout, $waveOneTwo, "{$category['category']}: 3D layout leaked into waves 1-2");
             }
         }

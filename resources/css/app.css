@@ -762,6 +762,84 @@
     .bq-reveal .bq3d-hanger { animation: bq3d-hang 6s ease-in-out infinite; }
 }
 
+/* ===== الدفعة 4 من المجسمات ===== */
+
+/* أسطوانة عامة (partials/depth/cylinder): شرايح حوالين محور Y + غطا فوق وتحت. اللون من --cyl. */
+.bq3d-cyl { position: absolute; left: 0; top: 0; }
+.bq3d-cyl > .strip { position: absolute; left: 0; top: 0; width: var(--sw); height: var(--h); margin: calc(var(--h) / -2) 0 0 calc(var(--sw) / -2); transform: rotateY(var(--a)) translateZ(var(--r)); background-color: color-mix(in srgb, var(--cyl, var(--site-primary)) var(--l), #fff); }
+.bq3d-cyl > .cap { position: absolute; left: 0; top: 0; width: calc(var(--r) * 2); height: calc(var(--r) * 2); margin: calc(var(--r) * -1) 0 0 calc(var(--r) * -1); border-radius: 9999px; background-color: var(--cap, color-mix(in srgb, var(--cyl, var(--site-primary)) 80%, #fff)); }
+.bq3d-cyl > .cap-top { transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); }
+.bq3d-cyl > .cap-bottom { transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); filter: brightness(.6); }
+
+/* "تورتة" — تورتة 3 أدوار بكريمة وشمعة نارها بترقص. */
+.bq3d-cake { position: absolute; transform: rotateX(-18deg) rotateY(-20deg); }
+.bq3d-cake .tier { --cyl: color-mix(in srgb, var(--site-primary) 55%, #f5d0a9); }
+.bq3d-cake .tier > .cap-top { background-image: radial-gradient(circle, #fffaf0 0 62%, color-mix(in srgb, var(--site-primary) 35%, #fff) 64% 100%); }
+.bq3d-cake .cream > .strip { background-color: color-mix(in srgb, #fffaf0 var(--l), color-mix(in srgb, var(--site-primary) 30%, #fff)); }
+.bq3d-cake .plate { position: absolute; left: 0; top: 0; width: 15rem; height: 15rem; margin: -7.5rem 0 0 -7.5rem; border-radius: 9999px; transform: translateY(4.6rem) rotateX(90deg); background-image: radial-gradient(circle, color-mix(in srgb, var(--site-surface) 70%, #fff) 0 66%, color-mix(in srgb, var(--site-text) 22%, var(--site-surface)) 68%); }
+.bq3d-candle { position: absolute; left: 0; top: 0; }
+.bq3d-candle .stick > i { background-image: repeating-linear-gradient(45deg, #fff 0 .3rem, var(--site-primary) .3rem .6rem); }
+.bq3d-flame { position: absolute; left: -.45rem; top: -6.9rem; width: .9rem; height: 1.5rem; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background-image: radial-gradient(ellipse at 50% 70%, #fff7c2 0 25%, #fbbf24 45%, #f97316 75%, transparent 76%); filter: drop-shadow(0 0 10px #fbbf24); transform-origin: 50% 100%; }
+
+@keyframes bq3d-flicker { 0%, 100% { scale: 1 1; rotate: -4deg; } 25% { scale: .9 1.12; rotate: 3deg; } 50% { scale: 1.05 .92; rotate: -2deg; } 75% { scale: .95 1.08; rotate: 5deg; } }
+
+/* "مكعبات لعب" — مكعبات حروف ملونة متكومة، وكورة بحر بتتنطط. */
+.bq3d-toys { position: absolute; transform: rotateX(-20deg) rotateY(-30deg); }
+.bq3d-toy > i { display: flex; align-items: center; justify-content: center; font-family: var(--site-font-heading); font-weight: 800; font-size: 2.4rem; color: #fff; background-color: var(--toy); box-shadow: inset 0 0 0 .35rem color-mix(in srgb, var(--toy) 70%, #000); }
+.bq3d-toy > :is(.f-right, .f-left) { filter: brightness(.82); }
+.bq3d-toy > .f-top { filter: brightness(1.1); }
+.bq3d-beachball { position: absolute; width: 4rem; height: 4rem; border-radius: 9999px; background-image: radial-gradient(circle at 34% 30%, rgb(255 255 255 / .75) 0 8%, transparent 30%), conic-gradient(#f43f5e 0 60deg, #fff 60deg 120deg, #3b82f6 120deg 180deg, #fff 180deg 240deg, #facc15 240deg 300deg, #fff 300deg); box-shadow: inset -8px -10px 18px rgb(0 0 0 / .25), 0 16px 26px -12px rgb(0 0 0 / .45); }
+
+@keyframes bq3d-bounce { 0%, 100% { translate: 0 -5rem; scale: 1 1; } 45% { translate: 0 0; scale: 1 1; } 50% { translate: 0 .3rem; scale: 1.15 .85; } 55% { translate: 0 0; scale: 1 1; } }
+
+/* "كاميرا" — كاميرا بعدسة بارزة، وريش الفتحة جوه العدسة بتلف، وفلاش بيلمع. */
+.bq3d-camera { position: absolute; transform: rotateX(-12deg) rotateY(-32deg); }
+.bq3d-camera .body > i { background-color: color-mix(in srgb, var(--site-text) 80%, var(--site-background)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .1); }
+.bq3d-camera .body > .f-front { background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / .04) 0 .2rem, transparent .2rem .4rem); }
+.bq3d-camera .grip > i { background-color: color-mix(in srgb, var(--site-primary) 70%, #000); }
+.bq3d-camera .lens { --cyl: #374151; --cap: #111827; }
+.bq3d-glass { position: absolute; left: 0; top: 0; width: 5.6rem; height: 5.6rem; margin: -2.8rem 0 0 -2.8rem; border-radius: 9999px; background-image: radial-gradient(circle at 35% 30%, rgb(255 255 255 / .55) 0 6%, transparent 14%), radial-gradient(circle, color-mix(in srgb, var(--site-primary) 50%, #0b1220) 0 30%, #0b1220 31% 60%, #1f2937 61% 100%); }
+.bq3d-iris { position: absolute; left: 0; top: 0; width: 4.4rem; height: 4.4rem; margin: -2.2rem 0 0 -2.2rem; border-radius: 9999px; background-image: radial-gradient(circle, transparent 0 22%, rgb(0 0 0 / .0) 23%), repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--site-primary) 35%, #1f2937) 0 30deg, #111827 30deg 60deg); -webkit-mask-image: radial-gradient(circle, transparent 0 24%, #000 25%); mask-image: radial-gradient(circle, transparent 0 24%, #000 25%); opacity: .85; }
+.bq3d-flash { position: absolute; width: 5rem; height: 5rem; border-radius: 9999px; background-image: radial-gradient(circle, #fff 0 10%, color-mix(in srgb, #fff 50%, var(--site-primary)) 25%, transparent 60%); opacity: 0; }
+
+@keyframes bq3d-iris { to { transform: translateZ(var(--z)) rotateZ(360deg); } }
+@keyframes bq3d-flash { 0%, 86%, 100% { opacity: 0; scale: .4; } 90% { opacity: 1; scale: 1.2; } }
+
+/* "عطر" — زجاجة عطر بأوجه (منشور 8 أضلاع) بغطا كروي، ورذاذ طالع منها. */
+.bq3d-perfume { position: absolute; transform: rotateX(-14deg) rotateY(-20deg); }
+.bq3d-perfume .flask { --cyl: color-mix(in srgb, var(--site-primary) 75%, transparent); --cap: color-mix(in srgb, var(--site-primary) 55%, #fff); }
+.bq3d-perfume .flask > .strip { background-image: linear-gradient(to bottom, rgb(255 255 255 / .35), transparent 30%, rgb(0 0 0 / .15)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35); }
+.bq3d-perfume .neck { --cyl: #c9a13b; --cap: #f6e7b0; }
+.bq3d-mist { position: absolute; width: 1.1rem; height: 1.1rem; border-radius: 9999px; background-color: color-mix(in srgb, var(--site-primary) 30%, #fff); filter: blur(3px); opacity: 0; }
+
+@keyframes bq3d-mist { 0% { translate: 0 0; opacity: 0; scale: .4; } 20% { opacity: .8; } 100% { translate: -7rem -3rem; opacity: 0; scale: 2.2; } }
+
+/* "أثر" — بصمة رجل حيوان بارزة بتلف، وعضمة بتلف، وقلب عايم. */
+.bq3d-paw { position: absolute; transform: rotateX(-10deg) rotateY(-25deg); }
+.bq3d-paw .layer { position: absolute; left: 0; top: 0; transform: translateZ(var(--z)); filter: brightness(var(--b, 1)); }
+.bq3d-paw .pad, .bq3d-paw .toe { position: absolute; background-color: var(--site-primary); }
+.bq3d-paw .pad { left: -3rem; top: -1.2rem; width: 6rem; height: 4.8rem; border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%; }
+.bq3d-paw .toe { width: 2rem; height: 2.5rem; border-radius: 50%; }
+.bq3d-bone { position: absolute; transform: rotateZ(-30deg); }
+.bq3d-bone .shaft > i { background-color: #f3ead8; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08); }
+.bq3d-bone .shaft > :is(.f-top, .f-bottom) { filter: brightness(.85); }
+.bq3d-bone .bq3d-ball { --bq3d-ball: #f3ead8; width: 2.1rem; height: 2.1rem; }
+.bq3d-heart { position: absolute; width: 1.8rem; height: 1.8rem; background-color: #f43f5e; rotate: 45deg; border-radius: .2rem; }
+.bq3d-heart::before, .bq3d-heart::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 9999px; background-color: inherit; }
+.bq3d-heart::before { left: -50%; }
+.bq3d-heart::after { top: -50%; }
+
+@keyframes bq3d-bone-spin { to { transform: rotateZ(330deg); } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .bq-reveal .bq3d-flame { animation: bq3d-flicker 1.2s ease-in-out infinite; }
+    .bq-reveal .bq3d-beachball { animation: bq3d-bounce 2.2s cubic-bezier(.5, 0, .5, 1) infinite; }
+    .bq-reveal .bq3d-iris { animation: bq3d-iris 8s linear infinite; }
+    .bq-reveal .bq3d-flash { animation: bq3d-flash 4s ease-out infinite; }
+    .bq-reveal .bq3d-mist { animation: bq3d-mist 3s ease-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-bone { animation: bq3d-bone-spin 6s linear infinite; }
+}
+
 /* نسخة المجسم التانية في قسم التواصل ثابتة (حركة واحدة بس في الصفحة — أخف على الموبايل). */
 .bq3d-still, .bq3d-still * {
     animation: none !important;

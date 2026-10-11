@@ -29,6 +29,7 @@ class Template extends Model
         'brew', 'helix', 'gloss', 'forge', 'skyline',
         'parcel', 'scholar', 'verdict', 'blocks', 'torque',
         'festive', 'globe', 'cubic', 'canvas', 'atelier',
+        'bakery', 'nursery', 'shutter', 'essence', 'pawprint',
     ];
 
     protected $fillable = [
@@ -101,6 +102,7 @@ class Template extends Model
             'brew' => 'قهوة 3D', 'helix' => 'حلزون 3D', 'gloss' => 'لمعة 3D', 'forge' => 'حديد 3D', 'skyline' => 'أبراج 3D',
             'parcel' => 'طرد 3D', 'scholar' => 'كتاب 3D', 'verdict' => 'ميزان 3D', 'blocks' => 'طوب 3D', 'torque' => 'عجلة 3D',
             'festive' => 'احتفال 3D', 'globe' => 'كرة أرضية 3D', 'cubic' => 'مكعب 3D', 'canvas' => 'لوحات 3D', 'atelier' => 'شماعة 3D',
+            'bakery' => 'تورتة 3D', 'nursery' => 'مكعبات لعب 3D', 'shutter' => 'كاميرا 3D', 'essence' => 'عطر 3D', 'pawprint' => 'أثر 3D',
             default => 'كلاسيك',
         };
     }

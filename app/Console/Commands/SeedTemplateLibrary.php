@@ -38,7 +38,7 @@ class SeedTemplateLibrary extends Command
 {
     // زوّدها مع أي تعديل في البيانات أو التوزيع — local/update وbarq:local-setup بيعيدوا التوليد
     // لما تختلف عن المتخزّنة في جدول settings، وعلى السيرفر خطوة في الديبلوي (شوف CLAUDE.md).
-    public const LIBRARY_VERSION = '2026-10-11.5';
+    public const LIBRARY_VERSION = '2026-10-11.6';
 
     // (2026-10-11) القالب اللي ينفع لفئة تانية يظهر فيها كمان — المفتاح أول الاسم (قبل « — »).
     // أي اسم بيبدأ بـ متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائياً (extraCategoriesFor).
@@ -268,6 +268,11 @@ class SeedTemplateLibrary extends Command
         'cubic' => ['3D', 'مجسم', 'مكعب'],
         'canvas' => ['3D', 'مجسم', 'لوحات'],
         'atelier' => ['3D', 'مجسم', 'شماعة'],
+        'bakery' => ['3D', 'مجسم', 'تورتة'],
+        'nursery' => ['3D', 'مجسم', 'مكعبات لعب'],
+        'shutter' => ['3D', 'مجسم', 'كاميرا'],
+        'essence' => ['3D', 'مجسم', 'عطر'],
+        'pawprint' => ['3D', 'مجسم', 'أثر'],
     ];
 
     // الدفعة اللي كل تصميم دخل فيها المكتبة (مش مكتوب = 1). شوف تعليق الدفعات فوق.
@@ -277,6 +282,7 @@ class SeedTemplateLibrary extends Command
         'brew' => 3, 'helix' => 3, 'gloss' => 3, 'forge' => 3, 'skyline' => 3,
         'parcel' => 3, 'scholar' => 3, 'verdict' => 3, 'blocks' => 3, 'torque' => 3,
         'festive' => 3, 'globe' => 3, 'cubic' => 3, 'canvas' => 3, 'atelier' => 3,
+        'bakery' => 3, 'nursery' => 3, 'shutter' => 3, 'essence' => 3, 'pawprint' => 3,
     ];
 
     // طابع كل تصميم — بيحدد نسخة النصوص (tones في ملف البيانات) والألوان والخطوط المفضّلة ليه.
@@ -295,6 +301,7 @@ class SeedTemplateLibrary extends Command
         'brew' => 'warm', 'helix' => 'calm', 'gloss' => 'luxury', 'forge' => 'bold', 'skyline' => 'modern',
         'parcel' => 'modern', 'scholar' => 'calm', 'verdict' => 'luxury', 'blocks' => 'bold', 'torque' => 'bold',
         'festive' => 'bold', 'globe' => 'modern', 'cubic' => 'modern', 'canvas' => 'calm', 'atelier' => 'luxury',
+        'bakery' => 'warm', 'nursery' => 'warm', 'shutter' => 'luxury', 'essence' => 'luxury', 'pawprint' => 'warm',
     ];
 
     // كلمات بتدل على طابع الاسم — بتكسر التعادل في التوزيع لصالح تصميم من نفس الطابع.
@@ -448,6 +455,11 @@ class SeedTemplateLibrary extends Command
         'cubic' => [['ibm-plex-arabic', 'changa'], ['readex-pro', 'noto-kufi-arabic']],
         'canvas' => [['ibm-plex-arabic', 'amiri'], ['mada', 'el-messiri']],
         'atelier' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'bakery' => [['almarai', 'lemonada'], ['cairo', 'el-messiri']],
+        'nursery' => [['almarai', 'baloo-bhaijaan-2'], ['tajawal', 'lemonada']],
+        'shutter' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'essence' => [['ibm-plex-arabic', 'amiri'], ['tajawal', 'el-messiri']],
+        'pawprint' => [['almarai', 'el-messiri'], ['tajawal', 'baloo-bhaijaan-2']],
     ];
 
     private bool $hasHeadingFont = false;

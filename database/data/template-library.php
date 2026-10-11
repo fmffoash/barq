@@ -1457,6 +1457,7 @@ return [
             ['slug' => 'mkhabz-ohloyat-frn-aaysh-fyno-ks-kl-sbh', 'wave' => 2, 'name' => 'فرن عيش فينو — قصة كل صبح', 'hero_title' => 'عيش سخن من الفرن كل صبح', 'hero_subtitle' => 'فينو وشامي وبقسماط ومخبوزات يومية، بنفس الريحة اللي بتصحّي الحي.'],
             ['slug' => 'mkhabz-ohloyat-mhl-bsbos-omhlby-zmn-altybyn', 'wave' => 2, 'name' => 'محل بسبوسة ومهلبية — زمن الطيبين', 'hero_title' => 'حلويات المحل اللي على الناصية', 'hero_subtitle' => 'بسبوسة وأرز بلبن ومهلبية وجيلي، بطعم الحاجات اللي كنا بنستناها زمان.'],
             ['slug' => 'mkhabz-ohloyat-mkhbz-aly-atmt-ogod-thabt', 'wave' => 2, 'name' => 'مخبز آلي — أتمتة وجودة ثابتة', 'hero_title' => 'خبز بجودة ثابتة كل يوم', 'hero_subtitle' => 'خطوط إنتاج حديثة بتتحكم في الوزن والحرارة، وتوريد للمطاعم والفنادق بالكميات.'],
+            ['slug' => 'mkhabz-ohlowyat-3d-bakery', 'wave' => 3, 'layout' => 'bakery', 'name' => 'محل تورت 3D — شمعة وفرحة', 'hero_title' => 'تورتة على مزاجك لكل مناسبة', 'hero_subtitle' => 'تورت وحلويات طازة بتتعمل بالطلب، بنكهات وتصميمات تفرّح أي مناسبة عندك.'],
         ],
         'tones' => [
             'warm' => [
@@ -1552,6 +1553,7 @@ return [
             ['slug' => 'hdanat-orodat-atfal-rod-hkayat-ks-kl-yom', 'wave' => 2, 'name' => 'روضة حكايات — قصة كل يوم', 'hero_title' => 'كل يوم حكاية جديدة', 'hero_subtitle' => 'أنشطة مبنية على القصص والكتب المصوّرة، بتنمّي الخيال واللغة والاستماع.'],
             ['slug' => 'hdanat-orodat-atfal-hdan-alaaab-shaaby-bhg-zman', 'wave' => 2, 'name' => 'حضانة ألعاب شعبية — بهجة زمان', 'hero_title' => 'ألعاب زمان رجعت تاني', 'hero_subtitle' => 'استغماية ونط حبل وكراسي موسيقية، لعب جماعي بيعلّم المشاركة والضحك.'],
             ['slug' => 'hdanat-orodat-atfal-rod-robotat-kod-llsghyryn', 'wave' => 2, 'name' => 'روضة روبوتات — كود للصغيرين', 'hero_title' => 'أول خطوة في البرمجة', 'hero_subtitle' => 'روبوتات وألعاب برمجة بالمكعبات، بتعلّم الأطفال يفكروا بالترتيب ويحلّوا المشاكل.'],
+            ['slug' => 'hdanat-orodat-3d-nursery', 'wave' => 3, 'layout' => 'nursery', 'name' => 'روضة 3D — نتعلّم ونلعب', 'hero_title' => 'يوم كله لعب وتعلّم', 'hero_subtitle' => 'أنشطة وألعاب تعليمية ومُعلّمات متخصصات، في مكان آمن ونضيف يحبه طفلك.'],
         ],
         'tones' => [
             'warm' => [
@@ -1644,6 +1646,7 @@ return [
             ['slug' => 'tsoyr-oantag-fydyo-msor-yom-alaayl-ks-yomkm', 'wave' => 2, 'name' => 'مصور يوم العيلة — قصة يومكم', 'hero_title' => 'يوم عادي بيتحوّل لذكرى', 'hero_subtitle' => 'تصوير توثيقي ليوم كامل في حياة العيلة، من الفطار لحد النوم.'],
             ['slug' => 'tsoyr-oantag-fydyo-astodyo-aflam-kdym-fyntag', 'wave' => 2, 'name' => 'استوديو أفلام قديمة — فينتاج', 'hero_title' => 'صور بولارويد وأفلام 35 ملي', 'hero_subtitle' => 'تصوير بكاميرات فيلم حقيقية، وطباعة فورية، وتحميض للأفلام القديمة.'],
             ['slug' => 'tsoyr-oantag-fydyo-astodyo-msh-thlathy-alabaaad-byanat-almkan', 'wave' => 2, 'name' => 'استوديو مسح ثلاثي الأبعاد — بيانات المكان', 'hero_title' => 'حوّل المكان لجولة افتراضية', 'hero_subtitle' => 'تصوير 360 ومسح ثلاثي الأبعاد للمعارض والوحدات والفنادق، يتشاف من أي جهاز.'],
+            ['slug' => 'tsoyr-oentag-3d-shutter', 'wave' => 3, 'layout' => 'shutter', 'name' => 'استوديو تصوير 3D — لقطة بلقطة', 'hero_title' => 'كل لقطة بحكاية', 'hero_subtitle' => 'تصوير مناسبات ومنتجات وفيديوهات إعلانية بمعدات احترافية ومونتاج على أعلى مستوى.'],
         ],
         'tones' => [
             'warm' => [
@@ -1736,6 +1739,7 @@ return [
             ['slug' => 'aator-omsthdrat-tgmyl-mark-aator-mhly-ks-kl-zgag', 'wave' => 2, 'name' => 'ماركة عطور محلية — قصة كل زجاجة', 'hero_title' => 'عطر اتعمل بإيدينا من الأول', 'hero_subtitle' => 'تركيبات بنخلطها في معملنا الصغير، وكل عطر وراه ذكرى وإلهام.'],
             ['slug' => 'aator-omsthdrat-tgmyl-mhl-kolonya-oroayh-zmn-altybyn', 'wave' => 2, 'name' => 'محل كولونيا وروائح — زمن الطيبين', 'hero_title' => 'كولونيا الجدّات رجعت', 'hero_subtitle' => 'روائح كولونيا وماء ورد وبودرة بتفكّرك بزمان، بزجاجات كلاسيك.'],
             ['slug' => 'aator-omsthdrat-tgmyl-maaml-aator-mkhss-byanat-thokk', 'wave' => 2, 'name' => 'معمل عطور مخصصة — بيانات ذوقك', 'hero_title' => 'عطرك الخاص من استبيان ذوقك', 'hero_subtitle' => 'اختبار ذوق قصير بيحدد الروايح اللي بتحبها، ونركّبلك عطر محدش عنده زيه.'],
+            ['slug' => 'aator-omsthdrat-3d-essence', 'wave' => 3, 'layout' => 'essence', 'name' => 'دار عطور 3D — رذاذ يدوم', 'hero_title' => 'ريحتك بتسبقك', 'hero_subtitle' => 'عطور شرقية وفرنسية بتركيبات ثابتة، وتغليف هدايا فاخر لكل المناسبات.'],
         ],
         'tones' => [
             'warm' => [
@@ -1829,6 +1833,7 @@ return [
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-gmaay-ankath-hyoanat-kss-ankath', 'wave' => 2, 'name' => 'جمعية إنقاذ حيوانات — قصص إنقاذ', 'hero_title' => 'كل حيوان يستاهل فرصة تانية', 'hero_subtitle' => 'إنقاذ وعلاج وتعقيم حيوانات الشارع، وتبنّي بمتابعة بعد ما يروح بيته الجديد.'],
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-hdan-klab-nhary-mrh-tol-alyom', 'wave' => 2, 'name' => 'حضانة كلاب نهارية — مرح طول اليوم', 'hero_title' => 'يوم لعب لكلبك وانت في الشغل', 'hero_subtitle' => 'حضانة نهارية بلعب جماعي ومشي وراحة، وصور تطمّنك عليه كل كام ساعة.'],
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-maaml-bytry-byanat-ontayg-sryaa', 'wave' => 2, 'name' => 'معمل بيطري — بيانات ونتايج سريعة', 'hero_title' => 'تحاليل دم ونتيجة في نفس اليوم', 'hero_subtitle' => 'معمل تحاليل وأشعة متخصص للحيوانات، وتقارير بتوصل للدكتور والصاحب أونلاين.'],
+            ['slug' => 'aayadat-baytry-3d-pawprint', 'wave' => 3, 'layout' => 'pawprint', 'name' => 'عيادة بيطرية 3D — صاحبك في أمان', 'hero_title' => 'صاحبك الصغير في إيد أمينة', 'hero_subtitle' => 'كشف وتطعيمات وعمليات وتجميل للقطط والكلاب، بأطباء بيطريين بيحبوا الحيوانات بجد.'],
         ],
         'tones' => [
             'warm' => [
