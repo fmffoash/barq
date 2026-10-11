@@ -52,6 +52,10 @@ class NamedTemplateTest extends TestCase
             $this->assertSame($derma->id, $decision['template_id'] ?? null, $message);
         }
 
+        // «النساء» = «نسائية»
+        $women = $this->template('عيادة نسائية — خصوصية وثقة', 'minimal');
+        $this->assertSame($women->id, FollowUpIntent::detect('ابي قالب عيادة النساء', false, $project, $project->site)['template_id'] ?? null);
+
         // تعادل «أطفال» بين فئتين: يكسب اللي في فئة المشروع
         $this->assertSame($kids->id, FollowUpIntent::detect('هات قالب عيادة الاطفال', false, $project, $project->site)['template_id'] ?? null);
         // «التصميم» كلمة عامة مش اسم قالب

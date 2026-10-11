@@ -212,7 +212,23 @@ class FollowUpIntent
             }
         }
 
+        // جذر تقريبي للكلمة (2026-10-11): «النساء» = «نسائية»، «جلدي» = «جلدية»، «العيون» = «عيون»
+        $stem = function (string $w): string {
+            $w = str_replace(['ء', 'ٔ'], '', $w);
+            // «نسائية» = نساييه بعد التوحيد — النهايات بتتشال واحدة واحدة طول ما الكلمة 3 حروف على الأقل
+            for ($i = 0; $i < 3; $i++) {
+                $next = preg_replace('/(يات|يه|ات|ين|ون|ه|ي)$/u', '', $w) ?? $w;
+                if ($next === $w || mb_strlen($next) < 3) {
+                    break;
+                }
+                $w = $next;
+            }
+
+            return mb_strlen($w) >= 3 ? $w : '';
+        };
+
         $matches = fn (string $token, array $pool) => isset($pool[$token])
+            || ($stem($token) !== '' && collect(array_keys($pool))->contains(fn ($w) => $stem($w) === $stem($token)))
             || (mb_strlen($token) >= 4 && collect(array_keys($pool))->contains(fn ($w) => mb_strlen($w) >= 4 && (str_starts_with($w, $token) || str_starts_with($token, $w))));
 
         $scored = [];
