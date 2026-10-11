@@ -182,7 +182,9 @@ class FollowUpIntent
      */
     public static function namedTemplate(string $message, Project $project): ?Template
     {
-        $normalized = PastedText::normalizeArabic($message);
+        // «ثري دي» / «ثلاثي الأبعاد» / «3 دي» = «3d» (تصميمات الـ3D، 2026-10-11)
+        $threeD = fn (string $s) => preg_replace('/(?:ال)?(?:ثري|ثلاثي|ثلاثيه)\s*(?:دي|الابعاد|ابعاد)|(?:ال)?3\s*(?:دي|d)(?![a-z])/u', '3d', $s) ?? $s;
+        $normalized = $threeD(PastedText::normalizeArabic($message));
         $base = fn (string $w) => preg_replace('/^(وال|بال|فال|كال|لل|ال|و|ب|ف|ل)(?=\p{L}{3,})/u', '', $w) ?? $w;
 
         // الكلمات المنفية: أول كلمتين بعد "مش/غير/بدل/مبلاش"
@@ -236,10 +238,10 @@ class FollowUpIntent
         $scored = [];
 
         foreach (Template::where('is_active', true)->where('kind', $project->template->kind ?? 'landing')->where('id', '!=', $project->template_id)->get(['id', 'name', 'kind', 'category', 'extra_categories']) as $template) {
-            $head = PastedText::normalizeArabic(trim(explode('—', (string) $template->name)[0]));
+            $head = $threeD(PastedText::normalizeArabic(trim(explode('—', (string) $template->name)[0])));
             $tokens = array_values(array_filter(
                 array_map($base, preg_split('/[^\p{L}\p{N}]+/u', $head, -1, PREG_SPLIT_NO_EMPTY) ?: []),
-                fn ($t) => mb_strlen($t) >= 3 && ! in_array($t, self::GENERIC_NAME_WORDS, true)
+                fn ($t) => ($t === '3d' || mb_strlen($t) >= 3) && ! in_array($t, self::GENERIC_NAME_WORDS, true)
             ));
             if (! $tokens || collect($tokens)->contains(fn ($t) => $matches($t, $negated))) {
                 continue;

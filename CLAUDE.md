@@ -186,7 +186,8 @@ chown -R www-data:www-data storage bootstrap/cache
   - صور الكروت: `barq:template-thumbnails --only=<slug>` بـ`CHROMIUM_PATH` لكروم الجهاز (playwright متسطّب global من غير متصفح).
     ⚠️ ماتولّدش صور قوالب قديمة من الجهاز المحلي: مشاريع التجربة المحلية بتثبّت تصميمات فالبصمة بتختلف عن السيرفر.
   - أسطوانة عامة: `site/partials/depth/cylinder` (شرايح + غطا، اللون من `--cyl`).
-  - المكتبة بقت 520 قالب (`LIBRARY_VERSION = 2026-10-11.6`). تست: `test_3d_layouts_stay_in_their_own_category`. الـ suite 282.
+  - المكتبة بقت 520 قالب (`LIBRARY_VERSION = 2026-10-11.6`). تستات: `test_3d_layouts_stay_in_their_own_category` + `Depth3dTemplatesTest` (الـ20 بيفتحوا عام وفي المحرر بكل الخانات، والشات بيطبّقهم بالاسم). الـ suite 284.
+  - الشات: «3D» / «ثري دي» / «ثلاثي الأبعاد» بقت كلمة في اسم القالب (`FollowUpIntent::namedTemplate`، كانت بتتشال لأنها أقل من 3 حروف).
 - **المكتبة بقت 500 قالب (26 تصميم)** — دمج الدفعة التانية (10 تصميمات + 200 قالب) ونشرها 2026-10-11.
 - ⚠️ **درس نشر (2026-10-11):** `.env` على السيرفر لازم يبقى `root:www-data` بصلاحية 640. كان `root:root`، فأوامر
   `artisan` بيوزر `www-data` ماقدرتش تقراه و`config:cache` حفظ إعدادات افتراضية (من غير APP_KEY وعلى sqlite) لدقيقتين.
