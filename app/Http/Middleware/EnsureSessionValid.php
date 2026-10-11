@@ -25,7 +25,11 @@ class EnsureSessionValid
             $lastSeen = $request->session()->get('idle_last_seen');
 
             $reason = null;
-            if ($lifetime > 0 && $lastSeen && (time() - $lastSeen) > $lifetime) {
+            // (2026-10-11 — فؤاد: جلسة الأدمن مقفلتش) كوكي «تذكّرني» قديم من قبل ما الخانة تتشال كان بيرجّع
+            // الدخول لوحده بعد ما الجلسة تخلص — أي دخول عن طريقه مرفوض، ولازم الباسورد (والكود للأدمن)
+            if (Auth::viaRemember()) {
+                $reason = 'سجّل دخول تاني.';
+            } elseif ($lifetime > 0 && $lastSeen && (time() - $lastSeen) > $lifetime) {
                 $reason = 'الجلسة خلصت بعد ربع ساعة من غير نشاط — سجّل دخول تاني.';
             } elseif (! ($fresh = \App\Models\User::find($user->id)) || ! $fresh->canLogIn()) {
                 // من قاعدة البيانات دلوقتي (مش النسخة اللي في الجلسة): الحظر بيسري في أول طلب
