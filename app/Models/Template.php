@@ -25,6 +25,8 @@ class Template extends Model
         // الدفعة التانية (2026-10-11) — 10 تصميمات أحدث، كل واحد بهيرو مختلف عن الـ16 اللي قبله.
         'aurora', 'bauhaus', 'organic', 'swiss', 'cinematic',
         'mashrabiya', 'showcase', 'story', 'retro', 'terminal',
+        // الدفعة 3 (2026-10-11) — تصميمات 3D، كل واحد مجسمه على مقاس فئة (site/partials/depth).
+        'brew', 'helix', 'gloss', 'forge', 'skyline',
     ];
 
     protected $fillable = [
@@ -94,6 +96,7 @@ class Template extends Model
             'aurora' => 'أورورا', 'bauhaus' => 'باوهاوس', 'organic' => 'أورجانيك',
             'swiss' => 'سويسري', 'cinematic' => 'سينمائي', 'mashrabiya' => 'مشربية',
             'showcase' => 'شوكيس', 'story' => 'حكاية', 'retro' => 'ريترو', 'terminal' => 'تيرمينال',
+            'brew' => 'قهوة 3D', 'helix' => 'حلزون 3D', 'gloss' => 'لمعة 3D', 'forge' => 'حديد 3D', 'skyline' => 'أبراج 3D',
             default => 'كلاسيك',
         };
     }

@@ -177,6 +177,15 @@ chown -R www-data:www-data storage bootstrap/cache
   - في الكود: `Template::inCategory()` (scope) و`belongsToCategory()`.
   - القواعد في `SeedTemplateLibrary::EXTRA_CATEGORIES` (أول الاسم قبل « — »)، وأي اسم أوله متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائي. 162 قالب من 500 بقوا في فئتين أو أكتر. `LIBRARY_VERSION = 2026-10-11.2`.
   - تست: `MultiCategoryTemplateTest`. الـ suite 281.
+- **تصميمات 3D — تصميم لكل فئة (2026-10-11، طلب فؤاد، 4 دفعات × 5):** الدفعة 1 لايف: `brew` (مطاعم — فنجان)،
+  `helix` (عيادات — DNA)، `gloss` (تجميل — زجاجات)، `forge` (جيم — دمبل)، `skyline` (عقارات — أبراج بتتبني).
+  - المجسمات CSS بس (`preserve-3d`) في `site/partials/depth/scenes/*`، والهيكل المشترك `site/partials/depth/page.blade.php`
+    (كل تصميم ملف سطرين بيحدد `$depth`: scene/hero/cards/gallery/radius/backdrop). الـCSS في آخر `resources/css/app.css` (`.bq3d-*`).
+  - الحركة مقفولة لطالب تقليل الحركة وفي المحرر المباشر، ونسخة المجسم في قسم التواصل ثابتة (`.bq3d-still`). `overflow-x: clip` على الصفحة.
+  - في المكتبة: قالب واحد لكل فئة بـ`'wave' => 3` و`'layout'` متثبّت في البيانات (`planCategory` بيحترمه). الدفعات 1/2 ما اتغيّرتش (اتحقّق).
+  - صور الكروت: `barq:template-thumbnails --only=<slug>` بـ`CHROMIUM_PATH` لكروم الجهاز (playwright متسطّب global من غير متصفح).
+    ⚠️ ماتولّدش صور قوالب قديمة من الجهاز المحلي: مشاريع التجربة المحلية بتثبّت تصميمات فالبصمة بتختلف عن السيرفر.
+  - تست: `test_3d_layouts_stay_in_their_own_category`. الـ suite 282.
 - **المكتبة بقت 500 قالب (26 تصميم)** — دمج الدفعة التانية (10 تصميمات + 200 قالب) ونشرها 2026-10-11.
 - ⚠️ **درس نشر (2026-10-11):** `.env` على السيرفر لازم يبقى `root:www-data` بصلاحية 640. كان `root:root`، فأوامر
   `artisan` بيوزر `www-data` ماقدرتش تقراه و`config:cache` حفظ إعدادات افتراضية (من غير APP_KEY وعلى sqlite) لدقيقتين.

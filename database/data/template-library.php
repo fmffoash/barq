@@ -56,6 +56,7 @@ return [
             ['slug' => 'mtaaam-okafyhat-mtaam-kshry-ks-mn-ost-albld', 'wave' => 2, 'name' => 'مطعم كشري — قصة من وسط البلد', 'hero_title' => 'طبق كشري بطعم مصر', 'hero_subtitle' => 'من عربية صغيرة لمحل كبير، ولسه بنعمل الكشري بنفس الخلطة ونفس الصلصة.'],
             ['slug' => 'mtaaam-okafyhat-ftatry-taam-zmn-altybyn', 'wave' => 2, 'name' => 'فطاطري — طعم زمن الطيبين', 'hero_title' => 'فطير مشلتت وحلو زي زمان', 'hero_subtitle' => 'فطير بالسمنة البلدي وحشوات حادقة وحلوة، معمول على الفرن بإيدين بتفهم.'],
             ['slug' => 'mtaaam-okafyhat-kafyh-msah-aaml-kho-okod', 'wave' => 2, 'name' => 'كافيه مساحة عمل — قهوة وكود', 'hero_title' => 'اشتغل وقهوتك جنبك', 'hero_subtitle' => 'إنترنت سريع ومكاتب مريحة وفيشة لكل كرسي، وقهوة بتتعمل لحد ما مشروعك يخلص.'],
+            ['slug' => 'mtaaam-okafyhat-3d-brew', 'wave' => 3, 'layout' => 'brew', 'name' => 'كافيه 3D — فنجان بيلف قدامك', 'hero_title' => 'فنجان قهوة يستاهل الزيارة', 'hero_subtitle' => 'حبوب محمّصة طازة ومشروبات سخنة وباردة بتتحضّر قدامك، في مكان يفتح النفس.'],
         ],
         'tones' => [
             'warm' => [
@@ -149,6 +150,7 @@ return [
             ['slug' => 'aayadat-okhdmat-tby-aayad-ntk-otkhatb-ks-kl-klm', 'wave' => 2, 'name' => 'عيادة نطق وتخاطب — قصة كل كلمة', 'hero_title' => 'أول كلمة ليها فرحة', 'hero_subtitle' => 'تقييم وجلسات نطق وتخاطب للأطفال والكبار، مع خطة بيتابعها الأهل معانا في كل جلسة.'],
             ['slug' => 'aayadat-okhdmat-tby-sydly-bhg-alkhdm-alkryb', 'wave' => 2, 'name' => 'صيدلية — بهجة الخدمة القريبة', 'hero_title' => 'صيدلية الحي اللي بتعرفك', 'hero_subtitle' => 'أدوية ومستلزمات طبية ومنتجات عناية، واستشارة صيدلي وتوصيل لحد البيت.'],
             ['slug' => 'aayadat-okhdmat-tby-maaml-orath-ogynat-byanat-dkyk', 'wave' => 2, 'name' => 'معمل وراثة وجينات — بيانات دقيقة', 'hero_title' => 'تحاليل جينية بنتايج دقيقة', 'hero_subtitle' => 'فحوصات وراثية قبل الجواز والحمل، وتقارير مفهومة مع استشارة متخصص.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-helix', 'wave' => 3, 'layout' => 'helix', 'name' => 'مركز طبي 3D — رعاية بتقنية حديثة', 'hero_title' => 'رعاية طبية بأحدث تقنية', 'hero_subtitle' => 'كشف دقيق وأجهزة حديثة وفريق طبي بيتابع حالتك خطوة بخطوة لحد ما تطمّن.'],
         ],
         'tones' => [
             'warm' => [
@@ -242,6 +244,7 @@ return [
             ['slug' => 'salonat-otgmyl-salon-hn-ks-kl-nksh', 'wave' => 2, 'name' => 'صالون حنّة — قصة كل نقشة', 'hero_title' => 'حنّة بنقوش تحكي فرحتك', 'hero_subtitle' => 'نقوش حنّة هندي وخليجي وسوداني للعرايس والمناسبات، بحنّة طبيعية لونها ثابت.'],
             ['slug' => 'salonat-otgmyl-hlak-klasyk-ksat-fyntag', 'wave' => 2, 'name' => 'حلاق كلاسيك — قصات فينتاج', 'hero_title' => 'حلاقة بالموس وقصات أيام زمان', 'hero_subtitle' => 'ذقن بالفوطة السخنة وقصات كلاسيك مظبوطة، في محل بروح الستينات.'],
             ['slug' => 'salonat-otgmyl-astsharat-sbgh-alshaar-thkaaa-astnaaay-ykhtar-drgtk', 'wave' => 2, 'name' => 'استشارات صبغة الشعر — ذكاء اصطناعي يختار درجتك', 'hero_title' => 'درجة صبغة تليق ببشرتك', 'hero_subtitle' => 'تحليل لون البشرة والعين بالكاميرا، واقتراح درجات صبغة تناسبك قبل ما تبدئي.'],
+            ['slug' => 'salonat-otgmyl-3d-gloss', 'wave' => 3, 'layout' => 'gloss', 'name' => 'صالون 3D — لمعة وأناقة', 'hero_title' => 'إطلالة بتلمع في كل مناسبة', 'hero_subtitle' => 'شعر ومكياج وعناية بالبشرة بمنتجات أصلية، وخبيرات بيهتموا بكل تفصيلة.'],
         ],
         'tones' => [
             'warm' => [
@@ -334,6 +337,7 @@ return [
             ['slug' => 'gym-olyak-bdny-nady-tns-ks-kl-drb', 'wave' => 2, 'name' => 'نادي تنس — قصة كل ضربة', 'hero_title' => 'ملاعب تنس للكبار والصغار', 'hero_subtitle' => 'تدريب تنس وبادل بمدربين معتمدين، وحجز ملاعب بالساعة طول اليوم.'],
             ['slug' => 'gym-olyak-bdny-astodyo-zomba-bhg-aal-almzyka', 'wave' => 2, 'name' => 'استوديو زومبا — بهجة على المزيكا', 'hero_title' => 'حرّق وانت بتضحك', 'hero_subtitle' => 'حصص زومبا ولاتيني بخطوات سهلة، وسعرات بتتحرق من غير ما تحس.'],
             ['slug' => 'gym-olyak-bdny-gym-aghz-mtsl-byanat-adayk', 'wave' => 2, 'name' => 'جيم أجهزة متصلة — بيانات أدائك', 'hero_title' => 'كل عدّة بتسجّل تمرينك', 'hero_subtitle' => 'أجهزة متصلة بتطبيق بيحفظ الأوزان والعدّات، وتقرير أسبوعي بتقدّمك.'],
+            ['slug' => 'gym-olyak-bdny-3d-forge', 'wave' => 3, 'layout' => 'forge', 'name' => 'جيم 3D — حديد وطاقة', 'hero_title' => 'ارفع الحديد وكسّر حدودك', 'hero_subtitle' => 'أجهزة حديثة ومدربين معتمدين وبرامج تمرين وتغذية على مقاسك من أول يوم.'],
         ],
         'tones' => [
             'warm' => [
@@ -427,6 +431,7 @@ return [
             ['slug' => 'aakarat-shrk-askan-ks-agyal', 'wave' => 2, 'name' => 'شركة إسكان — قصة أجيال', 'hero_title' => 'بنينا لآبائكم ونبني ليكم', 'hero_subtitle' => 'مشاريع سكنية سلّمناها في ميعادها على مدار سنين، وعملاء رجعوا لنا تاني.'],
             ['slug' => 'aakarat-shkk-msyf-bhg-alsyf', 'wave' => 2, 'name' => 'شقق مصيف — بهجة الصيف', 'hero_title' => 'مصيف العيلة على الشط', 'hero_subtitle' => 'شقق مصيف للإيجار بالأسبوع في أقرب نقطة للبحر، بأسعار مناسبة للعيلة.'],
             ['slug' => 'aakarat-mns-astthmar-aakary-byanat-alsok', 'wave' => 2, 'name' => 'منصة استثمار عقاري — بيانات السوق', 'hero_title' => 'استثمر في العقار بقرار مدروس', 'hero_subtitle' => 'تحليلات أسعار ومناطق ونسب عائد، تساعدك تختار الوحدة اللي هتكسب منها.'],
+            ['slug' => 'aakarat-3d-skyline', 'wave' => 3, 'layout' => 'skyline', 'name' => 'مطور عقاري 3D — أبراج بتتبني قدامك', 'hero_title' => 'بيتك الجديد بيتبني دلوقتي', 'hero_subtitle' => 'مشروعات سكنية وتجارية في أحسن المواقع، بتقسيط مريح ومتابعة لحد الاستلام.'],
         ],
         'tones' => [
             'warm' => [

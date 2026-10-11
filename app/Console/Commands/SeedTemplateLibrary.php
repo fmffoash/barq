@@ -38,7 +38,7 @@ class SeedTemplateLibrary extends Command
 {
     // زوّدها مع أي تعديل في البيانات أو التوزيع — local/update وbarq:local-setup بيعيدوا التوليد
     // لما تختلف عن المتخزّنة في جدول settings، وعلى السيرفر خطوة في الديبلوي (شوف CLAUDE.md).
-    public const LIBRARY_VERSION = '2026-10-11.2';
+    public const LIBRARY_VERSION = '2026-10-11.3';
 
     // (2026-10-11) القالب اللي ينفع لفئة تانية يظهر فيها كمان — المفتاح أول الاسم (قبل « — »).
     // أي اسم بيبدأ بـ متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائياً (extraCategoriesFor).
@@ -252,12 +252,19 @@ class SeedTemplateLibrary extends Command
         'story' => ['قصة', 'قصص', 'قصتك', 'قصتنا', 'سرد', 'فصول', 'من البداية', 'رحلتنا', 'ذكرياتك'],
         'retro' => ['ريترو', 'زمن الطيبين', 'فينتاج', 'السبعينات', 'مرح', 'مرحة', 'فرفشة', 'بهجة', 'ألوان زمان'],
         'terminal' => ['كود', 'برمجة', 'مطورين', 'سحابي', 'سحابية', 'أتمتة', 'ذكاء اصطناعي', 'بيانات', 'سطر أوامر'],
+        // الدفعة 3 (2026-10-11) — تصميمات 3D، كل واحد لفئة واحدة بس ومتثبّت في البيانات ('layout').
+        'brew' => ['3D', 'مجسم', 'فنجان'],
+        'helix' => ['3D', 'مجسم', 'حلزون'],
+        'gloss' => ['3D', 'مجسم', 'لمعة'],
+        'forge' => ['3D', 'مجسم', 'حديد'],
+        'skyline' => ['3D', 'مجسم', 'أبراج'],
     ];
 
     // الدفعة اللي كل تصميم دخل فيها المكتبة (مش مكتوب = 1). شوف تعليق الدفعات فوق.
     private const LAYOUT_WAVES = [
         'aurora' => 2, 'bauhaus' => 2, 'organic' => 2, 'swiss' => 2, 'cinematic' => 2,
         'mashrabiya' => 2, 'showcase' => 2, 'story' => 2, 'retro' => 2, 'terminal' => 2,
+        'brew' => 3, 'helix' => 3, 'gloss' => 3, 'forge' => 3, 'skyline' => 3,
     ];
 
     // طابع كل تصميم — بيحدد نسخة النصوص (tones في ملف البيانات) والألوان والخطوط المفضّلة ليه.
@@ -273,6 +280,7 @@ class SeedTemplateLibrary extends Command
         'bauhaus' => 'bold', 'retro' => 'bold',
         'swiss' => 'calm', 'story' => 'calm',
         'aurora' => 'modern', 'showcase' => 'modern', 'terminal' => 'modern',
+        'brew' => 'warm', 'helix' => 'calm', 'gloss' => 'luxury', 'forge' => 'bold', 'skyline' => 'modern',
     ];
 
     // كلمات بتدل على طابع الاسم — بتكسر التعادل في التوزيع لصالح تصميم من نفس الطابع.
@@ -411,6 +419,11 @@ class SeedTemplateLibrary extends Command
         'story' => [['ibm-plex-arabic', 'markazi-text'], ['mada', 'amiri'], ['almarai', 'el-messiri']],
         'retro' => [['cairo', 'baloo-bhaijaan-2'], ['tajawal', 'lemonada'], ['almarai', 'changa']],
         'terminal' => [['ibm-plex-arabic', 'changa'], ['readex-pro', 'noto-kufi-arabic'], ['mada', 'alexandria']],
+        'brew' => [['almarai', 'lemonada'], ['tajawal', 'el-messiri']],
+        'helix' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'gloss' => [['readex-pro', 'el-messiri'], ['tajawal', 'reem-kufi']],
+        'forge' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'skyline' => [['readex-pro', 'alexandria'], ['ibm-plex-arabic', 'cairo']],
     ];
 
     private bool $hasHeadingFont = false;
@@ -476,6 +489,12 @@ class SeedTemplateLibrary extends Command
     {
         $templates = $category['templates'];
         $pinned ??= $this->pinnedLayouts($templates);
+        // تصميم متثبّت في البيانات ('layout' — تصميمات الـ3D، كل واحد لفئة بس) بيغلب أي توزيع.
+        foreach ($templates as $index => $entry) {
+            if (isset($entry['layout'])) {
+                $pinned[$index] = $entry['layout'];
+            }
+        }
 
         // كل دفعة لوحدها وبالترتيب، وبتكمّل على اللي اتاخد في الدفعات اللي قبلها.
         $layouts = [];

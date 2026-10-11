@@ -19,6 +19,11 @@ class TemplateLibrarySeedTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function libraryCount(): int
+    {
+        return array_sum(array_map(fn (array $c) => count($c['templates']), SeedTemplateLibrary::libraryData()));
+    }
+
     private function seedLibrary(): void
     {
         $this->artisan('barq:seed-template-library')->assertSuccessful();
@@ -28,7 +33,7 @@ class TemplateLibrarySeedTest extends TestCase
     {
         $this->seedLibrary();
 
-        $this->assertSame(500, Template::count());
+        $this->assertSame($this->libraryCount(), Template::count());
 
         $byCategory = Template::with(['variants', 'slots'])->get()->groupBy('category');
         $this->assertCount(20, $byCategory);
@@ -38,11 +43,12 @@ class TemplateLibrarySeedTest extends TestCase
             $heroTitles = $templates->map(fn (Template $t) => $t->slots->firstWhere('key', 'hero_title')->default_value);
             $families = $variants->map(fn ($v) => collect(SeedTemplateLibrary::PALETTES)->first(fn ($p) => $p['colors'] == $v->colors_json)['family'] ?? $v->colors_json['primary']);
 
-            $this->assertCount(25, $templates, $category);
-            $this->assertSame(25, $templates->pluck('layout')->unique()->count(), "{$category}: layouts");
-            $this->assertSame(25, $heroTitles->unique()->count(), "{$category}: hero titles");
-            $this->assertSame(25, $templates->map(fn (Template $t) => trim(explode('—', $t->name)[0]))->unique()->count(), "{$category}: specialties");
-            $this->assertSame(25, $families->unique()->count(), "{$category}: colour families");
+            $n = $templates->count();
+            $this->assertGreaterThanOrEqual(25, $n, $category);
+            $this->assertSame($n, $templates->pluck('layout')->unique()->count(), "{$category}: layouts");
+            $this->assertSame($n, $heroTitles->unique()->count(), "{$category}: hero titles");
+            $this->assertSame($n, $templates->map(fn (Template $t) => trim(explode('—', $t->name)[0]))->unique()->count(), "{$category}: specialties");
+            $this->assertSame($n, $families->unique()->count(), "{$category}: colour families");
             $this->assertGreaterThanOrEqual(6, $variants->pluck('font')->merge($variants->pluck('heading_font'))->unique()->count(), "{$category}: fonts");
             $this->assertGreaterThanOrEqual(2, $templates->map(fn (Template $t) => $t->slots->firstWhere('key', 'hero_image')->default_value)->unique()->count(), "{$category}: cover photos");
         }
@@ -95,10 +101,10 @@ class TemplateLibrarySeedTest extends TestCase
         $before = Template::max('updated_at');
 
         $this->artisan('barq:seed-template-library')
-            ->expectsOutputToContain('0 قالب جديد، 0 محدّث، 500 من غير تغيير')
+            ->expectsOutputToContain('0 قالب جديد، 0 محدّث، '.$this->libraryCount().' من غير تغيير')
             ->assertSuccessful();
 
-        $this->assertSame(500, Template::count());
+        $this->assertSame($this->libraryCount(), Template::count());
         $this->assertSame($before, Template::max('updated_at'));
         $this->artisan('barq:seed-template-library --if-outdated')->expectsOutputToContain('up to date')->assertSuccessful();
     }
@@ -140,12 +146,38 @@ class TemplateLibrarySeedTest extends TestCase
             $this->assertCount(15, $firstWaveOnly['templates'], $category['category']);
             $this->assertSame($command->planCategory($index, $firstWaveOnly, []), array_slice($full, 0, 15), "{$category['category']}: first wave changed");
 
-            $secondWave = array_slice($full, 15);
+            $secondWave = array_slice($full, 15, 10);
             $this->assertEqualsCanonicalizing($newLayouts, array_column($secondWave, 'layout'), "{$category['category']}: second wave layouts");
             foreach ($secondWave as $plan) {
                 $this->assertSame(2, $category['templates'][array_search($plan['slug'], array_column($category['templates'], 'slug'), true)]['wave']);
             }
         }
+    }
+
+    // (2026-10-11) الدفعة 3: تصميمات الـ3D — كل واحد متثبّت لفئته بس، ومايدخلش توزيع أي فئة تانية.
+    public function test_3d_layouts_stay_in_their_own_category(): void
+    {
+        $command = app(SeedTemplateLibrary::class);
+        $seen = [];
+
+        foreach (SeedTemplateLibrary::libraryData() as $index => $category) {
+            $plans = $command->planCategory($index, $category, []);
+            foreach ($category['templates'] as $i => $entry) {
+                if (($entry['wave'] ?? 1) === 3) {
+                    $this->assertSame($entry['layout'], $plans[$i]['layout']);
+                    $this->assertArrayNotHasKey($entry['layout'], $seen, "{$entry['layout']} used twice");
+                    $seen[$entry['layout']] = true;
+                    $this->assertFileExists(resource_path("views/site/layouts/{$entry['layout']}.blade.php"));
+                    $this->assertContains($entry['layout'], Template::LAYOUTS);
+                }
+            }
+            $waveOneTwo = array_column(array_slice($plans, 0, 25), 'layout');
+            foreach (['brew', 'helix', 'gloss', 'forge', 'skyline'] as $layout) {
+                $this->assertNotContains($layout, $waveOneTwo, "{$category['category']}: 3D layout leaked into waves 1-2");
+            }
+        }
+
+        $this->assertNotEmpty($seen);
     }
 
     public function test_layouts_that_need_a_dark_or_light_background_always_get_one(): void

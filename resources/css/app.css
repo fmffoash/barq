@@ -336,3 +336,296 @@
 .bq-live-editable .bq-showcase-tilt {
     transform: none;
 }
+
+/* ===================== تصميمات 3D (2026-10-11، الدفعة 3: تصميم لكل فئة) =====================
+   كل مجسم مرسوم بـCSS بس (preserve-3d + أوجه div)، فبيشتغل في التصدير الثابت من غير أي سكريبت
+   ولا مكتبة. المجسمات زخرفة (aria-hidden + pointer-events-none) — مفيش عليها أي خانة. الحركة
+   مقفولة للي طالب تقليل الحركة وفي المحرر المباشر (body.bq-live-editable): المجسم بيفضل ظاهر ثابت.
+   ألوان المجسمات كلها من متغيرات الموقع (--site-primary/surface/text)، فبتتغيّر مع ألوان القالب. */
+
+.bq3d-scene {
+    position: relative;
+    width: var(--bq3d-size, 20rem);
+    height: var(--bq3d-size, 20rem);
+    perspective: 1100px;
+    pointer-events: none;
+    scale: var(--bq3d-scale, 1);
+}
+
+@media (max-width: 640px) {
+    .bq3d-scene {
+        --bq3d-scale: .72;
+    }
+}
+
+.bq3d-scene :where(div, i, b, span) {
+    transform-style: preserve-3d;
+}
+
+.bq3d-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+}
+
+/* صندوق 6 أوجه عام (partials/depth/box): --w عرض، --h ارتفاع، --d عمق. */
+.bq3d-box {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+}
+
+.bq3d-box > i {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.bq3d-box > .f-front, .bq3d-box > .f-back { width: var(--w); height: var(--h); margin: calc(var(--h) / -2) 0 0 calc(var(--w) / -2); }
+.bq3d-box > .f-left, .bq3d-box > .f-right { width: var(--d); height: var(--h); margin: calc(var(--h) / -2) 0 0 calc(var(--d) / -2); }
+.bq3d-box > .f-top, .bq3d-box > .f-bottom { width: var(--w); height: var(--d); margin: calc(var(--d) / -2) 0 0 calc(var(--w) / -2); }
+.bq3d-box > .f-front { transform: translateZ(calc(var(--d) / 2)); }
+.bq3d-box > .f-back { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+.bq3d-box > .f-right { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); }
+.bq3d-box > .f-left { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); }
+.bq3d-box > .f-top { transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); }
+.bq3d-box > .f-bottom { transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); }
+
+/* كرة لامعة (دايرة بتدرّج — بتبان مجسمة من أي زاوية لأنها مش بتلف). */
+.bq3d-ball {
+    position: absolute;
+    border-radius: 9999px;
+    background-image: radial-gradient(circle at 32% 28%, color-mix(in srgb, #fff 85%, var(--bq3d-ball, var(--site-primary))) 0 8%, var(--bq3d-ball, var(--site-primary)) 42%, color-mix(in srgb, var(--bq3d-ball, var(--site-primary)) 45%, #000) 100%);
+    box-shadow: 0 18px 30px -14px rgb(0 0 0 / .45);
+}
+
+/* إطار صورة الهيرو المايل (حاوية بس — الصورة نفسها من غير transform، شرط المحرر المباشر). */
+.bq3d-frame-stage {
+    perspective: 1400px;
+}
+
+.bq3d-frame {
+    transform: rotateY(var(--bq3d-ry, -14deg)) rotateX(var(--bq3d-rx, 6deg));
+    transition: transform .8s cubic-bezier(.2, .7, .2, 1);
+    box-shadow: 28px 34px 60px -26px rgb(0 0 0 / .55);
+}
+
+.bq3d-frame-stage:hover .bq3d-frame {
+    transform: none;
+}
+
+/* لوحة أرضية مايلة (هيرو "ستيج"): الصورة على لوح بيميل لورا. */
+.bq3d-floor {
+    transform: rotateX(20deg);
+    transform-origin: 50% 100%;
+    transition: transform .8s ease;
+}
+
+.bq3d-frame-stage:hover .bq3d-floor {
+    transform: none;
+}
+
+/* عنوان بعمق (طبقات ظل متدرّجة بلون الأساسي الغامق). */
+.bq3d-type {
+    text-shadow:
+        1px 1px 0 var(--bq3d-type, var(--site-primary-deep)),
+        2px 2px 0 var(--bq3d-type, var(--site-primary-deep)),
+        3px 3px 0 var(--bq3d-type, var(--site-primary-deep)),
+        4px 4px 0 var(--bq3d-type, var(--site-primary-deep)),
+        5px 5px 0 var(--bq3d-type, var(--site-primary-deep)),
+        6px 6px 14px rgb(0 0 0 / .35);
+}
+
+/* كروت: "tilt" بتميل ناحية الزائر والرقم بيطلع لبرّه، "block" بلوك بارز بعمق ثابت بينضغط
+   لما الماوس يقف عليه، "fan" كروت مايلة في صف بتتعدل. */
+.bq3d-cards {
+    perspective: 1200px;
+}
+
+.bq3d-card {
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.2, .7, .2, 1), box-shadow .5s ease;
+}
+
+.bq3d-card--tilt:hover {
+    transform: rotateX(7deg) rotateY(-9deg) translateZ(18px);
+}
+
+.bq3d-card--tilt .bq3d-pop {
+    transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+
+.bq3d-card--tilt:hover .bq3d-pop {
+    transform: translateZ(46px);
+}
+
+.bq3d-card--block {
+    box-shadow:
+        1px 1px 0 var(--bq3d-edge, var(--site-primary-deep)), 2px 2px 0 var(--bq3d-edge, var(--site-primary-deep)),
+        3px 3px 0 var(--bq3d-edge, var(--site-primary-deep)), 4px 4px 0 var(--bq3d-edge, var(--site-primary-deep)),
+        5px 5px 0 var(--bq3d-edge, var(--site-primary-deep)), 6px 6px 0 var(--bq3d-edge, var(--site-primary-deep)),
+        7px 7px 0 var(--bq3d-edge, var(--site-primary-deep)), 8px 8px 0 var(--bq3d-edge, var(--site-primary-deep)),
+        18px 22px 30px -12px rgb(0 0 0 / .4);
+}
+
+.bq3d-card--block:hover {
+    transform: translate(4px, 4px);
+    box-shadow:
+        1px 1px 0 var(--bq3d-edge, var(--site-primary-deep)), 2px 2px 0 var(--bq3d-edge, var(--site-primary-deep)),
+        3px 3px 0 var(--bq3d-edge, var(--site-primary-deep)), 4px 4px 0 var(--bq3d-edge, var(--site-primary-deep)),
+        10px 12px 20px -10px rgb(0 0 0 / .4);
+}
+
+@media (min-width: 768px) {
+    .bq3d-card--fan:nth-child(odd) { transform: rotateY(14deg); }
+    .bq3d-card--fan:nth-child(even) { transform: rotateY(-14deg) translateZ(-30px); }
+    .bq3d-card--fan:hover { transform: translateZ(40px); }
+}
+
+/* معرض "cover": صور في صف مايلة كأنها في رف والوسطانية قدام. "floor": بلاط على أرضية مايلة. */
+.bq3d-gallery {
+    perspective: 1300px;
+}
+
+.bq3d-plane {
+    transform-style: preserve-3d;
+}
+
+.bq3d-tile {
+    transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+}
+
+@media (min-width: 768px) {
+    .bq3d-gallery--cover .bq3d-tile { transform: rotateY(calc(var(--k, 0) * 22deg)) translateZ(calc(var(--dz, 0) * -70px)); }
+    .bq3d-gallery--cover .bq3d-tile:hover { transform: translateZ(60px); }
+    .bq3d-gallery--floor .bq3d-plane { transform: rotateX(22deg); transform-origin: 50% 100%; }
+    .bq3d-gallery--floor .bq3d-tile:hover { transform: translateZ(50px); }
+}
+
+/* ظهور القسم وقت التمرير بقلبة 3D بدل الطلوع العادي (نفس قواعد data-reveal في document). */
+@keyframes bq3d-rise {
+    from { opacity: 0; transform: perspective(1200px) rotateX(24deg) translateY(2.5rem); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+        .bq-reveal [data-reveal].bq3d-rise {
+            animation-name: bq3d-rise;
+        }
+    }
+}
+
+/* ===== المجسمات ===== */
+
+/* "قهوة" — فنجان: أسطوانة من 18 شريحة + حافة بقهوة + ودن + طبق، وبخار طالع وحبوب بن عايمة. */
+.bq3d-cup { position: absolute; transform: rotateX(-16deg) rotateY(-22deg); }
+.bq3d-cup .strip { position: absolute; width: 1.66rem; height: 7rem; margin: -3.5rem 0 0 -.83rem; transform: rotateY(var(--a)) translateZ(4.5rem); background-color: color-mix(in srgb, var(--site-primary) var(--l), #fff); }
+.bq3d-cup .rim { position: absolute; width: 9rem; height: 9rem; margin: -4.5rem 0 0 -4.5rem; border-radius: 9999px; transform: translateY(-3.5rem) rotateX(90deg); background-image: radial-gradient(circle, #6b3d22 0 50%, #3d2214 64%, color-mix(in srgb, var(--site-primary) 70%, #fff) 68%); }
+.bq3d-cup .base { position: absolute; width: 9rem; height: 9rem; margin: -4.5rem 0 0 -4.5rem; border-radius: 9999px; transform: translateY(3.5rem) rotateX(90deg); background-color: color-mix(in srgb, var(--site-primary) 55%, #000); }
+.bq3d-cup .handle { position: absolute; width: 3.6rem; height: 4.4rem; margin: -2.2rem 0 0 -1.8rem; border-radius: 9999px; border: .9rem solid color-mix(in srgb, var(--site-primary) 80%, #fff); transform: translateX(5.2rem) translateY(-.2rem); }
+.bq3d-cup .saucer { position: absolute; width: 15rem; height: 15rem; margin: -7.5rem 0 0 -7.5rem; border-radius: 9999px; transform: translateY(3.8rem) rotateX(90deg); background-image: radial-gradient(circle, color-mix(in srgb, var(--site-surface) 70%, var(--site-text)) 0 40%, color-mix(in srgb, var(--site-surface) 85%, #fff) 41% 70%, color-mix(in srgb, var(--site-text) 25%, var(--site-surface)) 71%); }
+.bq3d-steam { position: absolute; width: 1.4rem; height: 6rem; border-radius: 9999px; filter: blur(8px); background-image: linear-gradient(to top, rgb(255 255 255 / .8), transparent); opacity: .6; }
+.bq3d-bean { position: absolute; width: 2.2rem; height: 1.5rem; border-radius: 50%; background-image: radial-gradient(ellipse at 35% 30%, #a0663e, #4a2a17 75%); box-shadow: 0 10px 16px -8px rgb(0 0 0 / .5); }
+.bq3d-bean::after { content: ''; position: absolute; inset: 15% 47%; border-radius: 9999px; background-color: #2c170c; rotate: 12deg; }
+
+@keyframes bq3d-sway { 0%, 100% { transform: rotateX(-16deg) rotateY(-30deg); } 50% { transform: rotateX(-10deg) rotateY(26deg); } }
+@keyframes bq3d-steam { 0% { transform: translateY(1rem) scaleY(.6); opacity: 0; } 40% { opacity: .7; } 100% { transform: translateY(-5rem) translateX(.8rem) scaleY(1.2); opacity: 0; } }
+@keyframes bq3d-float { 0%, 100% { translate: 0 0; rotate: 0deg; } 50% { translate: 0 -1.1rem; rotate: 25deg; } }
+@keyframes bq3d-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -.9rem; } }
+
+/* "حلزون" — شريط DNA: 14 درجة كل واحدة بتلف 28° عن اللي قبلها، والشريط كله بيلف. الكور بتلف
+   عكس لفتها هي بالظبط فبتفضل مواجهة الزائر (فمش بتختفي وهي جنب). */
+.bq3d-helix { position: absolute; transform: rotateZ(-20deg); }
+.bq3d-helix-spin { position: absolute; }
+.bq3d-rung { position: absolute; width: 9rem; height: 1.2rem; margin: -.6rem 0 0 -4.5rem; transform: translateY(var(--y)) rotateY(var(--a)); }
+.bq3d-rung .bar { position: absolute; left: 1rem; right: 1rem; top: 45%; height: .3rem; border-radius: 9999px; background-image: linear-gradient(90deg, var(--site-primary), color-mix(in srgb, var(--site-text) 30%, transparent), color-mix(in srgb, var(--site-primary) 50%, #fff)); }
+.bq3d-rung .dot { position: absolute; top: -.25rem; width: 1.7rem; height: 1.7rem; transform: rotateY(calc(var(--a) * -1)); }
+.bq3d-rung .dot .bq3d-ball { inset: 0; }
+.bq3d-rung .dot--a { left: -.4rem; }
+.bq3d-rung .dot--b { right: -.4rem; }
+.bq3d-rung .dot--b .bq3d-ball { --bq3d-ball: color-mix(in srgb, var(--site-primary) 45%, #fff); }
+.bq3d-cross { position: absolute; width: 3.4rem; height: 3.4rem; border-radius: .9rem; background-color: color-mix(in srgb, var(--site-primary) 18%, var(--site-surface)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-primary) 30%, transparent), 0 16px 30px -14px rgb(0 0 0 / .4); }
+.bq3d-cross::before, .bq3d-cross::after { content: ''; position: absolute; inset: 40% 22%; border-radius: .2rem; background-color: var(--site-primary); }
+.bq3d-cross::after { inset: 22% 40%; }
+.bq3d-pulse { position: absolute; border-radius: 9999px; border: 2px solid color-mix(in srgb, var(--site-primary) 45%, transparent); inset: 10%; }
+
+@keyframes bq3d-spin-y { to { transform: rotateY(360deg); } }
+@keyframes bq3d-counter-y { to { rotate: y -360deg; } }
+@keyframes bq3d-pulse { 0% { scale: .7; opacity: .9; } 100% { scale: 1.35; opacity: 0; } }
+
+/* "لمعة" — زجاجات تجميل (صناديق شفافة بغطا) وقطرات لامعة عايمة. */
+.bq3d-bottle { position: absolute; }
+.bq3d-bottle .glass > i { background-image: linear-gradient(160deg, color-mix(in srgb, #fff 55%, var(--site-primary)) 0%, color-mix(in srgb, var(--site-primary) 75%, transparent) 55%, color-mix(in srgb, var(--site-primary) 45%, #000) 100%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35); }
+.bq3d-bottle .glass > .f-front::after { content: ''; position: absolute; inset: 10% 66% 14% 12%; border-radius: 9999px; background-image: linear-gradient(to bottom, rgb(255 255 255 / .85), rgb(255 255 255 / 0)); }
+.bq3d-bottle .glass > .f-front::before { content: ''; position: absolute; inset: 44% 14% 28%; border-radius: .2rem; background-color: color-mix(in srgb, var(--site-surface) 80%, transparent); }
+.bq3d-bottle .cap > i { background-image: linear-gradient(160deg, #f6e7b0, #b8902f 60%, #6d5216); }
+.bq3d-ring-glow { position: absolute; inset: 6%; border-radius: 9999px; background-image: conic-gradient(from 0deg, transparent, color-mix(in srgb, var(--site-primary) 45%, transparent), transparent 40%); filter: blur(14px); }
+
+@keyframes bq3d-turn { 0%, 100% { transform: rotateX(-12deg) rotateY(var(--from, -25deg)); } 50% { transform: rotateX(-6deg) rotateY(var(--to, 25deg)); } }
+
+/* "حديد" — دمبل: بار طويل + طارات على كل ناحية (صناديق بأوجه دايرية)، بيلف ويتهز. */
+.bq3d-dumbbell { position: absolute; transform: rotateX(-18deg) rotateZ(-14deg); }
+.bq3d-dumbbell .bar > i { background-image: linear-gradient(to bottom, #f3f4f6, #6b7280); }
+.bq3d-dumbbell .disc { position: absolute; width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2); border-radius: 9999px; transform: translateX(var(--x)) rotateY(90deg); background-image: radial-gradient(circle, #9ca3af 0 11%, color-mix(in srgb, var(--site-primary) 50%, #000) 12% 20%, color-mix(in srgb, var(--site-primary) var(--l, 80%), #fff) 21% 66%, color-mix(in srgb, var(--site-primary) 45%, #000) 67%); }
+.bq3d-speed { position: absolute; height: .35rem; border-radius: 9999px; background-image: linear-gradient(90deg, transparent, var(--site-primary)); }
+
+@keyframes bq3d-lift { 0%, 100% { transform: rotateX(-18deg) rotateZ(-14deg) rotateY(0deg) translateY(0); } 50% { transform: rotateX(-22deg) rotateZ(-6deg) rotateY(180deg) translateY(-1.2rem); } }
+@keyframes bq3d-dash { 0% { translate: 2rem 0; opacity: 0; } 30% { opacity: 1; } 100% { translate: -6rem 0; opacity: 0; } }
+
+/* "أبراج" — مدينة أيزومتري: أبراج بتتبني دور دور (--bq3d-grow بيكبر)، والأرضية بتلف ببطء. */
+@property --bq3d-grow {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1;
+}
+
+.bq3d-city { position: absolute; width: 15rem; height: 15rem; margin: -7.5rem 0 0 -7.5rem; transform: rotateX(58deg) rotateZ(-40deg); border-radius: 1.2rem; background-image: linear-gradient(color-mix(in srgb, var(--site-text) 8%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--site-text) 8%, transparent) 1px, transparent 1px); background-size: 1.5rem 1.5rem; background-color: color-mix(in srgb, var(--site-surface) 85%, var(--site-primary)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-text) 10%, transparent); }
+.bq3d-tower { position: absolute; left: var(--x); top: var(--y); width: var(--w); height: var(--dd); --hh: calc(var(--h) * var(--bq3d-grow)); }
+.bq3d-tower > i { position: absolute; background-color: color-mix(in srgb, var(--site-primary) var(--l, 70%), #000); background-image: repeating-linear-gradient(to bottom, transparent 0 .5rem, color-mix(in srgb, #fff 60%, var(--site-primary)) .5rem .8rem), repeating-linear-gradient(90deg, transparent 0 .45rem, color-mix(in srgb, var(--site-primary) var(--l, 70%), #000) .45rem .75rem); }
+.bq3d-tower > .roof { left: 0; top: 0; width: 100%; height: 100%; transform: translateZ(var(--hh)); background-image: none; background-color: color-mix(in srgb, var(--site-primary) 40%, #fff); }
+.bq3d-tower > .s1 { left: 0; top: 100%; width: 100%; height: var(--hh); transform-origin: top; transform: rotateX(90deg); }
+.bq3d-tower > .s2 { left: 100%; top: 0; width: var(--hh); height: 100%; transform-origin: left; transform: rotateY(-90deg); filter: brightness(.78); }
+.bq3d-tower > .s3 { left: 0; bottom: 100%; width: 100%; height: var(--hh); transform-origin: bottom; transform: rotateX(-90deg); filter: brightness(.9); }
+.bq3d-tower > .s4 { right: 100%; top: 0; width: var(--hh); height: 100%; transform-origin: right; transform: rotateY(90deg); filter: brightness(.7); }
+.bq3d-tree { position: absolute; left: var(--x); top: var(--y); width: 1.2rem; height: 1.2rem; transform: translateZ(.7rem) rotateX(-58deg); }
+.bq3d-tree .bq3d-ball { inset: 0; --bq3d-ball: #3f9a5a; }
+
+@keyframes bq3d-build { 0% { --bq3d-grow: .05; } 35%, 85% { --bq3d-grow: 1; } 100% { --bq3d-grow: .05; } }
+@keyframes bq3d-turntable { from { transform: rotateX(58deg) rotateZ(-70deg); } to { transform: rotateX(58deg) rotateZ(-10deg); } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .bq-reveal .bq3d-cup { animation: bq3d-sway 9s ease-in-out infinite; }
+    .bq-reveal .bq3d-steam { animation: bq3d-steam 3.6s ease-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-floaty { animation: bq3d-float 6s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-bobby { animation: bq3d-bob 4.5s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-helix-spin { animation: bq3d-spin-y 14s linear infinite; }
+    .bq-reveal .bq3d-rung .dot { animation: bq3d-counter-y 14s linear infinite; }
+    .bq-reveal .bq3d-pulse { animation: bq3d-pulse 3s ease-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-turny { animation: bq3d-turn 8s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-ring-glow { animation: bq-retro-spin 7s linear infinite; }
+    .bq-reveal .bq3d-dumbbell { animation: bq3d-lift 7s ease-in-out infinite; }
+    .bq-reveal .bq3d-speed { animation: bq3d-dash 1.8s ease-in infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-city { animation: bq3d-turntable 24s ease-in-out infinite alternate; }
+    .bq-reveal .bq3d-tower { animation: bq3d-build 10s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+}
+
+/* نسخة المجسم التانية في قسم التواصل ثابتة (حركة واحدة بس في الصفحة — أخف على الموبايل). */
+.bq3d-still, .bq3d-still * {
+    animation: none !important;
+}
+
+/* المحرر المباشر: من غير ميل على أي حاوية فيها خانة (شريط أدوات الصورة بيتحسب من مستطيلها). */
+.bq-live-editable :is(.bq3d-frame, .bq3d-floor, .bq3d-card, .bq3d-tile, .bq3d-plane) {
+    transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bq3d-card, .bq3d-tile, .bq3d-frame, .bq3d-floor {
+        transition: none;
+    }
+}
