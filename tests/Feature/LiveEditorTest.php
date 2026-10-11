@@ -69,6 +69,21 @@ class LiveEditorTest extends TestCase
         $response->assertSee('live-editor.css', false);
     }
 
+    // (2026-10-11 — فؤاد: التعديل الحر مش شغال لليوزرات) يوزر عادي على مشروعه هو
+    public function test_member_can_live_edit_his_own_project_and_save(): void
+    {
+        $member = User::factory()->member()->create();
+        $project = $this->buildProjectWithSite();
+        $project->forceFill(['created_by' => $member->id])->save();
+
+        $page = $this->actingAs($member)->get(route('projects.site.live-edit', $project));
+        $page->assertOk()->assertSee('live-editor-config', false)->assertSee('data-slot="hero_title"', false);
+
+        $this->actingAs($member)
+            ->put(route('projects.site.update', $project), ['content' => ['hero_title' => 'عنوان جديد']]);
+        $this->assertSame('عنوان جديد', $project->site->fresh()->content_json['hero_title']);
+    }
+
     // القيد الأمني الأهم في الخطة: المسار العام مش بيبان عليه أي أثر لوضع التعديل، حتى لو
     // اللي بيفتحه أدمن مسجّل دخول فعلاً (صفر query parameter بيفعّل التعديل على الرابط العام).
     public function test_the_public_site_route_never_loads_editor_assets(): void

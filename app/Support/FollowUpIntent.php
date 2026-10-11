@@ -204,6 +204,8 @@ class FollowUpIntent
             }
         }
 
+        $allWords = $messageWords; // قبل شيل كلمات القالب الحالي — لكسر التعادل تحت
+
         // كلمات تخصص القالب الحالي = كلام فؤاد عن مشروعه هو ("طبّقه على عيادة الأسنان")، مش القالب المطلوب
         $currentHead = PastedText::normalizeArabic(trim(explode('—', (string) $project->template->name)[0]));
         foreach (preg_split('/[^\p{L}\p{N}]+/u', $currentHead, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $w) {
@@ -245,7 +247,10 @@ class FollowUpIntent
 
             $score = collect($tokens)->filter(fn ($t) => $matches($t, array_diff_key($messageWords, $negated)))->count();
             if ($score > 0) {
-                $scored[] = [$template, $score];
+                // كسر التعادل: نسبة كلمات اسم القالب الموجودة في الرسالة كلها («كافيه ليلى» = «كافيه ليلي» كاملة،
+                // مش «مطعم فاخر ليلي» — كلمة «كافيه» كانت اتشالت لأنها تخصص القالب الحالي «كافيه شارع»)
+                $coverage = collect($tokens)->filter(fn ($t) => $matches($t, array_diff_key($allWords, $negated)))->count() / count($tokens);
+                $scored[] = [$template, $score, $coverage];
             }
         }
 
@@ -254,6 +259,10 @@ class FollowUpIntent
         }
         $top = max(array_column($scored, 1));
         $winners = array_values(array_filter($scored, fn ($s) => $s[1] === $top));
+        if (count($winners) > 1) {
+            $best = max(array_column($winners, 2));
+            $winners = array_values(array_filter($winners, fn ($s) => $s[2] === $best));
+        }
         // تعادل: القالب اللي في نفس فئة المشروع («عيادة الأطفال» لعيادة مش «متجر أطفال»)
         if (count($winners) > 1) {
             $winners = array_values(array_filter($winners, fn ($s) => $s[0]->category === $project->template->category));

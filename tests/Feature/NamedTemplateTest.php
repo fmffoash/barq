@@ -52,6 +52,17 @@ class NamedTemplateTest extends TestCase
             $this->assertSame($derma->id, $decision['template_id'] ?? null, $message);
         }
 
+        // (2026-10-11 — يوزر حقيقي) «غير القالب لي قالب كافيه ليلى» من مشروع على «كافيه شارع» راح لقالب تاني
+        $street = Template::factory()->create(['kind' => 'landing', 'category' => 'مطاعم وكافيهات', 'name' => 'كافيه شارع — رحلة قهوة يومية', 'layout' => 'classic', 'is_active' => true]);
+        $street->slots()->create(['section_key' => 'hero', 'key' => 'hero_title', 'label_ar' => 'hero_title', 'slot_type' => 'text', 'sort_order' => 1]);
+        $night = Template::factory()->create(['kind' => 'landing', 'category' => 'مطاعم وكافيهات', 'name' => 'كافيه ليلي — أجواء عصرية', 'layout' => 'modern', 'is_active' => true]);
+        Template::factory()->create(['kind' => 'landing', 'category' => 'مطاعم وكافيهات', 'name' => 'مطعم فاخر ليلي — طابع أنيق', 'layout' => 'bold', 'is_active' => true]);
+        Template::factory()->create(['kind' => 'landing', 'category' => 'مطاعم وكافيهات', 'name' => 'كافيه مساحة عمل — قهوة وكود', 'layout' => 'swiss', 'is_active' => true]);
+        $cafeProject = Project::factory()->for($street)->create(['name' => 'عرض']);
+        GeneratedSite::factory()->for($cafeProject)->create(['content_json' => []]);
+        $cafeProject = $cafeProject->fresh(['template.slots', 'site']);
+        $this->assertSame($night->id, FollowUpIntent::detect('غير القالب لي قالب كافيه ليلى', false, $cafeProject, $cafeProject->site)['template_id'] ?? null);
+
         // «النساء» = «نسائية»
         $women = $this->template('عيادة نسائية — خصوصية وثقة', 'minimal');
         $this->assertSame($women->id, FollowUpIntent::detect('ابي قالب عيادة النساء', false, $project, $project->site)['template_id'] ?? null);
