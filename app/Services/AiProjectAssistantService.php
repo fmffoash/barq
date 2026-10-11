@@ -592,6 +592,17 @@ class AiProjectAssistantService
 
         $styleHint = is_string($decision['style_hint'] ?? null) ? trim($decision['style_hint']) : '';
 
+        // (2026-10-11) قالب متسمّي بالاسم في الرسالة (FollowUpIntent::namedTemplate) = هو ده بالظبط
+        if (! empty($decision['template_id'])
+            && ($named = Template::where('is_active', true)->whereKey((int) $decision['template_id'])->first())) {
+            $project->update([
+                'template_id' => $named->id,
+                'template_variant_id' => $named->defaultVariant()?->id,
+            ]);
+
+            return "تمام، طبّقت قالب \"{$named->name}\" على مشروعك. المحتوى بتاعك اتنقل زي ما هو — اتفرج على الشكل الجديد.";
+        }
+
         // نفس التخصص (من أول رسالة/بيانات المكان) بتصميم مختلف عن الحالي.
         $firstMessage = (string) $project->aiChatMessages()->where('role', 'user')->value('content');
         $choice = $this->picker->pick(

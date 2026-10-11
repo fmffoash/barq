@@ -102,6 +102,12 @@ class FollowUpIntent
         // 4. قالب — كلمة "قالب/تصميم/تيمبلت" صريحة، أو "شكل" مع فعل تغيير.
         if ($has('قالب', 'القالب', 'تيمبلت', 'template', 'layout', 'تصميم', 'ستايل') || ($has('شكل', 'شكله', 'شكلها') && $change)) {
             $decision = ['action' => 'change_template', 'style_hint' => $message];
+
+            // (2026-10-11) فؤاد سمّى قالب بعينه ("القالب بتاع عيادة جلدية"، "الجلدية مش التخسيس") —
+            // ده القالب اللي يتطبّق بالظبط، مش "أقرب قالب" لتخصص المشروع (كان بيختار التخسيس/الأسنان).
+            if ($named = self::namedTemplate($message, $project)) {
+                return $decision + ['template_id' => $named->id];
+            }
             $categories = Template::where('is_active', true)->where('kind', 'landing')->distinct()->pluck('category');
             $guess = CategoryGuesser::guess($message, $categories);
             if ($guess && $guess['category'] !== $project->template->category) {
@@ -160,6 +166,73 @@ class FollowUpIntent
         }
 
         return false;
+    }
+
+    /** كلمات عامة في أسماء القوالب مابتميّزش قالب عن التاني */
+    private const GENERIC_NAME_WORDS = ['عياده', 'مركز', 'طبي', 'صغير', 'فاخر', 'شامل', 'قالب', 'محل', 'شركه', 'مكتب', 'استوديو', 'و'];
+
+    /**
+     * قالب متسمّي بالاسم في الرسالة (2026-10-11): بيقارن كلمات التخصص في اسم كل قالب (الجزء قبل
+     * "—"، من غير الكلمات العامة زي "عيادة/مركز") بكلمات الرسالة. الكلمة اللي بعد "مش/غير/بدل"
+     * بتستبعد قالبها ("الجلدية مش التخسيس"). القالب الحالي مستبعد (الطلب تغيير)، ولازم قالب واحد بس
+     * يكسب — لو اتنين متعادلين يبقى الطلب مش محدد، فبيرجع للاختيار العادي.
+     */
+    public static function namedTemplate(string $message, Project $project): ?Template
+    {
+        $normalized = PastedText::normalizeArabic($message);
+        $base = fn (string $w) => preg_replace('/^(وال|بال|فال|كال|لل|ال|و|ب|ف|ل)(?=\p{L}{3,})/u', '', $w) ?? $w;
+
+        // الكلمات المنفية: أول كلمتين بعد "مش/غير/بدل/مبلاش"
+        $negated = [];
+        if (preg_match_all('/(?:^|\s)(?:مش|غير|بدل|بلاش|مبلاش|not)\s+(\S+)(?:\s+(\S+))?/u', $normalized, $m, PREG_SET_ORDER)) {
+            foreach ($m as $match) {
+                foreach (array_slice($match, 1) as $w) {
+                    if ($w !== '') {
+                        $negated[$base($w)] = true;
+                    }
+                }
+            }
+        }
+
+        $messageWords = [];
+        foreach (preg_split('/[^\p{L}\p{N}]+/u', $normalized, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $w) {
+            $messageWords[$base($w)] = true;
+        }
+
+        // كلمات تخصص القالب الحالي = كلام فؤاد عن مشروعه هو ("طبّقه على عيادة الأسنان")، مش القالب المطلوب
+        $currentHead = PastedText::normalizeArabic(trim(explode('—', (string) $project->template->name)[0]));
+        foreach (preg_split('/[^\p{L}\p{N}]+/u', $currentHead, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $w) {
+            if (! in_array($base($w), self::GENERIC_NAME_WORDS, true)) {
+                unset($messageWords[$base($w)]);
+            }
+        }
+
+        $matches = fn (string $token, array $pool) => isset($pool[$token])
+            || (mb_strlen($token) >= 4 && collect(array_keys($pool))->contains(fn ($w) => mb_strlen($w) >= 4 && (str_starts_with($w, $token) || str_starts_with($token, $w))));
+
+        $best = null;
+        $bestScore = 0;
+        $tie = false;
+
+        foreach (Template::where('is_active', true)->where('kind', $project->template->kind ?? 'landing')->where('id', '!=', $project->template_id)->get(['id', 'name', 'kind']) as $template) {
+            $head = PastedText::normalizeArabic(trim(explode('—', (string) $template->name)[0]));
+            $tokens = array_values(array_filter(
+                array_map($base, preg_split('/[^\p{L}\p{N}]+/u', $head, -1, PREG_SPLIT_NO_EMPTY) ?: []),
+                fn ($t) => mb_strlen($t) >= 3 && ! in_array($t, self::GENERIC_NAME_WORDS, true)
+            ));
+            if (! $tokens || collect($tokens)->contains(fn ($t) => $matches($t, $negated))) {
+                continue;
+            }
+
+            $score = collect($tokens)->filter(fn ($t) => $matches($t, array_diff_key($messageWords, $negated)))->count();
+            if ($score > $bestScore) {
+                [$best, $bestScore, $tie] = [$template, $score, false];
+            } elseif ($score > 0 && $score === $bestScore) {
+                $tie = true;
+            }
+        }
+
+        return $bestScore > 0 && ! $tie ? $best : null;
     }
 
     public static function heroImageSlot(Template $template): ?string
