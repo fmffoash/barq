@@ -54,7 +54,7 @@ class GeneratedSiteController extends Controller
         // AiProjectAssistantService::applyChangeTemplate().
         $sameCategoryTemplates = Template::where('is_active', true)
             ->where('kind', 'landing')
-            ->where('category', $project->template->category)
+            ->inCategory($project->template->category)
             ->where('id', '!=', $project->template_id)
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -89,7 +89,7 @@ class GeneratedSiteController extends Controller
         if ($newTemplateId && $newTemplateId !== $project->template_id) {
             $newTemplate = Template::where('is_active', true)
                 ->where('kind', 'landing')
-                ->where('category', $project->template->category)
+                ->inCategory($project->template->category)
                 ->find($newTemplateId);
 
             if ($newTemplate) {

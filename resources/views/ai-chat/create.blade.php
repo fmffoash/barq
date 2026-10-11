@@ -192,7 +192,7 @@
                 templateSelect.appendChild(placeholder);
 
                 allTemplates
-                    .filter(function (t) { return t.category === category; })
+                    .filter(function (t) { return t.category === category || (t.extra_categories || []).indexOf(category) !== -1; })
                     .forEach(function (t) {
                         const opt = document.createElement('option');
                         opt.value = t.id;

@@ -235,7 +235,7 @@ class FollowUpIntent
 
         $scored = [];
 
-        foreach (Template::where('is_active', true)->where('kind', $project->template->kind ?? 'landing')->where('id', '!=', $project->template_id)->get(['id', 'name', 'kind', 'category']) as $template) {
+        foreach (Template::where('is_active', true)->where('kind', $project->template->kind ?? 'landing')->where('id', '!=', $project->template_id)->get(['id', 'name', 'kind', 'category', 'extra_categories']) as $template) {
             $head = PastedText::normalizeArabic(trim(explode('—', (string) $template->name)[0]));
             $tokens = array_values(array_filter(
                 array_map($base, preg_split('/[^\p{L}\p{N}]+/u', $head, -1, PREG_SPLIT_NO_EMPTY) ?: []),
@@ -265,7 +265,7 @@ class FollowUpIntent
         }
         // تعادل: القالب اللي في نفس فئة المشروع («عيادة الأطفال» لعيادة مش «متجر أطفال»)
         if (count($winners) > 1) {
-            $winners = array_values(array_filter($winners, fn ($s) => $s[0]->category === $project->template->category));
+            $winners = array_values(array_filter($winners, fn ($s) => $s[0]->belongsToCategory($project->template->category)));
         }
 
         return count($winners) === 1 ? $winners[0][0] : null;

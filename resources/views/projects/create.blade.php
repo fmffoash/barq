@@ -65,7 +65,7 @@
                             <div class="flex flex-1 flex-col p-4">
                                 <h2 class="mb-1 font-semibold text-slate-100">{{ $t->name }}</h2>
                                 <p class="mb-3 text-sm text-slate-500">
-                                    {{ $t->category ?: 'بدون تصنيف' }} &middot;
+                                    {{ $t->category ?: 'بدون تصنيف' }}@if ($t->extra_categories) + {{ implode('، ', $t->extra_categories) }}@endif &middot;
                                     {{ $t->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
                                 </p>
                                 <div class="mt-auto flex gap-2">

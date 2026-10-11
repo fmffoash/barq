@@ -54,7 +54,7 @@
                 @endunless
             </div>
             <p class="text-sm text-slate-500">
-                {{ $template->category ?: 'بدون تصنيف' }} &middot;
+                {{ $template->category ?: 'بدون تصنيف' }}@if ($template->extra_categories) + {{ implode('، ', $template->extra_categories) }}@endif &middot;
                 {{ $template->kind === 'wordpress' ? 'ووردبريس' : 'صفحة هبوط' }}
                 @if ($template->kind === 'landing')
                     &middot;

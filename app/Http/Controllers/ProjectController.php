@@ -57,7 +57,7 @@ class ProjectController extends Controller
             // كل الخانات + النسخ: صورة شكل القالب بتتعرض بس لو بصمته مطابقة (TemplatePreviewService).
             ->with(['slots', 'variants'])
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
-            ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
+            ->when($request->filled('category'), fn ($query) => $query->inCategory((string) $request->string('category')))
             ->orderBy('name')
             ->get();
 

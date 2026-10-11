@@ -124,7 +124,7 @@ class TemplatePicker
         $templates = Template::query()
             ->where('is_active', true)
             ->where('kind', 'landing')
-            ->where('category', $category)
+            ->inCategory($category)
             ->when($exceptId, fn ($q) => $q->where('id', '!=', $exceptId))
             ->with('variants')
             ->get();

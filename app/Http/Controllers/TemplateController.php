@@ -34,7 +34,7 @@ class TemplateController extends Controller
         $templates = Template::withCount(['variants', 'slots'])
             ->with(['variants', 'slots'])
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
-            ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')))
+            ->when($request->filled('category'), fn ($query) => $query->inCategory((string) $request->string('category')))
             ->orderBy('name')
             ->get();
 

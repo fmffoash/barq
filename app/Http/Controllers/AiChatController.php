@@ -29,7 +29,7 @@ class AiChatController extends Controller
             ->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
 
         $templates = Template::where('is_active', true)->where('kind', 'landing')
-            ->orderBy('name')->get(['id', 'name', 'category']);
+            ->orderBy('name')->get(['id', 'name', 'category', 'extra_categories']);
 
         return view('ai-chat.create', [
             'categories' => $categories,

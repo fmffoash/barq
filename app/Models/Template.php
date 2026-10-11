@@ -31,6 +31,7 @@ class Template extends Model
         'name',
         'slug',
         'category',
+        'extra_categories',
         'kind',
         'layout',
         'license_note',
@@ -41,7 +42,25 @@ class Template extends Model
     {
         return [
             'is_active' => 'boolean',
+            'extra_categories' => 'array',
         ];
+    }
+
+    // القالب بيظهر في فئته الأساسية + أي فئة إضافية ينفع لها (2026-10-11).
+    public function scopeInCategory($query, ?string $category)
+    {
+        return $query->where(fn ($q) => $q->where('category', $category)->orWhereJsonContains('extra_categories', $category));
+    }
+
+    public function belongsToCategory(?string $category): bool
+    {
+        return $category !== null && ($this->category === $category || in_array($category, $this->extra_categories ?? [], true));
+    }
+
+    /** @return list<string> */
+    public function allCategories(): array
+    {
+        return array_values(array_unique(array_filter([$this->category, ...($this->extra_categories ?? [])])));
     }
 
     public function variants(): HasMany
