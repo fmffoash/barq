@@ -614,6 +614,82 @@
     .bq-reveal .bq3d-tower { animation: bq3d-build 10s ease-in-out infinite; animation-delay: var(--delay, 0s); }
 }
 
+/* ===== الدفعة 2 من المجسمات ===== */
+
+/* "طرد" — صناديق شحن كرتون بشريط لاصق بلون الموقع، والصغير بيقع على الكومة ويتنطط. */
+.bq3d-parcels { position: absolute; transform: rotateX(-20deg) rotateY(-35deg); }
+.bq3d-parcel > i { background-color: color-mix(in srgb, #c8955a 82%, var(--site-primary)); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .12); }
+.bq3d-parcel > .f-right, .bq3d-parcel > .f-left { filter: brightness(.8); }
+.bq3d-parcel > .f-top { filter: brightness(1.1); }
+.bq3d-parcel > :is(.f-front, .f-back, .f-top)::after { content: ''; position: absolute; top: 0; bottom: 0; left: 42%; right: 42%; background-color: var(--site-primary); opacity: .9; }
+.bq3d-drop { position: absolute; }
+.bq3d-tag { position: absolute; width: 4.2rem; height: 2.4rem; border-radius: .5rem .5rem .5rem 1.2rem; background-color: var(--site-primary); box-shadow: 0 14px 24px -12px rgb(0 0 0 / .45); }
+.bq3d-tag::before { content: ''; position: absolute; left: .45rem; top: 50%; width: .55rem; height: .55rem; margin-top: -.275rem; border-radius: 9999px; background-color: var(--site-background); }
+.bq3d-tag::after { content: ''; position: absolute; left: 1.5rem; right: .6rem; top: 42%; height: .3rem; border-radius: 9999px; background-color: color-mix(in srgb, var(--site-on-primary) 70%, transparent); }
+
+@keyframes bq3d-drop { 0% { translate: 0 -9rem; opacity: 0; } 12% { opacity: 1; } 34% { translate: 0 0; } 42% { translate: 0 -1.4rem; } 50%, 88% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 0; } }
+
+/* "كتاب" — كتاب مفتوح بصفحة بتتقلب، وكاب تخرج عايم فوقه. */
+.bq3d-book { position: absolute; transform: rotateX(56deg) rotateZ(-18deg); }
+.bq3d-book .cover > i { background-color: color-mix(in srgb, var(--site-primary) 70%, #000); }
+.bq3d-page { position: absolute; top: -4.5rem; width: 6.6rem; height: 9rem; background-color: color-mix(in srgb, var(--site-surface) 35%, #fffdf6); background-image: repeating-linear-gradient(to bottom, transparent 0 1.1rem, color-mix(in srgb, var(--site-text) 14%, transparent) 1.1rem 1.18rem); background-position: 0 1.4rem; background-size: 80% 100%; background-repeat: no-repeat; background-origin: content-box; padding: 0 .7rem; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06); }
+.bq3d-page--l { right: 0; transform-origin: right; transform: translateZ(.45rem) rotateY(-10deg); }
+.bq3d-page--r, .bq3d-page--flip { left: 0; transform-origin: left; transform: translateZ(.45rem) rotateY(10deg); }
+.bq3d-page--flip { backface-visibility: visible; filter: brightness(.97); }
+.bq3d-cap { position: absolute; transform: rotateX(-22deg) rotateY(30deg); }
+.bq3d-cap .board > i { background-color: color-mix(in srgb, var(--site-text) 85%, var(--site-primary)); }
+.bq3d-cap .skull > i { background-color: color-mix(in srgb, var(--site-text) 70%, var(--site-primary)); }
+.bq3d-cap .tassel { position: absolute; left: 0; top: 0; width: .2rem; height: 3rem; background-color: var(--site-primary); transform: translateX(3rem) translateY(-.2rem); transform-origin: top; }
+.bq3d-cap .tassel::after { content: ''; position: absolute; left: -.3rem; bottom: -.4rem; width: .8rem; height: 1rem; border-radius: .3rem; background-color: var(--site-primary); }
+
+@keyframes bq3d-flip { 0%, 15% { transform: translateZ(.5rem) rotateY(10deg); } 55%, 70% { transform: translateZ(.5rem) rotateY(-170deg); } 100% { transform: translateZ(.5rem) rotateY(-170deg); opacity: 0; } }
+@keyframes bq3d-swing { 0%, 100% { rotate: z 12deg; } 50% { rotate: z -12deg; } }
+
+/* "ميزان" — ميزان عدالة: الدراع بيتهز، والكفتين بيلفوا عكسه فبيفضلوا معلقين لتحت. */
+.bq3d-scales { position: absolute; transform: rotateY(-22deg) rotateX(-6deg); }
+.bq3d-scales .gold > i, .bq3d-scales .gold { background-image: linear-gradient(160deg, #f6e7b0, color-mix(in srgb, #c9a13b 75%, var(--site-primary)) 55%, #6d5216); }
+.bq3d-beam { position: absolute; transform: translateY(-4.6rem); }
+.bq3d-hang { position: absolute; }
+.bq3d-hang-rot { position: absolute; transform-origin: 0 0; }
+.bq3d-chain { position: absolute; left: 0; top: 0; width: .12rem; height: 4.6rem; background-color: color-mix(in srgb, #c9a13b 70%, var(--site-text)); transform-origin: top; }
+.bq3d-pan { position: absolute; left: -2.9rem; top: 4.1rem; width: 5.8rem; height: 5.8rem; border-radius: 9999px; transform: rotateX(78deg); background-image: radial-gradient(circle, #fff3c4 0 18%, color-mix(in srgb, #c9a13b 80%, var(--site-primary)) 45%, #7a5b16 70%); box-shadow: 0 0 0 .2rem #8a6a1c; }
+
+@keyframes bq3d-rock { 0%, 100% { transform: translateY(-4.6rem) rotateZ(-7deg); } 50% { transform: translateY(-4.6rem) rotateZ(7deg); } }
+@keyframes bq3d-unrock { 0%, 100% { transform: rotateZ(7deg); } 50% { transform: rotateZ(-7deg); } }
+
+/* "طوب" — برج طوب (جينجا) بيتبني: الطبقة اللي فوق بتنزل طوبة طوبة، وطوبة بارزة من النص. */
+.bq3d-jenga { position: absolute; transform: rotateX(-24deg) rotateY(35deg); }
+.bq3d-layer { position: absolute; }
+.bq3d-brick > i { background-color: color-mix(in srgb, #d6a46a var(--wood, 70%), var(--site-primary)); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .14); }
+.bq3d-brick > :is(.f-right, .f-left) { filter: brightness(.82); }
+.bq3d-brick > .f-top { filter: brightness(1.08); }
+.bq3d-brick-drop { position: absolute; }
+
+@keyframes bq3d-brick { 0% { translate: 0 -6rem; opacity: 0; } 25% { translate: 0 0; opacity: 1; } 80% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 0; } }
+
+/* "عجلة" — كاوتش برنجة بتلف بسرعة، وترس ورا بيلف عكسها، وخطوط سرعة. */
+.bq3d-garage { position: absolute; transform: rotateY(-34deg) rotateX(6deg); }
+.bq3d-wheel, .bq3d-gear { position: absolute; }
+.bq3d-wheel i, .bq3d-gear i { position: absolute; border-radius: 9999px; transform: translateZ(var(--z)); }
+.bq3d-wheel i { width: 12rem; height: 12rem; margin: -6rem 0 0 -6rem; background-image: radial-gradient(circle closest-side, transparent 0 80%, #1f2937 81% 100%); }
+.bq3d-wheel i.face { background-image: radial-gradient(circle closest-side, #e5e7eb 0 11%, #4b5563 12% 16%, transparent 17%), radial-gradient(circle closest-side, transparent 0 72%, color-mix(in srgb, var(--site-primary) 70%, #d1d5db) 73% 80%, #1f2937 81% 92%, #111827 93% 100%), repeating-conic-gradient(from 10deg, color-mix(in srgb, var(--site-primary) 55%, #e5e7eb) 0 11deg, transparent 11deg 45deg); }
+.bq3d-gear i { width: 9rem; height: 9rem; margin: -4.5rem 0 0 -4.5rem; --gc: color-mix(in srgb, var(--site-primary) 60%, #000); background-image: radial-gradient(circle closest-side, var(--site-background) 0 18%, var(--gc) 19% 80%, transparent 81%), repeating-conic-gradient(var(--gc) 0 9deg, transparent 9deg 20deg); }
+.bq3d-gear i.face { --gc: color-mix(in srgb, var(--site-primary) 85%, #fff); }
+
+@keyframes bq3d-roll { to { transform: rotateZ(-360deg); } }
+@keyframes bq3d-unroll { to { transform: rotateZ(360deg); } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .bq-reveal .bq3d-drop { animation: bq3d-drop 5s ease-in infinite; }
+    .bq-reveal .bq3d-page--flip { animation: bq3d-flip 4.5s ease-in-out infinite; }
+    .bq-reveal .bq3d-cap .tassel { animation: bq3d-swing 3s ease-in-out infinite; }
+    .bq-reveal .bq3d-beam { animation: bq3d-rock 5s ease-in-out infinite; }
+    .bq-reveal .bq3d-hang-rot { animation: bq3d-unrock 5s ease-in-out infinite; }
+    .bq-reveal .bq3d-brick-drop { animation: bq3d-brick 6s cubic-bezier(.3, 0, .3, 1) infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-wheel { animation: bq3d-roll 2.4s linear infinite; }
+    .bq-reveal .bq3d-gear { animation: bq3d-unroll 6s linear infinite; }
+}
+
 /* نسخة المجسم التانية في قسم التواصل ثابتة (حركة واحدة بس في الصفحة — أخف على الموبايل). */
 .bq3d-still, .bq3d-still * {
     animation: none !important;

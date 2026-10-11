@@ -525,6 +525,7 @@ return [
             ['slug' => 'mtagr-alktrony-mtgr-mntgat-ydoy-ks-kl-ktaa', 'wave' => 2, 'name' => 'متجر منتجات يدوية — قصة كل قطعة', 'hero_title' => 'حاجات معمولة بإيدين بتحب شغلها', 'hero_subtitle' => 'شنط وخزف ومفارش وهدايا يدوية من حرفيين محليين، كل قطعة مختلفة عن التانية.'],
             ['slug' => 'mtagr-alktrony-mtgr-alaaab-fydyo-kdym-zmn-altybyn', 'wave' => 2, 'name' => 'متجر ألعاب فيديو قديمة — زمن الطيبين', 'hero_title' => 'رجّع ذكريات الأتاري والسيجا', 'hero_subtitle' => 'أجهزة وألعاب كلاسيكية متصلّحة ومتجرّبة، وإكسسوارات لهواة الجمع.'],
             ['slug' => 'mtagr-alktrony-mtgr-ktaa-kmbyotr-byanat-kl-ktaa', 'wave' => 2, 'name' => 'متجر قطع كمبيوتر — بيانات كل قطعة', 'hero_title' => 'جمّع جهازك على مزاجك', 'hero_subtitle' => 'كروت شاشة وبروسيسورات ورامات أصلية، مع أداة تتأكد إن القطع متوافقة.'],
+            ['slug' => 'mtagr-alktrony-3d-parcel', 'wave' => 3, 'layout' => 'parcel', 'name' => 'متجر 3D — طلبك في الطريق', 'hero_title' => 'اطلب النهارده يوصلك بكرة', 'hero_subtitle' => 'منتجات أصلية بأسعار واضحة، وتغليف محترم، وشحن سريع لحد باب البيت.'],
         ],
         'tones' => [
             'warm' => [
@@ -617,6 +618,7 @@ return [
             ['slug' => 'taalym-odorat-tdryby-nady-kraaa-kss-lkl-sn', 'wave' => 2, 'name' => 'نادي قراءة — قصص لكل سن', 'hero_title' => 'حبّب ولادك في القراية', 'hero_subtitle' => 'نادي قراءة أسبوعي للأطفال والشباب، ومكتبة كتب عربي وإنجليزي للاستعارة.'],
             ['slug' => 'taalym-odorat-tdryby-mrkz-shtrng-oalaaab-thhny-bhg-altfkyr', 'wave' => 2, 'name' => 'مركز شطرنج وألعاب ذهنية — بهجة التفكير', 'hero_title' => 'شطرنج وألغاز تشغّل دماغك', 'hero_subtitle' => 'تدريب شطرنج وروبيك وألعاب ذهنية للأطفال، وبطولات شهرية بجوايز.'],
             ['slug' => 'taalym-odorat-tdryby-maaskr-ttoyr-oyb-kod-mn-aol-yom', 'wave' => 2, 'name' => 'معسكر تطوير ويب — كود من أول يوم', 'hero_title' => 'من الصفر لأول وظيفة', 'hero_subtitle' => 'معسكر مكثف 16 أسبوع، مشاريع حقيقية، ومتابعة لحد ما تقدّم على أول شغل.'],
+            ['slug' => 'taalym-odorat-3d-scholar', 'wave' => 3, 'layout' => 'scholar', 'name' => 'أكاديمية 3D — كل صفحة خطوة', 'hero_title' => 'اتعلّم صح وخد شهادتك', 'hero_subtitle' => 'كورسات عملية بمدربين خبرة، ومتابعة لحد ما تتقن المهارة وتاخد شهادة معتمدة.'],
         ],
         'tones' => [
             'warm' => [
@@ -710,6 +712,7 @@ return [
             ['slug' => 'astsharat-omhama-mktb-kdaya-aamaly-ks-kl-hk', 'wave' => 2, 'name' => 'مكتب قضايا عمالية — قصة كل حق', 'hero_title' => 'حقك في شغلك محفوظ', 'hero_subtitle' => 'قضايا فصل تعسفي ومستحقات ومكافآت نهاية خدمة، للعمال والموظفين.'],
             ['slug' => 'astsharat-omhama-astsharat-almshroaaat-alsghyr-bhg-albday', 'wave' => 2, 'name' => 'استشارات المشروعات الصغيرة — بهجة البداية', 'hero_title' => 'مشروعك الصغير بخطوات قانونية صح', 'hero_subtitle' => 'سجل تجاري وبطاقة ضريبية وعقود إيجار وشراكة، بأسعار تناسب البداية.'],
             ['slug' => 'astsharat-omhama-mktb-kanon-albrmgyat-hmay-byanat', 'wave' => 2, 'name' => 'مكتب قانون البرمجيات — حماية بيانات', 'hero_title' => 'شركتك متوافقة مع قوانين البيانات', 'hero_subtitle' => 'سياسات خصوصية وعقود برمجيات وامتثال لقوانين حماية البيانات الشخصية.'],
+            ['slug' => 'astsharat-omhama-3d-verdict', 'wave' => 3, 'layout' => 'verdict', 'name' => 'مكتب محاماة 3D — ميزان الحق', 'hero_title' => 'حقك في إيد أمينة', 'hero_subtitle' => 'استشارات قانونية وتمثيل أمام المحاكم بخبرة طويلة وسرية تامة في كل قضية.'],
         ],
         'tones' => [
             'warm' => [
@@ -803,6 +806,7 @@ return [
             ['slug' => 'mkaolat-odykor-orsh-ngar-ks-alkhshb', 'wave' => 2, 'name' => 'ورشة نجارة — قصة الخشب', 'hero_title' => 'أثاث خشب متين يعيش سنين', 'hero_subtitle' => 'تفصيل غرف نوم وسفرة وأبواب من خشب طبيعي، بتشطيب يدوي على مهل.'],
             ['slug' => 'mkaolat-odykor-shrk-dhanat-oork-hayt-aloan-zman', 'wave' => 2, 'name' => 'شركة دهانات وورق حائط — ألوان زمان', 'hero_title' => 'حيطان بألوان بتفرح', 'hero_subtitle' => 'دهانات وورق حائط وتأثيرات ديكور، بعينات تشوفها على الحيطة قبل التنفيذ.'],
             ['slug' => 'mkaolat-odykor-mktb-hsr-kmyat-byanat-oatmt', 'wave' => 2, 'name' => 'مكتب حصر كميات — بيانات وأتمتة', 'hero_title' => 'حصر كميات وتكلفة قبل ما تبدأ', 'hero_subtitle' => 'حصر مواد وتسعير بنود من الرسومات، ببرامج حديثة وتقرير مفصّل بكل بند.'],
+            ['slug' => 'mkaolat-odykor-3d-blocks', 'wave' => 3, 'layout' => 'blocks', 'name' => 'شركة مقاولات 3D — طوبة فوق طوبة', 'hero_title' => 'بنبني صح من أول طوبة', 'hero_subtitle' => 'تنفيذ مباني وتشطيبات بمواد مضمونة وجدول زمني ملتزم، وإشراف هندسي على كل مرحلة.'],
         ],
         'tones' => [
             'warm' => [
@@ -895,6 +899,7 @@ return [
             ['slug' => 'syan-okhdmat-syarat-orsh-mykanyka-ks-thk-mn-alab-llabn', 'wave' => 2, 'name' => 'ورشة ميكانيكا — قصة ثقة من الأب للابن', 'hero_title' => 'ميكانيكي بيعرف عربيتك بالصوت', 'hero_subtitle' => 'إصلاح موتور وفتيس وعفشة بإيدين خبرة سنين، وأسعار محترمة من غير مفاجآت.'],
             ['slug' => 'syan-okhdmat-syarat-orsh-trmym-syarat-klasyk-fyntag', 'wave' => 2, 'name' => 'ورشة ترميم سيارات كلاسيك — فينتاج', 'hero_title' => 'رجّع العربية القديمة لعزّها', 'hero_subtitle' => 'ترميم كامل لسيارات الستينات والسبعينات، من الصاج للدهان للفرش.'],
             ['slug' => 'syan-okhdmat-syarat-mrkz-brmg-mfatyh-kod-dkyk', 'wave' => 2, 'name' => 'مركز برمجة مفاتيح — كود دقيق', 'hero_title' => 'برمجة مفاتيح وكمبيوتر العربية', 'hero_subtitle' => 'تشخيص بالكمبيوتر وبرمجة ريموت ومفاتيح وكمبيوتر موتور لكل الماركات.'],
+            ['slug' => 'syan-sayarat-3d-torque', 'wave' => 3, 'layout' => 'torque', 'name' => 'مركز سيارات 3D — عجلة وسرعة', 'hero_title' => 'عربيتك ترجع زي الفابريكة', 'hero_subtitle' => 'صيانة دورية وكشف كمبيوتر وكاوتش وزيوت، بقطع غيار أصلية وضمان على الشغل.'],
         ],
         'tones' => [
             'warm' => [

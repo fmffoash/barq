@@ -27,6 +27,7 @@ class Template extends Model
         'mashrabiya', 'showcase', 'story', 'retro', 'terminal',
         // الدفعة 3 (2026-10-11) — تصميمات 3D، كل واحد مجسمه على مقاس فئة (site/partials/depth).
         'brew', 'helix', 'gloss', 'forge', 'skyline',
+        'parcel', 'scholar', 'verdict', 'blocks', 'torque',
     ];
 
     protected $fillable = [
@@ -97,6 +98,7 @@ class Template extends Model
             'swiss' => 'سويسري', 'cinematic' => 'سينمائي', 'mashrabiya' => 'مشربية',
             'showcase' => 'شوكيس', 'story' => 'حكاية', 'retro' => 'ريترو', 'terminal' => 'تيرمينال',
             'brew' => 'قهوة 3D', 'helix' => 'حلزون 3D', 'gloss' => 'لمعة 3D', 'forge' => 'حديد 3D', 'skyline' => 'أبراج 3D',
+            'parcel' => 'طرد 3D', 'scholar' => 'كتاب 3D', 'verdict' => 'ميزان 3D', 'blocks' => 'طوب 3D', 'torque' => 'عجلة 3D',
             default => 'كلاسيك',
         };
     }

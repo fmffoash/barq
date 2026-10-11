@@ -177,8 +177,8 @@ chown -R www-data:www-data storage bootstrap/cache
   - في الكود: `Template::inCategory()` (scope) و`belongsToCategory()`.
   - القواعد في `SeedTemplateLibrary::EXTRA_CATEGORIES` (أول الاسم قبل « — »)، وأي اسم أوله متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائي. 162 قالب من 500 بقوا في فئتين أو أكتر. `LIBRARY_VERSION = 2026-10-11.2`.
   - تست: `MultiCategoryTemplateTest`. الـ suite 281.
-- **تصميمات 3D — تصميم لكل فئة (2026-10-11، طلب فؤاد، 4 دفعات × 5):** الدفعة 1 لايف: `brew` (مطاعم — فنجان)،
-  `helix` (عيادات — DNA)، `gloss` (تجميل — زجاجات)، `forge` (جيم — دمبل)، `skyline` (عقارات — أبراج بتتبني).
+- **تصميمات 3D — تصميم لكل فئة (2026-10-11، طلب فؤاد، 4 دفعات × 5):** الدفعة 1 + 2 لايف: `brew` (مطاعم — فنجان)،
+  `helix` (عيادات — DNA)، `gloss` (تجميل — زجاجات)، `forge` (جيم — دمبل)، `skyline` (عقارات — أبراج بتتبني)، `parcel` (متاجر — صناديق)، `scholar` (تعليم — كتاب)، `verdict` (محاماة — ميزان)، `blocks` (مقاولات — برج طوب)، `torque` (سيارات — عجلة وترس).
   - المجسمات CSS بس (`preserve-3d`) في `site/partials/depth/scenes/*`، والهيكل المشترك `site/partials/depth/page.blade.php`
     (كل تصميم ملف سطرين بيحدد `$depth`: scene/hero/cards/gallery/radius/backdrop). الـCSS في آخر `resources/css/app.css` (`.bq3d-*`).
   - الحركة مقفولة لطالب تقليل الحركة وفي المحرر المباشر، ونسخة المجسم في قسم التواصل ثابتة (`.bq3d-still`). `overflow-x: clip` على الصفحة.

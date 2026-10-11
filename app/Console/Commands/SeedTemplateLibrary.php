@@ -38,7 +38,7 @@ class SeedTemplateLibrary extends Command
 {
     // زوّدها مع أي تعديل في البيانات أو التوزيع — local/update وbarq:local-setup بيعيدوا التوليد
     // لما تختلف عن المتخزّنة في جدول settings، وعلى السيرفر خطوة في الديبلوي (شوف CLAUDE.md).
-    public const LIBRARY_VERSION = '2026-10-11.3';
+    public const LIBRARY_VERSION = '2026-10-11.4';
 
     // (2026-10-11) القالب اللي ينفع لفئة تانية يظهر فيها كمان — المفتاح أول الاسم (قبل « — »).
     // أي اسم بيبدأ بـ متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائياً (extraCategoriesFor).
@@ -258,6 +258,11 @@ class SeedTemplateLibrary extends Command
         'gloss' => ['3D', 'مجسم', 'لمعة'],
         'forge' => ['3D', 'مجسم', 'حديد'],
         'skyline' => ['3D', 'مجسم', 'أبراج'],
+        'parcel' => ['3D', 'مجسم', 'طرد'],
+        'scholar' => ['3D', 'مجسم', 'كتاب'],
+        'verdict' => ['3D', 'مجسم', 'ميزان'],
+        'blocks' => ['3D', 'مجسم', 'طوب'],
+        'torque' => ['3D', 'مجسم', 'عجلة'],
     ];
 
     // الدفعة اللي كل تصميم دخل فيها المكتبة (مش مكتوب = 1). شوف تعليق الدفعات فوق.
@@ -265,6 +270,7 @@ class SeedTemplateLibrary extends Command
         'aurora' => 2, 'bauhaus' => 2, 'organic' => 2, 'swiss' => 2, 'cinematic' => 2,
         'mashrabiya' => 2, 'showcase' => 2, 'story' => 2, 'retro' => 2, 'terminal' => 2,
         'brew' => 3, 'helix' => 3, 'gloss' => 3, 'forge' => 3, 'skyline' => 3,
+        'parcel' => 3, 'scholar' => 3, 'verdict' => 3, 'blocks' => 3, 'torque' => 3,
     ];
 
     // طابع كل تصميم — بيحدد نسخة النصوص (tones في ملف البيانات) والألوان والخطوط المفضّلة ليه.
@@ -281,6 +287,7 @@ class SeedTemplateLibrary extends Command
         'swiss' => 'calm', 'story' => 'calm',
         'aurora' => 'modern', 'showcase' => 'modern', 'terminal' => 'modern',
         'brew' => 'warm', 'helix' => 'calm', 'gloss' => 'luxury', 'forge' => 'bold', 'skyline' => 'modern',
+        'parcel' => 'modern', 'scholar' => 'calm', 'verdict' => 'luxury', 'blocks' => 'bold', 'torque' => 'bold',
     ];
 
     // كلمات بتدل على طابع الاسم — بتكسر التعادل في التوزيع لصالح تصميم من نفس الطابع.
@@ -424,6 +431,11 @@ class SeedTemplateLibrary extends Command
         'gloss' => [['readex-pro', 'el-messiri'], ['tajawal', 'reem-kufi']],
         'forge' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
         'skyline' => [['readex-pro', 'alexandria'], ['ibm-plex-arabic', 'cairo']],
+        'parcel' => [['tajawal', 'cairo'], ['readex-pro', 'changa']],
+        'scholar' => [['ibm-plex-arabic', 'markazi-text'], ['almarai', 'el-messiri']],
+        'verdict' => [['ibm-plex-arabic', 'amiri'], ['markazi-text', 'el-messiri']],
+        'blocks' => [['cairo', 'noto-kufi-arabic'], ['tajawal', 'changa']],
+        'torque' => [['tajawal', 'changa'], ['cairo', 'alexandria']],
     ];
 
     private bool $hasHeadingFont = false;
