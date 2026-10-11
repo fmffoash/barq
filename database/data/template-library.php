@@ -992,6 +992,7 @@ return [
             ['slug' => 'tnthym-faaalyat-omnasbat-mkdm-hflat-ks-alaarosyn', 'wave' => 2, 'name' => 'مقدّم حفلات — قصة العروسين', 'hero_title' => 'كلمة حلوة في أهم لحظة', 'hero_subtitle' => 'تقديم فقرات الفرح والخطوبة، وحكاية العروسين بتتقال بشكل يفرّح الكل.'],
             ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-hflat-althmanynat-rytro', 'wave' => 2, 'name' => 'منظّم حفلات الثمانينات — ريترو', 'hero_title' => 'حفلة بطعم الأيام الحلوة', 'hero_subtitle' => 'ديكور وأغاني وأزياء وألعاب من الثمانينات والتسعينات، ليوم يرجّعكم ورا.'],
             ['slug' => 'tnthym-faaalyat-omnasbat-shrk-tthakr-otsgyl-faaalyat-byanat-alhdor', 'wave' => 2, 'name' => 'شركة تذاكر وتسجيل فعاليات — بيانات الحضور', 'hero_title' => 'تذاكر وتسجيل من غير طوابير', 'hero_subtitle' => 'تذاكر إلكترونية بكود QR، وتسجيل دخول سريع، وتقرير لحظي بأعداد الحضور.'],
+            ['slug' => 'tnthym-faaalyat-3d-festive', 'wave' => 3, 'layout' => 'festive', 'name' => 'منظّم حفلات 3D — هدية وفرحة', 'hero_title' => 'فرحتك علينا من الأول للآخر', 'hero_subtitle' => 'تنظيم أفراح وأعياد ميلاد ومناسبات بديكور وصوت وإضاءة، وكل تفصيلة متظبطة في ميعادها.'],
         ],
         'tones' => [
             'warm' => [
@@ -1084,6 +1085,7 @@ return [
             ['slug' => 'sfr-osyah-rhlat-maa-rhal-kss-mn-altryk', 'wave' => 2, 'name' => 'رحلات مع رحّالة — قصص من الطريق', 'hero_title' => 'سافر مع حد شاف الدنيا', 'hero_subtitle' => 'رحلات جماعية صغيرة يقودها رحّالة، لأماكن مش في كتالوجات السياحة العادية.'],
             ['slug' => 'sfr-osyah-rhlat-ktar-klasyky-fyntag', 'wave' => 2, 'name' => 'رحلات قطار كلاسيكية — فينتاج', 'hero_title' => 'رحلة قطر زي زمان', 'hero_subtitle' => 'رحلات بقطارات النوم للأقصر وأسوان، بعربيات مرمّمة وأكل على الطريقة القديمة.'],
             ['slug' => 'sfr-osyah-mns-tamyn-sfr-atmt-kaml', 'wave' => 2, 'name' => 'منصة تأمين سفر — أتمتة كاملة', 'hero_title' => 'تأمين سفر في دقيقتين', 'hero_subtitle' => 'وثيقة تأمين طبي للسفر بتطلع فوراً، وتغطية معتمدة للسفارات.'],
+            ['slug' => 'sfr-osyah-3d-globe', 'wave' => 3, 'layout' => 'globe', 'name' => 'شركة سياحة 3D — العالم بين إيديك', 'hero_title' => 'لف العالم وإنت مطمّن', 'hero_subtitle' => 'رحلات داخلية وخارجية بطيران وفنادق مختارة، وبرنامج مظبوط من أول الحجز لحد الرجوع.'],
         ],
         'tones' => [
             'warm' => [
@@ -1176,6 +1178,7 @@ return [
             ['slug' => 'brmgyat-ostart-ab-shrk-ttoyr-mtagr-ks-ngah-kl-mtgr', 'wave' => 2, 'name' => 'شركة تطوير متاجر — قصة نجاح كل متجر', 'hero_title' => 'متجرك الإلكتروني من أول يوم', 'hero_subtitle' => 'تصميم وبرمجة متاجر بربط دفع وشحن، وعملاء كبروا معانا.'],
             ['slug' => 'brmgyat-ostart-ab-astodyo-alaaab-mobayl-mrh-bksl', 'wave' => 2, 'name' => 'استوديو ألعاب موبايل — مرح بكسل', 'hero_title' => 'ألعاب بسيطة بتسلّي جداً', 'hero_subtitle' => 'ألعاب موبايل بستايل البكسل الكلاسيكي، للاعبين من كل الأعمار حول العالم.'],
             ['slug' => 'brmgyat-ostart-ab-start-ab-thkaaa-astnaaay-atmt-alshghl', 'wave' => 2, 'name' => 'ستارت أب ذكاء اصطناعي — أتمتة الشغل', 'hero_title' => 'خلّي الذكاء الاصطناعي يشتغل عنك', 'hero_subtitle' => 'أدوات بتقرا الإيميلات والفواتير وترد على العملاء، وتوفر ساعات كل يوم.'],
+            ['slug' => 'brmgyat-ostart-ab-3d-cubic', 'wave' => 3, 'layout' => 'cubic', 'name' => 'شركة برمجيات 3D — كود بيلف', 'hero_title' => 'سيستم شغلك يمشي لوحده', 'hero_subtitle' => 'تطبيقات ومواقع وأنظمة مخصوصة لشغلك، بكود نضيف ودعم فني مستمر بعد التسليم.'],
         ],
         'tones' => [
             'warm' => [
@@ -1268,6 +1271,7 @@ return [
             ['slug' => 'bortfolyo-omstklyn-sfh-mhrr-mthkrat-kstk-bklamk', 'wave' => 2, 'name' => 'صفحة محررة مذكرات — قصتك بكلامك', 'hero_title' => 'ذكرياتك تستاهل تتكتب', 'hero_subtitle' => 'بنسجّل ذكرياتك ونصيغها في كتاب مطبوع، هدية تفضل للعيلة سنين.'],
             ['slug' => 'bortfolyo-omstklyn-bortfolyo-msmm-tyshyrtat-bhg-oaloan-zman', 'wave' => 2, 'name' => 'بورتفوليو مصمم تيشيرتات — بهجة وألوان زمان', 'hero_title' => 'تيشيرتات بتصميمات تفرّح', 'hero_subtitle' => 'رسومات مطبوعة على تيشيرتات وشنط، بستايل الكرتون والإعلانات القديمة.'],
             ['slug' => 'bortfolyo-omstklyn-sfh-mhnds-byanat-kod-othlyl', 'wave' => 2, 'name' => 'صفحة مهندس بيانات — كود وتحليل', 'hero_title' => 'بيانات بتتحول لقرارات', 'hero_subtitle' => 'تنظيف وتحليل بيانات ولوحات متابعة ونماذج تنبؤ، لشركات ناشئة ومتوسطة.'],
+            ['slug' => 'portfolio-mstklyn-3d-canvas', 'wave' => 3, 'layout' => 'canvas', 'name' => 'معرض أعمال 3D — لوحات في الهوا', 'hero_title' => 'أعمالي بتتكلم عني', 'hero_subtitle' => 'مشاريع اشتغلتها بإيدي من الفكرة للتسليم، اتفرّج عليها واختار اللي يناسب فكرتك.'],
         ],
         'tones' => [
             'warm' => [
@@ -1360,6 +1364,7 @@ return [
             ['slug' => 'azyaaa-omlabs-orsh-khyat-ks-kl-ghrz', 'wave' => 2, 'name' => 'ورشة خياطة — قصة كل غرزة', 'hero_title' => 'تفصيل وتعديل بإيد أسطى', 'hero_subtitle' => 'تفصيل فساتين وجلاليب وتعديل مقاسات، بتشطيب نضيف وميعاد مظبوط.'],
             ['slug' => 'azyaaa-omlabs-mtgr-mlabs-fyntag-ktaa-mkhtar', 'wave' => 2, 'name' => 'متجر ملابس فينتاج — قطع مختارة', 'hero_title' => 'قطع فينتاج مالهاش زي', 'hero_subtitle' => 'جواكت وفساتين وشنط من السبعينات والتمانينات، متنضفة ومتختارة واحدة واحدة.'],
             ['slug' => 'azyaaa-omlabs-mark-tbaaa-aand-altlb-atmt-kaml', 'wave' => 2, 'name' => 'ماركة طباعة عند الطلب — أتمتة كاملة', 'hero_title' => 'صمّم واطبع من غير مخزون', 'hero_subtitle' => 'اطبع تصميماتك على تيشيرتات وشنط، وإحنا نطبع ونشحن أول ما الطلب يوصل.'],
+            ['slug' => 'azyaa-omlabs-3d-atelier', 'wave' => 3, 'layout' => 'atelier', 'name' => 'بوتيك 3D — فستان على الشماعة', 'hero_title' => 'لبسك يعمل حضور', 'hero_subtitle' => 'تشكيلات جديدة كل موسم بخامات مختارة ومقاسات لكل الأجسام، وتوصيل لحد البيت.'],
         ],
         'tones' => [
             'warm' => [

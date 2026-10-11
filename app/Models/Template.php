@@ -28,6 +28,7 @@ class Template extends Model
         // الدفعة 3 (2026-10-11) — تصميمات 3D، كل واحد مجسمه على مقاس فئة (site/partials/depth).
         'brew', 'helix', 'gloss', 'forge', 'skyline',
         'parcel', 'scholar', 'verdict', 'blocks', 'torque',
+        'festive', 'globe', 'cubic', 'canvas', 'atelier',
     ];
 
     protected $fillable = [
@@ -99,6 +100,7 @@ class Template extends Model
             'showcase' => 'شوكيس', 'story' => 'حكاية', 'retro' => 'ريترو', 'terminal' => 'تيرمينال',
             'brew' => 'قهوة 3D', 'helix' => 'حلزون 3D', 'gloss' => 'لمعة 3D', 'forge' => 'حديد 3D', 'skyline' => 'أبراج 3D',
             'parcel' => 'طرد 3D', 'scholar' => 'كتاب 3D', 'verdict' => 'ميزان 3D', 'blocks' => 'طوب 3D', 'torque' => 'عجلة 3D',
+            'festive' => 'احتفال 3D', 'globe' => 'كرة أرضية 3D', 'cubic' => 'مكعب 3D', 'canvas' => 'لوحات 3D', 'atelier' => 'شماعة 3D',
             default => 'كلاسيك',
         };
     }

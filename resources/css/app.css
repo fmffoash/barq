@@ -348,6 +348,7 @@
     width: var(--bq3d-size, 20rem);
     height: var(--bq3d-size, 20rem);
     perspective: 1100px;
+    direction: ltr;
     pointer-events: none;
     scale: var(--bq3d-scale, 1);
 }
@@ -688,6 +689,77 @@
     .bq-reveal .bq3d-brick-drop { animation: bq3d-brick 6s cubic-bezier(.3, 0, .3, 1) infinite; animation-delay: var(--delay, 0s); }
     .bq-reveal .bq3d-wheel { animation: bq3d-roll 2.4s linear infinite; }
     .bq-reveal .bq3d-gear { animation: bq3d-unroll 6s linear infinite; }
+}
+
+/* ===== الدفعة 3 من المجسمات ===== */
+
+/* "احتفال" — علبة هدية بشريطة بتلف، وبلالين طالعة، وقصاقيص ملونة نازلة. */
+.bq3d-gift { position: absolute; }
+.bq3d-gift .wrap > i { background-color: var(--site-primary); background-image: linear-gradient(90deg, transparent 42%, color-mix(in srgb, #fff 80%, var(--site-primary)) 42% 58%, transparent 58%); }
+.bq3d-gift .wrap > :is(.f-right, .f-left) { filter: brightness(.82); }
+.bq3d-gift .wrap > .f-top, .bq3d-gift .lid > .f-top { background-image: linear-gradient(90deg, transparent 42%, color-mix(in srgb, #fff 80%, var(--site-primary)) 42% 58%, transparent 58%), linear-gradient(transparent 42%, color-mix(in srgb, #fff 80%, var(--site-primary)) 42% 58%, transparent 58%); }
+.bq3d-gift .lid > i { background-color: color-mix(in srgb, var(--site-primary) 85%, #000); background-image: linear-gradient(90deg, transparent 42%, color-mix(in srgb, #fff 80%, var(--site-primary)) 42% 58%, transparent 58%); }
+.bq3d-bow { position: absolute; left: 0; top: 0; width: 2.6rem; height: 1.8rem; margin: -.9rem 0 0 -2.6rem; border-radius: 50% 10% 10% 50%; border: .45rem solid color-mix(in srgb, #fff 80%, var(--site-primary)); transform-origin: right center; }
+.bq3d-balloon { position: absolute; width: 3rem; height: 3.6rem; border-radius: 50% 50% 48% 48%; background-image: radial-gradient(circle at 32% 28%, color-mix(in srgb, #fff 70%, var(--bq3d-ball)) 0 10%, var(--bq3d-ball) 45%, color-mix(in srgb, var(--bq3d-ball) 55%, #000) 100%); box-shadow: 0 16px 26px -14px rgb(0 0 0 / .45); }
+.bq3d-balloon::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 4.5rem; background-color: color-mix(in srgb, var(--site-text) 35%, transparent); }
+.bq3d-confetti { position: absolute; width: .55rem; height: .9rem; border-radius: .1rem; background-color: var(--c); }
+
+@keyframes bq3d-rise-up { 0%, 100% { translate: 0 0; } 50% { translate: .6rem -1.4rem; } }
+@keyframes bq3d-confetti { 0% { transform: translateY(-2rem) rotate3d(1, 1, 0, 0deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(16rem) rotate3d(1, 1, 0, 720deg); opacity: 0; } }
+
+/* "كرة أرضية" — كرة من خطوط طول وعرض بتلف، وطيارة بتدور حواليها. */
+.bq3d-globe { position: absolute; }
+.bq3d-globe .meridian { position: absolute; width: 11rem; height: 11rem; margin: -5.5rem 0 0 -5.5rem; border-radius: 9999px; border: 3px solid color-mix(in srgb, var(--site-primary) 85%, #fff); transform: rotateY(var(--a)); }
+.bq3d-globe .parallel { position: absolute; width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2); border-radius: 9999px; border: 2.5px solid color-mix(in srgb, var(--site-primary) 65%, #fff); transform: translateY(var(--y)) rotateX(90deg); }
+.bq3d-globe-core { position: absolute; left: 50%; top: 50%; width: 10.6rem; height: 10.6rem; margin: -5.3rem 0 0 -5.3rem; border-radius: 9999px; background-image: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--site-primary) 25%, var(--site-surface)), color-mix(in srgb, var(--site-primary) 55%, var(--site-surface)) 75%); box-shadow: 0 24px 50px -20px rgb(0 0 0 / .5); }
+.bq3d-orbit { position: absolute; transform: rotateX(72deg) rotateZ(-14deg); }
+.bq3d-orbit-ring { position: absolute; width: 16rem; height: 16rem; margin: -8rem 0 0 -8rem; border-radius: 9999px; border: 1.5px dashed color-mix(in srgb, var(--site-text) 30%, transparent); }
+.bq3d-orbit-spin { position: absolute; }
+.bq3d-plane { position: absolute; left: 7.4rem; top: -1.1rem; width: 2.2rem; height: 2.2rem; transform: rotateX(-72deg); background-color: var(--site-primary); clip-path: polygon(50% 0, 58% 38%, 100% 58%, 100% 66%, 58% 56%, 56% 84%, 68% 94%, 68% 100%, 50% 95%, 32% 100%, 32% 94%, 44% 84%, 42% 56%, 0 66%, 0 58%, 42% 38%); }
+
+@keyframes bq3d-orbit { to { transform: rotateZ(360deg); } }
+
+/* "مكعب" — مكعب كود (أوجه فيها سطور كود ونوافذ) بيلف، ومكعبات صغيرة بتدور حواليه. */
+.bq3d-codecube > i { background-color: color-mix(in srgb, var(--site-surface) 70%, #000); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--site-primary) 70%, transparent), 0 0 24px color-mix(in srgb, var(--site-primary) 30%, transparent); background-image: radial-gradient(circle at .9rem .9rem, #ff5f57 0 .22rem, transparent .24rem), radial-gradient(circle at 1.6rem .9rem, #febc2e 0 .22rem, transparent .24rem), radial-gradient(circle at 2.3rem .9rem, #28c840 0 .22rem, transparent .24rem), repeating-linear-gradient(to bottom, transparent 0 .55rem, color-mix(in srgb, var(--site-primary) 75%, transparent) .55rem .8rem, transparent .8rem 1.1rem); background-size: auto, auto, auto, 70% 60%; background-position: 0 0, 0 0, 0 0, .8rem 2rem; background-repeat: no-repeat; }
+.bq3d-codecube > .f-right { background-size: auto, auto, auto, 45% 60%; }
+.bq3d-codecube > .f-top { background-size: auto, auto, auto, 55% 50%; }
+.bq3d-cubelet > i { background-color: var(--site-primary); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .3); }
+.bq3d-cubelet > :is(.f-right, .f-left) { filter: brightness(.75); }
+.bq3d-cubelet > .f-top { filter: brightness(1.15); }
+
+@keyframes bq3d-tumble { to { transform: rotateX(-24deg) rotateY(360deg); } }
+@keyframes bq3d-tumble-small { to { transform: rotateX(360deg) rotateY(360deg); } }
+
+/* "لوحات" — لوحات فنية متعلقة في الهوا على أعماق مختلفة، بتلف كأنك ماشي في معرض. */
+.bq3d-frames { position: absolute; transform: rotateY(-24deg) rotateX(6deg); }
+.bq3d-art { position: absolute; width: var(--w); height: var(--h); margin: calc(var(--h) / -2) 0 0 calc(var(--w) / -2); transform: translate3d(var(--x), var(--y), var(--z)); padding: .45rem; background-color: color-mix(in srgb, var(--site-surface) 50%, #fff); box-shadow: 0 0 0 .3rem color-mix(in srgb, var(--site-primary) 55%, #1f2937), 0 24px 40px -18px rgb(0 0 0 / .55); }
+.bq3d-art::before { content: ''; position: absolute; inset: .45rem; background-image: var(--art); }
+
+@keyframes bq3d-walk { 0%, 100% { transform: rotateY(-30deg) rotateX(6deg); } 50% { transform: rotateY(22deg) rotateX(2deg); } }
+
+/* "شماعة" — شماعة عليها فستان بيتمرجح، وشنطة تسوق جنبها. */
+.bq3d-hanger { position: absolute; transform-origin: 0 -5.5rem; }
+.bq3d-hanger .hook { position: absolute; left: -.9rem; top: -6.4rem; width: 1.8rem; height: 1.8rem; border-radius: 9999px; border: .25rem solid #9ca3af; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); }
+.bq3d-hanger .wire { position: absolute; left: -5rem; top: -4.8rem; width: 10rem; height: 2.2rem; background-color: #9ca3af; clip-path: polygon(50% 0, 100% 90%, 100% 100%, 0 100%, 0 90%, 50% 6%); }
+.bq3d-hanger .dress { position: absolute; left: -4.6rem; top: -2.8rem; width: 9.2rem; height: 11rem; background-image: linear-gradient(100deg, color-mix(in srgb, var(--site-primary) 70%, #000), var(--site-primary) 40%, color-mix(in srgb, var(--site-primary) 60%, #fff) 55%, var(--site-primary) 70%, color-mix(in srgb, var(--site-primary) 65%, #000)); clip-path: polygon(30% 0, 40% 0, 50% 8%, 60% 0, 70% 0, 72% 30%, 64% 38%, 100% 100%, 0 100%, 36% 38%, 28% 30%); }
+.bq3d-hanger .belt { position: absolute; left: -1.7rem; top: 1.2rem; width: 3.4rem; height: .5rem; border-radius: 9999px; background-color: color-mix(in srgb, #fff 75%, var(--site-primary)); }
+.bq3d-bag { position: absolute; }
+.bq3d-bag .body > i { background-color: color-mix(in srgb, var(--site-surface) 30%, #fff); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .1); }
+.bq3d-bag .body > .f-front::after { content: ''; position: absolute; left: 30%; right: 30%; top: 38%; height: 26%; border-radius: 9999px; background-color: var(--site-primary); }
+.bq3d-bag .body > :is(.f-right, .f-left) { filter: brightness(.85); }
+.bq3d-bag .handle { position: absolute; left: -1.3rem; top: -4.6rem; width: 2.6rem; height: 2.6rem; border-radius: 9999px; border: .3rem solid var(--site-primary); border-bottom-color: transparent; transform: translateZ(1.25rem); }
+
+@keyframes bq3d-hang { 0%, 100% { transform: rotateY(-28deg) rotateZ(3deg); } 50% { transform: rotateY(28deg) rotateZ(-3deg); } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .bq-reveal .bq3d-balloon { animation: bq3d-rise-up 5s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-confetti { animation: bq3d-confetti 4s linear infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-globe-spin { animation: bq3d-spin-y 20s linear infinite; }
+    .bq-reveal .bq3d-orbit-spin { animation: bq3d-orbit 7s linear infinite; }
+    .bq-reveal .bq3d-cube-spin { animation: bq3d-tumble 16s linear infinite; }
+    .bq-reveal .bq3d-cubelet-spin { animation: bq3d-tumble-small 6s linear infinite; animation-delay: var(--delay, 0s); }
+    .bq-reveal .bq3d-frames { animation: bq3d-walk 10s ease-in-out infinite; }
+    .bq-reveal .bq3d-hanger { animation: bq3d-hang 6s ease-in-out infinite; }
 }
 
 /* نسخة المجسم التانية في قسم التواصل ثابتة (حركة واحدة بس في الصفحة — أخف على الموبايل). */
