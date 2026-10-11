@@ -67,5 +67,16 @@ class Depth3dTemplatesTest extends TestCase
             $this->assertSame('change_template', $decision['action'], $message);
             $this->assertSame($brew->id, $decision['template_id'] ?? null, $message);
         }
+
+        // كل الـ20 بالاسم، من أول قالب عادي في نفس الفئة («شركة مقاولات 3D» من «شركة مقاولات» كانت بتتعادل
+        // مع «استوديو تصميم ثلاثي الأبعاد» — 2026-10-11)
+        foreach (Template::where('slug', 'like', '%-3d-%')->get() as $target) {
+            $from = Template::with('slots')->where('category', $target->category)->where('slug', 'not like', '%-3d-%')->orderBy('id')->firstOrFail();
+            $p = Project::factory()->for($from)->create();
+            GeneratedSite::factory()->for($p)->create(['content_json' => []]);
+            $p = $p->fresh(['template.slots', 'site']);
+            $message = 'غير القالب لقالب '.trim(explode('—', $target->name)[0]);
+            $this->assertSame($target->id, FollowUpIntent::detect($message, false, $p, $p->site)['template_id'] ?? null, $message);
+        }
     }
 }

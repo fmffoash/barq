@@ -251,8 +251,8 @@ class FollowUpIntent
             if ($score > 0) {
                 // كسر التعادل: نسبة كلمات اسم القالب الموجودة في الرسالة كلها («كافيه ليلى» = «كافيه ليلي» كاملة،
                 // مش «مطعم فاخر ليلي» — كلمة «كافيه» كانت اتشالت لأنها تخصص القالب الحالي «كافيه شارع»)
-                $coverage = collect($tokens)->filter(fn ($t) => $matches($t, array_diff_key($allWords, $negated)))->count() / count($tokens);
-                $scored[] = [$template, $score, $coverage];
+                $covered = collect($tokens)->filter(fn ($t) => $matches($t, array_diff_key($allWords, $negated)))->count();
+                $scored[] = [$template, $score, $covered / count($tokens), $covered];
             }
         }
 
@@ -264,6 +264,11 @@ class FollowUpIntent
         if (count($winners) > 1) {
             $best = max(array_column($winners, 2));
             $winners = array_values(array_filter($winners, fn ($s) => $s[2] === $best));
+        }
+        // تعادل: اللي كلمات أكتر من اسمه في الرسالة («شركة مقاولات 3D» مش «استوديو تصميم ثلاثي الأبعاد»)
+        if (count($winners) > 1) {
+            $most = max(array_column($winners, 3));
+            $winners = array_values(array_filter($winners, fn ($s) => $s[3] === $most));
         }
         // تعادل: القالب اللي في نفس فئة المشروع («عيادة الأطفال» لعيادة مش «متجر أطفال»)
         if (count($winners) > 1) {
