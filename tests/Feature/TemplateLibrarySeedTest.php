@@ -48,7 +48,8 @@ class TemplateLibrarySeedTest extends TestCase
             $this->assertSame($n, $templates->pluck('layout')->unique()->count(), "{$category}: layouts");
             $this->assertSame($n, $heroTitles->unique()->count(), "{$category}: hero titles");
             $this->assertSame($n, $templates->map(fn (Template $t) => trim(explode('—', $t->name)[0]))->unique()->count(), "{$category}: specialties");
-            $this->assertSame($n, $families->unique()->count(), "{$category}: colour families");
+            // عيلات الألوان مش متكررة في أول 25 (الدفعات 1/2) — الأنواع الفرعية الـ3D ممكن تكرر لو العيلات خلصت.
+            $this->assertSame(25, $families->take(25)->unique()->count(), "{$category}: colour families");
             $this->assertGreaterThanOrEqual(6, $variants->pluck('font')->merge($variants->pluck('heading_font'))->unique()->count(), "{$category}: fonts");
             $this->assertGreaterThanOrEqual(2, $templates->map(fn (Template $t) => $t->slots->firstWhere('key', 'hero_image')->default_value)->unique()->count(), "{$category}: cover photos");
         }
@@ -172,7 +173,7 @@ class TemplateLibrarySeedTest extends TestCase
                 }
             }
             $waveOneTwo = array_column(array_slice($plans, 0, 25), 'layout');
-            foreach (['brew', 'helix', 'gloss', 'forge', 'skyline', 'parcel', 'scholar', 'verdict', 'blocks', 'torque', 'festive', 'globe', 'cubic', 'canvas', 'atelier', 'bakery', 'nursery', 'shutter', 'essence', 'pawprint'] as $layout) {
+            foreach (array_keys(\App\Support\SceneLibrary::all()) as $layout) {
                 $this->assertNotContains($layout, $waveOneTwo, "{$category['category']}: 3D layout leaked into waves 1-2");
             }
         }

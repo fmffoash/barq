@@ -188,6 +188,17 @@ chown -R www-data:www-data storage bootstrap/cache
   - أسطوانة عامة: `site/partials/depth/cylinder` (شرايح + غطا، اللون من `--cyl`).
   - المكتبة بقت 520 قالب (`LIBRARY_VERSION = 2026-10-11.6`). تستات: `test_3d_layouts_stay_in_their_own_category` + `Depth3dTemplatesTest` (الـ20 بيفتحوا عام وفي المحرر بكل الخانات، والشات بيطبّقهم بالاسم). الـ suite 284.
   - الشات: «3D» / «ثري دي» / «ثلاثي الأبعاد» بقت كلمة في اسم القالب (`FollowUpIntent::namedTemplate`، كانت بتتشال لأنها أقل من 3 حروف).
+- **الأنواع الفرعية + ميكس + أرشيف/مفضلة (2026-10-11، طلب فؤاد «كله مرة واحدة»):**
+  - 78 رسمة جديدة لكل نوع تحت الفئات (أسنان، باطنة، عظام، ألبان، عطارة، كاوتش، بطاريات، باربر، جيم حريمي، فول، بيتزا…)، كل واحدة قالب لوحده
+    (`wave 3` + `layout` = مفتاح الرسمة). المكتبة بقت 598 قالب، و98 تصميم 3D (`LIBRARY_VERSION = 2026-10-11.7`).
+  - الرسومات الجديدة وصف بيانات في `app/Support/SceneLibrary.php` (قطع box/cyl/ball/shape/glyph/plane/group، ألوان رموز)، بيترندرها
+    `site/partials/depth/scenes/_spec` و`_part`. `site/partials/depth/scene` بيختار: Blade (الـ20 الأولى) أو بيانات. أسطوانة عامة `depth/cylinder`.
+  - **ميكس:** `generated_sites.scene_override` — أي رسمة على أي قالب: من «تصميم الموقع» في التعديل الحر (قايمة «🧊 رسمة 3D»)، أو الشات
+    («حط رسمة السنة» / «شيل الرسمة» → `set_scene`، `FollowUpIntent::namedScene`). على تصميم 3D بتبدّل رسمته، وعلى أي تصميم تاني طبقة `.bq3d-overlay`.
+  - **أرشيف/مفضلة/حذف** في صفحة القوالب: ⭐ مفضلة لكل يوزر (`template_favorites`)، 📦 أرشيف للأدمن (`templates.archived_at` + `is_active=false`،
+    والمكتبة مابترجّعوش)، 🗑 حذف للأدمن (مرفوض لو عليه مشاريع، وقالب المكتبة بيتسجّل في `Setting deleted_template_slugs` فمابيرجعش).
+  - ألوان: لو عيلات الألوان خلصت في فئة، الأنواع الفرعية بتكرر (`paletteKeysFor`). تست العيلات بقى لأول 25 بس.
+  - تستات: `TemplateManagementAndScenesTest` + `Depth3dTemplatesTest` (كل الـ98 بيفتحوا وفي المحرر وبالاسم في الشات). الـ suite 286.
 - **المكتبة بقت 500 قالب (26 تصميم)** — دمج الدفعة التانية (10 تصميمات + 200 قالب) ونشرها 2026-10-11.
 - ⚠️ **درس نشر (2026-10-11):** `.env` على السيرفر لازم يبقى `root:www-data` بصلاحية 640. كان `root:root`، فأوامر
   `artisan` بيوزر `www-data` ماقدرتش تقراه و`config:cache` حفظ إعدادات افتراضية (من غير APP_KEY وعلى sqlite) لدقيقتين.

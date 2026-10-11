@@ -24,7 +24,8 @@
         default => 'background-image: radial-gradient(ellipse 55% 60% at 70% 30%, color-mix(in srgb, var(--site-primary) 24%, transparent), transparent 70%), radial-gradient(ellipse 40% 50% at 15% 80%, color-mix(in srgb, var(--site-primary-deep) 18%, transparent), transparent 70%);',
     };
     $rating = $sections->firstWhere('kind', 'testimonials')['rating'] ?? null;
-    $sceneView = 'site.partials.depth.scenes.'.$dp['scene'];
+    // رسمة متختارة للموقع ده (site.scene_override — ميكس) بتغلب رسمة القالب.
+    $sceneKey = ($sceneOverride ?? null) ?: $dp['scene'];
 @endphp
 
 {{-- overflow-x: clip — قلبة الظهور الـ3D والمجسمات الطالعة برّه الحاويات ماتعملش سكرول عرضي على
@@ -52,7 +53,7 @@
             @if ($dp['hero'] === 'stage')
                 <div class="relative mx-auto flex max-w-6xl flex-col items-center gap-8 text-center">
                     <div class="flex h-[15rem] items-center justify-center sm:h-[20rem]">
-                        @include($sceneView)
+                        @include('site.partials.depth.scene', ['sceneKey' => $sceneKey])
                     </div>
                     <span class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold" style="{{ $ghostButton }}">
                         <span class="h-2 w-2 rounded-full" style="background-color: var(--site-primary);" aria-hidden="true"></span>
@@ -103,10 +104,10 @@
                                 </div>
                             </div>
                             <div class="absolute -bottom-16 start-[-3rem] sm:start-[-5rem]" style="--bq3d-size: 17rem;">
-                                @include($sceneView)
+                                @include('site.partials.depth.scene', ['sceneKey' => $sceneKey])
                             </div>
                         @else
-                            <div class="flex justify-center">@include($sceneView)</div>
+                            <div class="flex justify-center">@include('site.partials.depth.scene', ['sceneKey' => $sceneKey])</div>
                         @endif
                     </div>
                 </div>
@@ -195,7 +196,7 @@
         <section id="{{ $section['key'] }}" class="relative px-5 py-16 sm:px-10 sm:py-24">
             <div data-reveal class="bq3d-rise relative mx-auto max-w-6xl overflow-hidden px-6 py-16 text-center sm:px-16 sm:py-20" style="border-radius: calc({{ $radius }} * 1.4); background-image: linear-gradient(135deg, var(--site-primary), var(--site-primary-deep)); color: var(--site-on-primary); box-shadow: 0 10px 0 color-mix(in srgb, var(--site-primary-deep) 70%, #000), 0 40px 60px -30px rgb(0 0 0 / .5);">
                 <div class="bq3d-still pointer-events-none absolute -end-10 -top-10 opacity-40 sm:opacity-60" style="--bq3d-size: 14rem;" aria-hidden="true">
-                    @include($sceneView)
+                    @include('site.partials.depth.scene', ['sceneKey' => $sceneKey])
                 </div>
                 <div class="relative mx-auto flex max-w-2xl flex-col items-center gap-6" style="{{ $onPrimaryScope }}">
                     @if ($heading)

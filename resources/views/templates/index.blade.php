@@ -22,8 +22,19 @@
         </div>
     @endif
 
+    {{-- تبويبات (2026-10-11): الكل / المفضلة / الأرشيف (أدمن). --}}
+    <div class="mb-4 flex flex-wrap gap-2 text-sm">
+        @foreach (array_filter(['all' => 'كل القوالب', 'favorites' => '⭐ المفضلة', 'archived' => auth()->user()->is_admin ? '📦 الأرشيف ('.$archivedCount.')' : null]) as $key => $label)
+            <a href="{{ route('templates.index', array_filter(['view' => $key === 'all' ? null : $key, 'category' => request('category'), 'q' => request('q')])) }}"
+               @class(['rounded-full px-4 py-1.5 transition', 'bg-amber-400 font-semibold text-slate-950' => $view === $key, 'border border-slate-700 text-slate-300 hover:border-amber-400' => $view !== $key])>{{ $label }}</a>
+        @endforeach
+    </div>
+
     {{-- بحث وفلترة --}}
     <form method="GET" action="{{ route('templates.index') }}" class="mb-6 flex flex-wrap gap-3">
+        @if ($view !== 'all')
+            <input type="hidden" name="view" value="{{ $view }}">
+        @endif
         <input
             type="text"
             name="q"
@@ -55,7 +66,11 @@
 
     @if ($templates->isEmpty())
         <div class="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-10 text-center text-slate-500">
-            @if (request('q') || request('category'))
+            @if ($view === 'favorites')
+                لسه مفيش قوالب في المفضلة — دوس ☆ على أي قالب يعجبك.
+            @elseif ($view === 'archived')
+                الأرشيف فاضي.
+            @elseif (request('q') || request('category'))
                 مفيش قوالب مطابقة للفلترة دي.
             @else
                 لسه مفيش أي قالب. ابدأ بإضافة أول قالب.
@@ -106,6 +121,26 @@
                         @endif
 
                         <a href="{{ route('templates.show', $template) }}" class="ms-auto rounded-lg px-2 py-1.5 text-xs text-slate-500 transition hover:text-slate-300">التفاصيل</a>
+                    </div>
+
+                    {{-- مفضلة (أي يوزر) + أرشيف/حذف (أدمن) — 2026-10-11. --}}
+                    <div class="flex items-center gap-2 border-t border-slate-800 px-5 py-2.5">
+                        @php $isFav = in_array($template->id, $favoriteIds, true); @endphp
+                        <form method="POST" action="{{ route('templates.favorite', $template) }}">
+                            @csrf
+                            <button type="submit" title="{{ $isFav ? 'شيل من المفضلة' : 'ضيف للمفضلة' }}" @class(['rounded-lg px-2.5 py-1 text-xs transition', 'bg-amber-400/15 text-amber-300' => $isFav, 'text-slate-400 hover:text-amber-300' => ! $isFav])>{{ $isFav ? '⭐ مفضّل' : '☆ مفضلة' }}</button>
+                        </form>
+                        @if (auth()->user()->is_admin)
+                            <form method="POST" action="{{ route('templates.archive', $template) }}" class="ms-auto">
+                                @csrf
+                                <button type="submit" class="rounded-lg px-2.5 py-1 text-xs text-slate-400 transition hover:text-sky-300">{{ $template->archived_at ? '↩ رجّعه' : '📦 أرشيف' }}</button>
+                            </form>
+                            <form method="POST" action="{{ route('templates.destroy', $template) }}" onsubmit="return confirm({{ \Illuminate\Support\Js::from('امسح «'.$template->name.'» نهائياً؟ مش هيرجع تاني حتى مع تحديث المكتبة.') }})">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="rounded-lg px-2.5 py-1 text-xs text-slate-500 transition hover:text-rose-400">🗑 حذف</button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             @endforeach

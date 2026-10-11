@@ -159,6 +159,10 @@
         font-style: {{ $fontStyle }};
     "
 >
+    @if (! empty($sceneOverride) && empty($isDepthLayout))
+        {{-- رسمة 3D مضافة على قالب عادي (ميكس، 2026-10-11) — طبقة عايمة جنب الهيرو. --}}
+        <div class="bq3d-overlay" aria-hidden="true">@include('site.partials.depth.scene', ['sceneKey' => $sceneOverride])</div>
+    @endif
     @include('site.layouts.'.($layout ?: 'classic'))
 
     {{-- زرار واتساب/اتصال عائم لو رابط التواصل واتساب أو تليفون — مش في المحرر المباشر. --}}

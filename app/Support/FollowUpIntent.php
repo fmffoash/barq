@@ -99,6 +99,16 @@ class FollowUpIntent
             }
         }
 
+        // 3.5 رسمة 3D (ميكس، 2026-10-11): "حط رسمة سنة"، "غيّر الرسمة للفنجان"، "شيل الرسمة".
+        if ($has('رسمه', 'الرسمه', 'رسمة', 'الرسمة', 'مجسم', 'المجسم', 'رسومات')) {
+            if ($has('شيل', 'امسح', 'احذف', 'بلاش', 'الغي', 'من غير')) {
+                return ['action' => 'set_scene', 'scene' => null];
+            }
+            if ($scene = self::namedScene($message)) {
+                return ['action' => 'set_scene', 'scene' => $scene];
+            }
+        }
+
         // 4. قالب — كلمة "قالب/تصميم/تيمبلت" صريحة، أو "شكل" مع فعل تغيير.
         if ($has('قالب', 'القالب', 'تيمبلت', 'template', 'layout', 'تصميم', 'ستايل') || ($has('شكل', 'شكله', 'شكلها') && $change)) {
             $decision = ['action' => 'change_template', 'style_hint' => $message];
@@ -276,6 +286,39 @@ class FollowUpIntent
         }
 
         return count($winners) === 1 ? $winners[0][0] : null;
+    }
+
+    // الرسمة اللي اسمها متقال في الرسالة (أكتر كلمات اسم متطابقة، ولازم واحدة بس تكسب).
+    public static function namedScene(string $message): ?string
+    {
+        $base = fn (string $w) => preg_replace('/^(وال|بال|فال|كال|لل|ال|و|ب|ف|ل)(?=\p{L}{3,})/u', '', $w) ?? $w;
+        // اسم الرسمة: "ال" بس اللي بتتشال (حرف الباء في «بيتزا» مش حرف جر). الرسالة: الصيغتين.
+        $article = fn (string $w) => preg_replace('/^(وال|بال|فال|كال|لل|ال)(?=\p{L}{3,})/u', '', $w) ?? $w;
+        $raw = preg_split('/[^\p{L}\p{N}]+/u', PastedText::normalizeArabic($message), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $words = array_values(array_unique([...array_map($article, $raw), ...array_map($base, $raw)]));
+        $base = $article;
+        $ignore = ['رسمه', 'مجسم', 'رسومات', 'قالب'];
+        // كلمة "رسمة" نفسها مش اسم رسمة («رسم بياني» كانت بتتعادل معاها)
+        $words = array_values(array_filter($words, fn ($w) => mb_strlen($w) >= 3 && ! in_array($w, [...$ignore, ...self::GENERIC_NAME_WORDS, 'موقع', 'غير', 'ضيف'], true)));
+        $best = [];
+        $top = 0;
+        foreach (SceneLibrary::all() as $key => $label) {
+            $tokens = array_filter(array_map($base, preg_split('/[^\p{L}\p{N}]+/u', PastedText::normalizeArabic($label), -1, PREG_SPLIT_NO_EMPTY) ?: []), fn ($t) => mb_strlen($t) >= 3 && ! in_array($t, $ignore, true));
+            // كلمة مطابقة = 2، بداية كلمة (4 حروف فأكتر) = 1 — «بيتزا» تكسب «مفتاح بيت»
+            $score = array_sum(array_map(fn ($t) => collect($words)->contains($t) ? 2
+                : (collect($words)->contains(fn ($w) => mb_strlen($w) >= 4 && mb_strlen($t) >= 4 && (str_starts_with($w, $t) || str_starts_with($t, $w))) ? 1 : 0), $tokens));
+            // تعادل: الاسم اللي اتقال كله («عربية» = عربية، مش «عربية تسوق»)
+            if ($score > 0) {
+                $score += 0.5 * $score / (2 * count($tokens));
+            }
+            if ($score > $top) {
+                [$top, $best] = [$score, [$key]];
+            } elseif ($score === $top && $score > 0) {
+                $best[] = $key;
+            }
+        }
+
+        return count($best) === 1 ? $best[0] : null;
     }
 
     public static function heroImageSlot(Template $template): ?string

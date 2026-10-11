@@ -101,6 +101,19 @@
             </div>
         @endif
 
+        {{-- رسمة 3D (ميكس، 2026-10-11) — أي رسمة من المكتبة على أي قالب. على تصميم 3D بتبدّل رسمته، وعلى
+        أي تصميم تاني بتظهر عايمة جنب أول الصفحة. --}}
+        <div class="bq-drawer-section">
+            <label class="bq-checkbox-label" style="display: block; margin-bottom: 6px;">🧊 رسمة 3D</label>
+            <select name="scene_override" style="width: 100%; border-radius: 8px; border: 1px solid #334155; background: #020617; padding: 10px 14px; font-size: 14px; color: #f1f5f9;">
+                <option value="">— من غير رسمة إضافية (زي القالب) —</option>
+                @foreach (\App\Support\SceneLibrary::all() as $sceneKey => $sceneLabel)
+                    <option value="{{ $sceneKey }}" @selected($site->scene_override === $sceneKey)>{{ $sceneLabel }}</option>
+                @endforeach
+            </select>
+            <p class="bq-hint">التغيير بيبان بعد الحفظ وتحديث الصفحة.</p>
+        </div>
+
         <div class="bq-drawer-section">
             <label class="bq-checkbox-label">
                 <input type="checkbox" name="use_custom_colors" value="1" @checked($site->colors_override_json)>

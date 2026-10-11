@@ -30,6 +30,16 @@ class Template extends Model
         'parcel', 'scholar', 'verdict', 'blocks', 'torque',
         'festive', 'globe', 'cubic', 'canvas', 'atelier',
         'bakery', 'nursery', 'shutter', 'essence', 'pawprint',
+        'dish', 'beanpot', 'pizza', 'skewer', 'juice', 'tooth', 'stetho', 'joint',
+        'eye', 'teddy', 'capsule', 'tubes', 'drop', 'barber', 'polish', 'stones',
+        'lipstick', 'yoga', 'boxing', 'mat', 'swim', 'villa', 'chalet', 'storefront',
+        'key', 'dairy', 'spice', 'cart', 'phone', 'speech', 'laptop', 'crayons',
+        'calc', 'chart', 'stamp', 'sofa', 'kitchen', 'paint', 'saw', 'tire',
+        'battery', 'oil', 'wash', 'car', 'rings', 'partyhat', 'mic', 'spotlight',
+        'jet', 'kaaba', 'beach', 'tent', 'apps', 'servers', 'padlock', 'neural',
+        'pencils', 'brackets', 'quill', 'suit', 'heels', 'abaya', 'kidswear', 'bread',
+        'kunafa', 'donut', 'icecream', 'rattle', 'abc', 'clapper', 'drone', 'polaroid',
+        'incense', 'soap', 'cat', 'dog', 'bird', 'petbowl',
     ];
 
     protected $fillable = [
@@ -88,6 +98,12 @@ class Template extends Model
 
     // الاسم العربي المعروض لتصميم بصري معيّن — مستخدم في صفحات الإدارة (index/show) عشان
     // مايتكررش نفس الـ match في أكتر من فيو.
+    // تصميم 3D (site/partials/depth) = مفتاح رسمة في SceneLibrary.
+    public static function isDepthLayout(?string $layout): bool
+    {
+        return $layout !== null && \App\Support\SceneLibrary::exists($layout);
+    }
+
     public static function layoutLabel(string $layout): string
     {
         return match ($layout) {
@@ -103,6 +119,26 @@ class Template extends Model
             'parcel' => 'طرد 3D', 'scholar' => 'كتاب 3D', 'verdict' => 'ميزان 3D', 'blocks' => 'طوب 3D', 'torque' => 'عجلة 3D',
             'festive' => 'احتفال 3D', 'globe' => 'كرة أرضية 3D', 'cubic' => 'مكعب 3D', 'canvas' => 'لوحات 3D', 'atelier' => 'شماعة 3D',
             'bakery' => 'تورتة 3D', 'nursery' => 'مكعبات لعب 3D', 'shutter' => 'كاميرا 3D', 'essence' => 'عطر 3D', 'pawprint' => 'أثر 3D',
+            'dish' => 'طبق وشوكة 3D', 'beanpot' => 'قدرة فول 3D', 'pizza' => 'بيتزا 3D', 'skewer' => 'سيخ مشويات 3D',
+            'juice' => 'كوباية عصير 3D', 'tooth' => 'سنة 3D', 'stetho' => 'قلب وسماعة 3D', 'joint' => 'عضمة ومفصل 3D',
+            'eye' => 'عين 3D', 'teddy' => 'دبدوب 3D', 'capsule' => 'كبسولات دوا 3D', 'tubes' => 'أنابيب تحاليل 3D',
+            'drop' => 'قطرة لامعة 3D', 'barber' => 'عمود الحلاق ومقص 3D', 'polish' => 'زجاجة مانيكير 3D', 'stones' => 'أحجار سبا وشمعة 3D',
+            'lipstick' => 'روج 3D', 'yoga' => 'كورة يوجا ودمبل 3D', 'boxing' => 'جوانتي وكيس ملاكمة 3D', 'mat' => 'مات يوجا 3D',
+            'swim' => 'عوامة وموج 3D', 'villa' => 'فيلا بحمام سباحة 3D', 'chalet' => 'شاليه ع البحر 3D', 'storefront' => 'محل تجاري 3D',
+            'key' => 'مفتاح بيت 3D', 'dairy' => 'كرتونة لبن وجبنة 3D', 'spice' => 'برطمانات عطارة 3D', 'cart' => 'عربية تسوق 3D',
+            'phone' => 'موبايل 3D', 'speech' => 'فقاعات كلام (لغات) 3D', 'laptop' => 'لابتوب 3D', 'crayons' => 'ألوان شمع 3D',
+            'calc' => 'آلة حاسبة وعملات 3D', 'chart' => 'رسم بياني طالع 3D', 'stamp' => 'ورقة وختم 3D', 'sofa' => 'كنبة 3D',
+            'kitchen' => 'مطبخ 3D', 'paint' => 'جردل ورولة دهان 3D', 'saw' => 'منشار وخشب 3D', 'tire' => 'كاوتش 3D',
+            'battery' => 'بطارية 3D', 'oil' => 'جركن زيت 3D', 'wash' => 'إسفنجة وفقاعات 3D', 'car' => 'عربية 3D',
+            'rings' => 'خاتمين 3D', 'partyhat' => 'طرطور وبلالين 3D', 'mic' => 'مايك ومنصة 3D', 'spotlight' => 'كشافات وسماعة 3D',
+            'jet' => 'طيارة 3D', 'kaaba' => 'الكعبة 3D', 'beach' => 'شمسية وشاطئ 3D', 'tent' => 'خيمة ونار 3D',
+            'apps' => 'موبايل وأيقونات 3D', 'servers' => 'سيرفرات وسحابة 3D', 'padlock' => 'قفل أمان 3D', 'neural' => 'شبكة ذكاء اصطناعي 3D',
+            'pencils' => 'أقلام وباليتة ألوان 3D', 'brackets' => 'أقواس كود 3D', 'quill' => 'ريشة وحبر 3D', 'suit' => 'بدلة وكرافتة 3D',
+            'heels' => 'كعب وشنطة 3D', 'abaya' => 'عباية 3D', 'kidswear' => 'تيشيرت أطفال 3D', 'bread' => 'عيش وفينو 3D',
+            'kunafa' => 'صينية كنافة 3D', 'donut' => 'دونتس 3D', 'icecream' => 'آيس كريم 3D', 'rattle' => 'رضّاعة وخشخيشة 3D',
+            'abc' => 'حروف وأرقام 3D', 'clapper' => 'كلاكيت تصوير 3D', 'drone' => 'درون 3D', 'polaroid' => 'صور مطبوعة 3D',
+            'incense' => 'مبخرة ودخان 3D', 'soap' => 'صابون طبيعي 3D', 'cat' => 'قطة 3D', 'dog' => 'كلب 3D',
+            'bird' => 'عصفورة 3D', 'petbowl' => 'طبق أكل حيوانات 3D',
             default => 'كلاسيك',
         };
     }

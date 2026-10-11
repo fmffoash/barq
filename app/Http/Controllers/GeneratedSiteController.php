@@ -376,7 +376,14 @@ class GeneratedSiteController extends Controller
             }
         }
 
-        return [
+        // رسمة 3D للموقع ده (ميكس، 2026-10-11) — بس لو الفورم بعتها (الفورم القديم مابيبعتهاش فمايمسحهاش).
+        $scene = [];
+        if ($request->has('scene_override')) {
+            $key = (string) $request->input('scene_override');
+            $scene['scene_override'] = \App\Support\SceneLibrary::exists($key) ? $key : null;
+        }
+
+        return $scene + [
             'colors_override_json' => $colorsOverride,
             'font_override' => $fontOverride,
             'font_weight_override' => $fontWeightOverride,

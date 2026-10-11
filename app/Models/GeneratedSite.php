@@ -28,6 +28,7 @@ class GeneratedSite extends Model
         'sections_override_json',
         'custom_blocks_json',
         'photo_pool_json',
+        'scene_override',
         'status',
         'exported_at',
         'last_generated_at',

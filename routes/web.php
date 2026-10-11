@@ -36,6 +36,8 @@ Route::middleware(['auth', 'session.valid'])->group(function () {
     // الإنشاء/التعديل متسجّل الأول عشان templates/create ماتتلقطش كـ show
     Route::middleware('admin')->group(fn () => Route::resource('templates', TemplateController::class)->except(['index', 'show']));
     Route::resource('templates', TemplateController::class)->only(['index', 'show']);
+    Route::post('templates/{template}/favorite', [TemplateController::class, 'favorite'])->name('templates.favorite');
+    Route::middleware('admin')->post('templates/{template}/archive', [TemplateController::class, 'archive'])->name('templates.archive');
     // معاينة كاملة لشكل القالب الحقيقي قبل اختياره (TemplatePreviewService) — صفحة واحدة بس
     // وقت ما فؤاد يدوس "معاينة"، مش iframe لكل كارت (شوف CLAUDE.md).
     Route::get('templates/{template}/preview', [TemplateController::class, 'preview'])

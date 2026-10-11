@@ -432,6 +432,7 @@ class AiProjectAssistantService
             'update_image' => $this->applyUpdateImage($project, $site, $imagePath, $decision),
             'add_custom_block' => $this->applyAddCustomBlock($site, $imagePath, $decision),
             'remove_custom_block' => $this->applyRemoveCustomBlock($site, $decision),
+            'set_scene' => $this->applySetScene($site, $decision),
             default => is_string($decision['reply'] ?? null) && trim($decision['reply']) !== ''
                 ? $decision['reply']
                 : 'مش متأكد فاهم طلبك — ممكن توضحه أكتر؟',
@@ -589,6 +590,18 @@ class AiProjectAssistantService
             ],
             'required' => ['category', 'project_name', 'style_hint', 'content'],
         ];
+    }
+
+    // رسمة 3D للموقع ده بس (ميكس، 2026-10-11) — null = شيلها.
+    private function applySetScene(GeneratedSite $site, array $decision): string
+    {
+        $key = $decision['scene'] ?? null;
+        $key = is_string($key) && \App\Support\SceneLibrary::exists($key) ? $key : null;
+        $site->update(['scene_override' => $key]);
+
+        return $key
+            ? 'تمام، حطيت رسمة «'.\App\Support\SceneLibrary::all()[$key].'» على موقعك — اتفرج عليها.'
+            : 'تمام، شلت الرسمة الإضافية ورجع شكل القالب زي ما كان.';
     }
 
     private function applyChangeTemplate(Project $project, array $decision): string

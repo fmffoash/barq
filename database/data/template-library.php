@@ -57,6 +57,11 @@ return [
             ['slug' => 'mtaaam-okafyhat-ftatry-taam-zmn-altybyn', 'wave' => 2, 'name' => 'فطاطري — طعم زمن الطيبين', 'hero_title' => 'فطير مشلتت وحلو زي زمان', 'hero_subtitle' => 'فطير بالسمنة البلدي وحشوات حادقة وحلوة، معمول على الفرن بإيدين بتفهم.'],
             ['slug' => 'mtaaam-okafyhat-kafyh-msah-aaml-kho-okod', 'wave' => 2, 'name' => 'كافيه مساحة عمل — قهوة وكود', 'hero_title' => 'اشتغل وقهوتك جنبك', 'hero_subtitle' => 'إنترنت سريع ومكاتب مريحة وفيشة لكل كرسي، وقهوة بتتعمل لحد ما مشروعك يخلص.'],
             ['slug' => 'mtaaam-okafyhat-3d-brew', 'wave' => 3, 'layout' => 'brew', 'name' => 'كافيه 3D — فنجان بيلف قدامك', 'hero_title' => 'فنجان قهوة يستاهل الزيارة', 'hero_subtitle' => 'حبوب محمّصة طازة ومشروبات سخنة وباردة بتتحضّر قدامك، في مكان يفتح النفس.'],
+            ['slug' => 'mtaaam-okafyhat-3d-dish', 'wave' => 3, 'layout' => 'dish', 'name' => 'مطعم 3D — طبق على أصوله', 'hero_title' => 'طبق سخن مستنيك', 'hero_subtitle' => 'أكلات متطبوخة طازة كل يوم، وقعدة مريحة للعيلة والصحاب، وتوصيل لحد البيت.'],
+            ['slug' => 'mtaaam-okafyhat-3d-beanpot', 'wave' => 3, 'layout' => 'beanpot', 'name' => 'فول وطعمية 3D — قدرة الصبح', 'hero_title' => 'فطار شعبي من القدرة', 'hero_subtitle' => 'فول مدمس وطعمية سخنة وبيض وبطاطس، بطعم زمان وأسعار في متناول الكل.'],
+            ['slug' => 'mtaaam-okafyhat-3d-pizza', 'wave' => 3, 'layout' => 'pizza', 'name' => 'بيتزا 3D — عجينة بتلف', 'hero_title' => 'بيتزا بتطلع من الفرن لبابك', 'hero_subtitle' => 'عجينة بتتعمل كل يوم وجبنة موتزاريلا بزيادة، وطلبك يوصلك سخن.'],
+            ['slug' => 'mtaaam-okafyhat-3d-skewer', 'wave' => 3, 'layout' => 'skewer', 'name' => 'مشويات 3D — سيخ على الفحم', 'hero_title' => 'ريحة الفحم بتنادي', 'hero_subtitle' => 'كباب وكفتة وريش وفراخ مشوية على الفحم، بتتبّل على طريقتنا الخاصة.'],
+            ['slug' => 'mtaaam-okafyhat-3d-juice', 'wave' => 3, 'layout' => 'juice', 'name' => 'محل عصير 3D — كوباية فريش', 'hero_title' => 'عصير يردّ الروح', 'hero_subtitle' => 'عصاير فريش وكوكتيلات فواكه وسموذي، بتتعصر قدامك من غير سكر مضاف.'],
         ],
         'tones' => [
             'warm' => [
@@ -151,6 +156,14 @@ return [
             ['slug' => 'aayadat-okhdmat-tby-sydly-bhg-alkhdm-alkryb', 'wave' => 2, 'name' => 'صيدلية — بهجة الخدمة القريبة', 'hero_title' => 'صيدلية الحي اللي بتعرفك', 'hero_subtitle' => 'أدوية ومستلزمات طبية ومنتجات عناية، واستشارة صيدلي وتوصيل لحد البيت.'],
             ['slug' => 'aayadat-okhdmat-tby-maaml-orath-ogynat-byanat-dkyk', 'wave' => 2, 'name' => 'معمل وراثة وجينات — بيانات دقيقة', 'hero_title' => 'تحاليل جينية بنتايج دقيقة', 'hero_subtitle' => 'فحوصات وراثية قبل الجواز والحمل، وتقارير مفهومة مع استشارة متخصص.'],
             ['slug' => 'aayadat-okhdmat-tbya-3d-helix', 'wave' => 3, 'layout' => 'helix', 'name' => 'مركز طبي 3D — رعاية بتقنية حديثة', 'hero_title' => 'رعاية طبية بأحدث تقنية', 'hero_subtitle' => 'كشف دقيق وأجهزة حديثة وفريق طبي بيتابع حالتك خطوة بخطوة لحد ما تطمّن.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-tooth', 'wave' => 3, 'layout' => 'tooth', 'name' => 'عيادة أسنان 3D — ابتسامة بتلمع', 'hero_title' => 'ابتسامتك تستاهل تلمع', 'hero_subtitle' => 'تنظيف وتبييض وتقويم وزراعة أسنان، بأحدث الأجهزة ومن غير ألم.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-stetho', 'wave' => 3, 'layout' => 'stetho', 'name' => 'عيادة باطنة 3D — قلب مطمّن', 'hero_title' => 'صحتك من جوه أهم حاجة', 'hero_subtitle' => 'كشف باطنة وقلب وضغط وسكر، ومتابعة دورية بخطة علاج واضحة.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-joint', 'wave' => 3, 'layout' => 'joint', 'name' => 'عيادة عظام 3D — مفاصل سليمة', 'hero_title' => 'ارجع اتحرك من غير وجع', 'hero_subtitle' => 'علاج آلام المفاصل والعمود الفقري والكسور، وجلسات تأهيل لحد ما ترجع لنشاطك.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-eye', 'wave' => 3, 'layout' => 'eye', 'name' => 'مركز عيون 3D — نظرة واضحة', 'hero_title' => 'عينك في أمان معانا', 'hero_subtitle' => 'كشف نظر وفحص شبكية وليزك ومياه بيضا، بأجهزة تشخيص دقيقة.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-teddy', 'wave' => 3, 'layout' => 'teddy', 'name' => 'طبيب أطفال 3D — دبدوب وحنان', 'hero_title' => 'صحة طفلك في أمان', 'hero_subtitle' => 'كشف ومتابعة نمو وتطعيمات في مكان مريح يحبه الأطفال.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-capsule', 'wave' => 3, 'layout' => 'capsule', 'name' => 'صيدلية 3D — دواك موجود', 'hero_title' => 'دواك عندنا وتوصيله أسرع', 'hero_subtitle' => 'أدوية ومستلزمات طبية ومنتجات عناية، وصيدلي يرد على أسئلتك طول اليوم.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-tubes', 'wave' => 3, 'layout' => 'tubes', 'name' => 'معمل تحاليل 3D — نتيجة دقيقة', 'hero_title' => 'تحاليلك بدقة وسرعة', 'hero_subtitle' => 'كل التحاليل الطبية بنتايج سريعة على الموبايل، وسحب عينات من البيت.'],
+            ['slug' => 'aayadat-okhdmat-tbya-3d-drop', 'wave' => 3, 'layout' => 'drop', 'name' => 'عيادة جلدية وتجميل 3D — بشرة صافية', 'hero_title' => 'بشرتك ترجع تنوّر', 'hero_subtitle' => 'علاج حب الشباب والتصبغات وليزر وفيلر، بخطة على مقاس بشرتك.'],
         ],
         'tones' => [
             'warm' => [
@@ -245,6 +258,10 @@ return [
             ['slug' => 'salonat-otgmyl-hlak-klasyk-ksat-fyntag', 'wave' => 2, 'name' => 'حلاق كلاسيك — قصات فينتاج', 'hero_title' => 'حلاقة بالموس وقصات أيام زمان', 'hero_subtitle' => 'ذقن بالفوطة السخنة وقصات كلاسيك مظبوطة، في محل بروح الستينات.'],
             ['slug' => 'salonat-otgmyl-astsharat-sbgh-alshaar-thkaaa-astnaaay-ykhtar-drgtk', 'wave' => 2, 'name' => 'استشارات صبغة الشعر — ذكاء اصطناعي يختار درجتك', 'hero_title' => 'درجة صبغة تليق ببشرتك', 'hero_subtitle' => 'تحليل لون البشرة والعين بالكاميرا، واقتراح درجات صبغة تناسبك قبل ما تبدئي.'],
             ['slug' => 'salonat-otgmyl-3d-gloss', 'wave' => 3, 'layout' => 'gloss', 'name' => 'صالون 3D — لمعة وأناقة', 'hero_title' => 'إطلالة بتلمع في كل مناسبة', 'hero_subtitle' => 'شعر ومكياج وعناية بالبشرة بمنتجات أصلية، وخبيرات بيهتموا بكل تفصيلة.'],
+            ['slug' => 'salonat-otgmyl-3d-barber', 'wave' => 3, 'layout' => 'barber', 'name' => 'باربر 3D — قصة ودقن', 'hero_title' => 'قصّتك على أصولها', 'hero_subtitle' => 'قص شعر وتهذيب دقن وعناية رجالي، بإيد حلاقين خبرة وأدوات معقّمة.'],
+            ['slug' => 'salonat-otgmyl-3d-polish', 'wave' => 3, 'layout' => 'polish', 'name' => 'صالون أظافر 3D — لمسة لون', 'hero_title' => 'أظافرك بقت حكاية', 'hero_subtitle' => 'مانيكير وباديكير وجل وأكريليك بتصميمات جديدة كل موسم.'],
+            ['slug' => 'salonat-otgmyl-3d-stones', 'wave' => 3, 'layout' => 'stones', 'name' => 'سبا 3D — أحجار وهدوء', 'hero_title' => 'ساعة هدوء ترجعك جديد', 'hero_subtitle' => 'مساج وحمام مغربي وجلسات استرخاء بزيوت طبيعية في جو هادي.'],
+            ['slug' => 'salonat-otgmyl-3d-lipstick', 'wave' => 3, 'layout' => 'lipstick', 'name' => 'ميكب آرتست 3D — روج وإطلالة', 'hero_title' => 'إطلالة تخطف العين', 'hero_subtitle' => 'مكياج سهرات وعرايس وتصوير، بمنتجات عالمية وتسريحات تكمّل اللوك.'],
         ],
         'tones' => [
             'warm' => [
@@ -338,6 +355,10 @@ return [
             ['slug' => 'gym-olyak-bdny-astodyo-zomba-bhg-aal-almzyka', 'wave' => 2, 'name' => 'استوديو زومبا — بهجة على المزيكا', 'hero_title' => 'حرّق وانت بتضحك', 'hero_subtitle' => 'حصص زومبا ولاتيني بخطوات سهلة، وسعرات بتتحرق من غير ما تحس.'],
             ['slug' => 'gym-olyak-bdny-gym-aghz-mtsl-byanat-adayk', 'wave' => 2, 'name' => 'جيم أجهزة متصلة — بيانات أدائك', 'hero_title' => 'كل عدّة بتسجّل تمرينك', 'hero_subtitle' => 'أجهزة متصلة بتطبيق بيحفظ الأوزان والعدّات، وتقرير أسبوعي بتقدّمك.'],
             ['slug' => 'gym-olyak-bdny-3d-forge', 'wave' => 3, 'layout' => 'forge', 'name' => 'جيم 3D — حديد وطاقة', 'hero_title' => 'ارفع الحديد وكسّر حدودك', 'hero_subtitle' => 'أجهزة حديثة ومدربين معتمدين وبرامج تمرين وتغذية على مقاسك من أول يوم.'],
+            ['slug' => 'gym-olyak-bdny-3d-yoga', 'wave' => 3, 'layout' => 'yoga', 'name' => 'جيم حريمي 3D — لياقة بخصوصية', 'hero_title' => 'لياقتك في مكان ليكي بس', 'hero_subtitle' => 'جيم حريمي بمدربات متخصصات، وكلاسات زومبا وبيلاتس وبرامج تخسيس.'],
+            ['slug' => 'gym-olyak-bdny-3d-boxing', 'wave' => 3, 'layout' => 'boxing', 'name' => 'نادي ملاكمة 3D — جوانتي وقوة', 'hero_title' => 'اتعلّم تضرب صح', 'hero_subtitle' => 'تدريب ملاكمة وكيك بوكسينج لكل المستويات، ولياقة قتالية بجد.'],
+            ['slug' => 'gym-olyak-bdny-3d-mat', 'wave' => 3, 'layout' => 'mat', 'name' => 'استوديو يوجا 3D — نفس وهدوء', 'hero_title' => 'جسمك مرن وبالك رايق', 'hero_subtitle' => 'كلاسات يوجا وتأمل وتمارين تنفس، لكل الأعمار والمستويات.'],
+            ['slug' => 'gym-olyak-bdny-3d-swim', 'wave' => 3, 'layout' => 'swim', 'name' => 'أكاديمية سباحة 3D — عوامة وموج', 'hero_title' => 'اتعلّم العوم بثقة', 'hero_subtitle' => 'تعليم سباحة للأطفال والكبار، ومدربين معتمدين وحمامات نضيفة.'],
         ],
         'tones' => [
             'warm' => [
@@ -432,6 +453,10 @@ return [
             ['slug' => 'aakarat-shkk-msyf-bhg-alsyf', 'wave' => 2, 'name' => 'شقق مصيف — بهجة الصيف', 'hero_title' => 'مصيف العيلة على الشط', 'hero_subtitle' => 'شقق مصيف للإيجار بالأسبوع في أقرب نقطة للبحر، بأسعار مناسبة للعيلة.'],
             ['slug' => 'aakarat-mns-astthmar-aakary-byanat-alsok', 'wave' => 2, 'name' => 'منصة استثمار عقاري — بيانات السوق', 'hero_title' => 'استثمر في العقار بقرار مدروس', 'hero_subtitle' => 'تحليلات أسعار ومناطق ونسب عائد، تساعدك تختار الوحدة اللي هتكسب منها.'],
             ['slug' => 'aakarat-3d-skyline', 'wave' => 3, 'layout' => 'skyline', 'name' => 'مطور عقاري 3D — أبراج بتتبني قدامك', 'hero_title' => 'بيتك الجديد بيتبني دلوقتي', 'hero_subtitle' => 'مشروعات سكنية وتجارية في أحسن المواقع، بتقسيط مريح ومتابعة لحد الاستلام.'],
+            ['slug' => 'aakarat-3d-villa', 'wave' => 3, 'layout' => 'villa', 'name' => 'فيلات 3D — فيلا بحمام سباحة', 'hero_title' => 'فيلتك وحمام السباحة بتاعك', 'hero_subtitle' => 'فيلات مستقلة وتوين هاوس في كمبوندات راقية، بتقسيط مريح.'],
+            ['slug' => 'aakarat-3d-chalet', 'wave' => 3, 'layout' => 'chalet', 'name' => 'شاليهات 3D — على البحر', 'hero_title' => 'صيفك على البحر طول السنة', 'hero_subtitle' => 'شاليهات بإطلالة على البحر في أجمل القرى الساحلية، للبيع والإيجار.'],
+            ['slug' => 'aakarat-3d-storefront', 'wave' => 3, 'layout' => 'storefront', 'name' => 'محلات تجارية 3D — واجهة على الشارع', 'hero_title' => 'محلك في أحسن موقع', 'hero_subtitle' => 'وحدات تجارية وإدارية في مواقع حيوية، بعائد استثماري مضمون.'],
+            ['slug' => 'aakarat-3d-key', 'wave' => 3, 'layout' => 'key', 'name' => 'وسيط عقاري 3D — مفتاح بيتك', 'hero_title' => 'مفتاح بيتك الجديد معانا', 'hero_subtitle' => 'شقق للبيع والإيجار في كل المناطق، ومعاينة وعقود بأمان.'],
         ],
         'tones' => [
             'warm' => [
@@ -526,6 +551,10 @@ return [
             ['slug' => 'mtagr-alktrony-mtgr-alaaab-fydyo-kdym-zmn-altybyn', 'wave' => 2, 'name' => 'متجر ألعاب فيديو قديمة — زمن الطيبين', 'hero_title' => 'رجّع ذكريات الأتاري والسيجا', 'hero_subtitle' => 'أجهزة وألعاب كلاسيكية متصلّحة ومتجرّبة، وإكسسوارات لهواة الجمع.'],
             ['slug' => 'mtagr-alktrony-mtgr-ktaa-kmbyotr-byanat-kl-ktaa', 'wave' => 2, 'name' => 'متجر قطع كمبيوتر — بيانات كل قطعة', 'hero_title' => 'جمّع جهازك على مزاجك', 'hero_subtitle' => 'كروت شاشة وبروسيسورات ورامات أصلية، مع أداة تتأكد إن القطع متوافقة.'],
             ['slug' => 'mtagr-alktrony-3d-parcel', 'wave' => 3, 'layout' => 'parcel', 'name' => 'متجر 3D — طلبك في الطريق', 'hero_title' => 'اطلب النهارده يوصلك بكرة', 'hero_subtitle' => 'منتجات أصلية بأسعار واضحة، وتغليف محترم، وشحن سريع لحد باب البيت.'],
+            ['slug' => 'mtagr-alktrony-3d-dairy', 'wave' => 3, 'layout' => 'dairy', 'name' => 'منتجات ألبان 3D — لبن وجبنة', 'hero_title' => 'ألبان طازة كل يوم', 'hero_subtitle' => 'لبن وجبن وزبادي وزبدة من مزارعنا لحد بيتك، طازة ومن غير مواد حافظة.'],
+            ['slug' => 'mtagr-alktrony-3d-spice', 'wave' => 3, 'layout' => 'spice', 'name' => 'عطارة 3D — برطمانات توابل', 'hero_title' => 'كل بهارات المطبخ عندنا', 'hero_subtitle' => 'توابل وأعشاب وبقوليات وعسل، مطحونة طازة وبجودة عالية.'],
+            ['slug' => 'mtagr-alktrony-3d-cart', 'wave' => 3, 'layout' => 'cart', 'name' => 'سوبر ماركت 3D — عربية تسوق', 'hero_title' => 'طلبات البيت كلها في مكان واحد', 'hero_subtitle' => 'بقالة وخضار وفاكهة ومنظفات بأسعار حلوة، وتوصيل في نفس اليوم.'],
+            ['slug' => 'mtagr-alktrony-3d-phone', 'wave' => 3, 'layout' => 'phone', 'name' => 'محل موبايلات 3D — أحدث الأجهزة', 'hero_title' => 'موبايلك الجديد بضمان', 'hero_subtitle' => 'موبايلات وإكسسوارات وصيانة، بأسعار منافسة وتقسيط.'],
         ],
         'tones' => [
             'warm' => [
@@ -619,6 +648,9 @@ return [
             ['slug' => 'taalym-odorat-tdryby-mrkz-shtrng-oalaaab-thhny-bhg-altfkyr', 'wave' => 2, 'name' => 'مركز شطرنج وألعاب ذهنية — بهجة التفكير', 'hero_title' => 'شطرنج وألغاز تشغّل دماغك', 'hero_subtitle' => 'تدريب شطرنج وروبيك وألعاب ذهنية للأطفال، وبطولات شهرية بجوايز.'],
             ['slug' => 'taalym-odorat-tdryby-maaskr-ttoyr-oyb-kod-mn-aol-yom', 'wave' => 2, 'name' => 'معسكر تطوير ويب — كود من أول يوم', 'hero_title' => 'من الصفر لأول وظيفة', 'hero_subtitle' => 'معسكر مكثف 16 أسبوع، مشاريع حقيقية، ومتابعة لحد ما تقدّم على أول شغل.'],
             ['slug' => 'taalym-odorat-3d-scholar', 'wave' => 3, 'layout' => 'scholar', 'name' => 'أكاديمية 3D — كل صفحة خطوة', 'hero_title' => 'اتعلّم صح وخد شهادتك', 'hero_subtitle' => 'كورسات عملية بمدربين خبرة، ومتابعة لحد ما تتقن المهارة وتاخد شهادة معتمدة.'],
+            ['slug' => 'taalym-odorat-3d-speech', 'wave' => 3, 'layout' => 'speech', 'name' => 'مركز لغات 3D — اتكلم بثقة', 'hero_title' => 'اتكلم أي لغة بطلاقة', 'hero_subtitle' => 'كورسات إنجليزي وفرنساوي وألماني بمدرسين خبرة، ومستويات لكل الأعمار.'],
+            ['slug' => 'taalym-odorat-3d-laptop', 'wave' => 3, 'layout' => 'laptop', 'name' => 'كورسات برمجة 3D — لابتوب ومشروع', 'hero_title' => 'اتعلّم برمجة واشتغل', 'hero_subtitle' => 'كورسات عملية في البرمجة وتطوير المواقع والتطبيقات، بمشاريع حقيقية.'],
+            ['slug' => 'taalym-odorat-3d-crayons', 'wave' => 3, 'layout' => 'crayons', 'name' => 'تأسيس أطفال 3D — ألوان ومرح', 'hero_title' => 'طفلك يتعلّم وهو بيلعب', 'hero_subtitle' => 'تأسيس قراية وكتابة وحساب بطرق ممتعة وأنشطة فنية.'],
         ],
         'tones' => [
             'warm' => [
@@ -713,6 +745,9 @@ return [
             ['slug' => 'astsharat-omhama-astsharat-almshroaaat-alsghyr-bhg-albday', 'wave' => 2, 'name' => 'استشارات المشروعات الصغيرة — بهجة البداية', 'hero_title' => 'مشروعك الصغير بخطوات قانونية صح', 'hero_subtitle' => 'سجل تجاري وبطاقة ضريبية وعقود إيجار وشراكة، بأسعار تناسب البداية.'],
             ['slug' => 'astsharat-omhama-mktb-kanon-albrmgyat-hmay-byanat', 'wave' => 2, 'name' => 'مكتب قانون البرمجيات — حماية بيانات', 'hero_title' => 'شركتك متوافقة مع قوانين البيانات', 'hero_subtitle' => 'سياسات خصوصية وعقود برمجيات وامتثال لقوانين حماية البيانات الشخصية.'],
             ['slug' => 'astsharat-omhama-3d-verdict', 'wave' => 3, 'layout' => 'verdict', 'name' => 'مكتب محاماة 3D — ميزان الحق', 'hero_title' => 'حقك في إيد أمينة', 'hero_subtitle' => 'استشارات قانونية وتمثيل أمام المحاكم بخبرة طويلة وسرية تامة في كل قضية.'],
+            ['slug' => 'astsharat-omhama-3d-calc', 'wave' => 3, 'layout' => 'calc', 'name' => 'مكتب محاسبة 3D — أرقام مظبوطة', 'hero_title' => 'حساباتك مظبوطة وضرايبك في ميعادها', 'hero_subtitle' => 'مسك دفاتر وإقرارات ضريبية ومراجعة حسابات للشركات والأفراد.'],
+            ['slug' => 'astsharat-omhama-3d-chart', 'wave' => 3, 'layout' => 'chart', 'name' => 'استشارات أعمال 3D — نمو طالع', 'hero_title' => 'شركتك تكبر بخطة واضحة', 'hero_subtitle' => 'دراسات جدوى وخطط تسويق وإعادة هيكلة، بأرقام ونتايج قابلة للقياس.'],
+            ['slug' => 'astsharat-omhama-3d-stamp', 'wave' => 3, 'layout' => 'stamp', 'name' => 'مكتب توثيق 3D — ورقة وختم', 'hero_title' => 'عقودك مضمونة من أول مرة', 'hero_subtitle' => 'صياغة ومراجعة وتوثيق العقود والتوكيلات بسرعة وأمان قانوني.'],
         ],
         'tones' => [
             'warm' => [
@@ -807,6 +842,10 @@ return [
             ['slug' => 'mkaolat-odykor-shrk-dhanat-oork-hayt-aloan-zman', 'wave' => 2, 'name' => 'شركة دهانات وورق حائط — ألوان زمان', 'hero_title' => 'حيطان بألوان بتفرح', 'hero_subtitle' => 'دهانات وورق حائط وتأثيرات ديكور، بعينات تشوفها على الحيطة قبل التنفيذ.'],
             ['slug' => 'mkaolat-odykor-mktb-hsr-kmyat-byanat-oatmt', 'wave' => 2, 'name' => 'مكتب حصر كميات — بيانات وأتمتة', 'hero_title' => 'حصر كميات وتكلفة قبل ما تبدأ', 'hero_subtitle' => 'حصر مواد وتسعير بنود من الرسومات، ببرامج حديثة وتقرير مفصّل بكل بند.'],
             ['slug' => 'mkaolat-odykor-3d-blocks', 'wave' => 3, 'layout' => 'blocks', 'name' => 'شركة مقاولات 3D — طوبة فوق طوبة', 'hero_title' => 'بنبني صح من أول طوبة', 'hero_subtitle' => 'تنفيذ مباني وتشطيبات بمواد مضمونة وجدول زمني ملتزم، وإشراف هندسي على كل مرحلة.'],
+            ['slug' => 'mkaolat-odykor-3d-sofa', 'wave' => 3, 'layout' => 'sofa', 'name' => 'ديكور داخلي 3D — كنبة وروقان', 'hero_title' => 'بيتك بشكل يفرّحك', 'hero_subtitle' => 'تصميم داخلي وأثاث وتنفيذ ديكورات على ذوقك وميزانيتك.'],
+            ['slug' => 'mkaolat-odykor-3d-kitchen', 'wave' => 3, 'layout' => 'kitchen', 'name' => 'مطابخ 3D — تصميم وتركيب', 'hero_title' => 'مطبخ أحلامك متفصّل', 'hero_subtitle' => 'مطابخ خشب وألوميتال وأكريليك بتصميم وتركيب وضمان.'],
+            ['slug' => 'mkaolat-odykor-3d-paint', 'wave' => 3, 'layout' => 'paint', 'name' => 'دهانات 3D — جردل ورولة', 'hero_title' => 'حيطانك بألوان جديدة', 'hero_subtitle' => 'دهانات حديثة وورق حائط وديكورات جبس، بتشطيب نضيف ومواعيد مظبوطة.'],
+            ['slug' => 'mkaolat-odykor-3d-saw', 'wave' => 3, 'layout' => 'saw', 'name' => 'ورشة نجارة 3D — خشب ومنشار', 'hero_title' => 'شغل خشب على المقاس', 'hero_subtitle' => 'أبواب وشبابيك ودواليب وأثاث خشب متين بتصميمك.'],
         ],
         'tones' => [
             'warm' => [
@@ -900,6 +939,11 @@ return [
             ['slug' => 'syan-okhdmat-syarat-orsh-trmym-syarat-klasyk-fyntag', 'wave' => 2, 'name' => 'ورشة ترميم سيارات كلاسيك — فينتاج', 'hero_title' => 'رجّع العربية القديمة لعزّها', 'hero_subtitle' => 'ترميم كامل لسيارات الستينات والسبعينات، من الصاج للدهان للفرش.'],
             ['slug' => 'syan-okhdmat-syarat-mrkz-brmg-mfatyh-kod-dkyk', 'wave' => 2, 'name' => 'مركز برمجة مفاتيح — كود دقيق', 'hero_title' => 'برمجة مفاتيح وكمبيوتر العربية', 'hero_subtitle' => 'تشخيص بالكمبيوتر وبرمجة ريموت ومفاتيح وكمبيوتر موتور لكل الماركات.'],
             ['slug' => 'syan-sayarat-3d-torque', 'wave' => 3, 'layout' => 'torque', 'name' => 'مركز سيارات 3D — عجلة وسرعة', 'hero_title' => 'عربيتك ترجع زي الفابريكة', 'hero_subtitle' => 'صيانة دورية وكشف كمبيوتر وكاوتش وزيوت، بقطع غيار أصلية وضمان على الشغل.'],
+            ['slug' => 'syan-sayarat-3d-tire', 'wave' => 3, 'layout' => 'tire', 'name' => 'محل كاوتش 3D — كاوتش وجنوط', 'hero_title' => 'كاوتشك جديد وماشي ثابت', 'hero_subtitle' => 'كاوتش لكل الماركات وترصيص وزوايا وتغيير في دقايق.'],
+            ['slug' => 'syan-sayarat-3d-battery', 'wave' => 3, 'layout' => 'battery', 'name' => 'محل بطاريات 3D — طاقة مضمونة', 'hero_title' => 'بطاريتك ماتعطّلكش تاني', 'hero_subtitle' => 'بطاريات أصلية بضمان، وكشف وتركيب في المكان أو عندك.'],
+            ['slug' => 'syan-sayarat-3d-oil', 'wave' => 3, 'layout' => 'oil', 'name' => 'مركز زيوت 3D — جركن وفلتر', 'hero_title' => 'غيّر زيتك في 15 دقيقة', 'hero_subtitle' => 'زيوت وفلاتر أصلية لكل العربيات، وفحص سريع مع كل تغيير.'],
+            ['slug' => 'syan-sayarat-3d-wash', 'wave' => 3, 'layout' => 'wash', 'name' => 'غسيل سيارات 3D — فقاعات ولمعة', 'hero_title' => 'عربيتك ترجع تلمع', 'hero_subtitle' => 'غسيل داخلي وخارجي وتلميع وحماية طلاء بخامات آمنة.'],
+            ['slug' => 'syan-sayarat-3d-car', 'wave' => 3, 'layout' => 'car', 'name' => 'معرض سيارات 3D — عربيتك الجاية', 'hero_title' => 'عربيتك الجاية مستنياك', 'hero_subtitle' => 'عربيات جديدة ومستعملة بحالة ممتازة، وتقسيط وفحص قبل الشراء.'],
         ],
         'tones' => [
             'warm' => [
@@ -993,6 +1037,10 @@ return [
             ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-hflat-althmanynat-rytro', 'wave' => 2, 'name' => 'منظّم حفلات الثمانينات — ريترو', 'hero_title' => 'حفلة بطعم الأيام الحلوة', 'hero_subtitle' => 'ديكور وأغاني وأزياء وألعاب من الثمانينات والتسعينات، ليوم يرجّعكم ورا.'],
             ['slug' => 'tnthym-faaalyat-omnasbat-shrk-tthakr-otsgyl-faaalyat-byanat-alhdor', 'wave' => 2, 'name' => 'شركة تذاكر وتسجيل فعاليات — بيانات الحضور', 'hero_title' => 'تذاكر وتسجيل من غير طوابير', 'hero_subtitle' => 'تذاكر إلكترونية بكود QR، وتسجيل دخول سريع، وتقرير لحظي بأعداد الحضور.'],
             ['slug' => 'tnthym-faaalyat-3d-festive', 'wave' => 3, 'layout' => 'festive', 'name' => 'منظّم حفلات 3D — هدية وفرحة', 'hero_title' => 'فرحتك علينا من الأول للآخر', 'hero_subtitle' => 'تنظيم أفراح وأعياد ميلاد ومناسبات بديكور وصوت وإضاءة، وكل تفصيلة متظبطة في ميعادها.'],
+            ['slug' => 'tnthym-faaalyat-3d-rings', 'wave' => 3, 'layout' => 'rings', 'name' => 'تنظيم أفراح 3D — خاتمين وفرحة', 'hero_title' => 'فرحك زي ما حلمت بيه', 'hero_subtitle' => 'تنظيم كتب كتاب وأفراح بالقاعة والديكور والزفة والتصوير.'],
+            ['slug' => 'tnthym-faaalyat-3d-partyhat', 'wave' => 3, 'layout' => 'partyhat', 'name' => 'أعياد ميلاد 3D — طرطور وبلالين', 'hero_title' => 'عيد ميلاد يفضل في الذاكرة', 'hero_subtitle' => 'تنظيم أعياد ميلاد بثيمات وبلالين وتورتة وألعاب للأطفال والكبار.'],
+            ['slug' => 'tnthym-faaalyat-3d-mic', 'wave' => 3, 'layout' => 'mic', 'name' => 'تنظيم مؤتمرات 3D — منصة ومايك', 'hero_title' => 'مؤتمرك منظم من الألف للياء', 'hero_subtitle' => 'تنظيم مؤتمرات وندوات وإطلاق منتجات بالتسجيل والمسرح والضيافة.'],
+            ['slug' => 'tnthym-faaalyat-3d-spotlight', 'wave' => 3, 'layout' => 'spotlight', 'name' => 'صوت وإضاءة 3D — كشافات وسماعات', 'hero_title' => 'صوت وإضاءة يقلبوا المكان', 'hero_subtitle' => 'تأجير سماعات وإضاءة ومسارح وشاشات لكل أنواع الحفلات.'],
         ],
         'tones' => [
             'warm' => [
@@ -1086,6 +1134,10 @@ return [
             ['slug' => 'sfr-osyah-rhlat-ktar-klasyky-fyntag', 'wave' => 2, 'name' => 'رحلات قطار كلاسيكية — فينتاج', 'hero_title' => 'رحلة قطر زي زمان', 'hero_subtitle' => 'رحلات بقطارات النوم للأقصر وأسوان، بعربيات مرمّمة وأكل على الطريقة القديمة.'],
             ['slug' => 'sfr-osyah-mns-tamyn-sfr-atmt-kaml', 'wave' => 2, 'name' => 'منصة تأمين سفر — أتمتة كاملة', 'hero_title' => 'تأمين سفر في دقيقتين', 'hero_subtitle' => 'وثيقة تأمين طبي للسفر بتطلع فوراً، وتغطية معتمدة للسفارات.'],
             ['slug' => 'sfr-osyah-3d-globe', 'wave' => 3, 'layout' => 'globe', 'name' => 'شركة سياحة 3D — العالم بين إيديك', 'hero_title' => 'لف العالم وإنت مطمّن', 'hero_subtitle' => 'رحلات داخلية وخارجية بطيران وفنادق مختارة، وبرنامج مظبوط من أول الحجز لحد الرجوع.'],
+            ['slug' => 'sfr-osyah-3d-jet', 'wave' => 3, 'layout' => 'jet', 'name' => 'حجز طيران 3D — طيارة جاهزة', 'hero_title' => 'تذكرتك بأقل سعر', 'hero_subtitle' => 'حجز تذاكر طيران لكل الوجهات، وتأشيرات وفنادق في مكان واحد.'],
+            ['slug' => 'sfr-osyah-3d-kaaba', 'wave' => 3, 'layout' => 'kaaba', 'name' => 'عمرة وحج 3D — رحلة روحانية', 'hero_title' => 'رحلة عمرك بطمأنينة', 'hero_subtitle' => 'برامج عمرة وحج بفنادق قريبة من الحرم، ومشرفين معاكم خطوة بخطوة.'],
+            ['slug' => 'sfr-osyah-3d-beach', 'wave' => 3, 'layout' => 'beach', 'name' => 'رحلات بحر 3D — شمسية وشاطئ', 'hero_title' => 'إجازة على البحر تستاهلها', 'hero_subtitle' => 'رحلات للساحل والغردقة وشرم الشيخ بباقات شاملة الإقامة والأكل.'],
+            ['slug' => 'sfr-osyah-3d-tent', 'wave' => 3, 'layout' => 'tent', 'name' => 'رحلات سفاري 3D — خيمة ونار', 'hero_title' => 'ليلة في الصحرا تحت النجوم', 'hero_subtitle' => 'سفاري وتخييم وركوب دبابات وسهرة بدوية بأمان وتنظيم كامل.'],
         ],
         'tones' => [
             'warm' => [
@@ -1179,6 +1231,10 @@ return [
             ['slug' => 'brmgyat-ostart-ab-astodyo-alaaab-mobayl-mrh-bksl', 'wave' => 2, 'name' => 'استوديو ألعاب موبايل — مرح بكسل', 'hero_title' => 'ألعاب بسيطة بتسلّي جداً', 'hero_subtitle' => 'ألعاب موبايل بستايل البكسل الكلاسيكي، للاعبين من كل الأعمار حول العالم.'],
             ['slug' => 'brmgyat-ostart-ab-start-ab-thkaaa-astnaaay-atmt-alshghl', 'wave' => 2, 'name' => 'ستارت أب ذكاء اصطناعي — أتمتة الشغل', 'hero_title' => 'خلّي الذكاء الاصطناعي يشتغل عنك', 'hero_subtitle' => 'أدوات بتقرا الإيميلات والفواتير وترد على العملاء، وتوفر ساعات كل يوم.'],
             ['slug' => 'brmgyat-ostart-ab-3d-cubic', 'wave' => 3, 'layout' => 'cubic', 'name' => 'شركة برمجيات 3D — كود بيلف', 'hero_title' => 'سيستم شغلك يمشي لوحده', 'hero_subtitle' => 'تطبيقات ومواقع وأنظمة مخصوصة لشغلك، بكود نضيف ودعم فني مستمر بعد التسليم.'],
+            ['slug' => 'brmgyat-ostart-ab-3d-apps', 'wave' => 3, 'layout' => 'apps', 'name' => 'تطوير تطبيقات 3D — موبايل وأيقونات', 'hero_title' => 'تطبيقك على كل موبايل', 'hero_subtitle' => 'تصميم وبرمجة تطبيقات أندرويد وآيفون، من الفكرة لحد النشر على المتاجر.'],
+            ['slug' => 'brmgyat-ostart-ab-3d-servers', 'wave' => 3, 'layout' => 'servers', 'name' => 'استضافة مواقع 3D — سيرفرات وسحابة', 'hero_title' => 'موقعك شغال على طول', 'hero_subtitle' => 'استضافة سريعة وآمنة ودومينات وإيميلات شركات ودعم فني مستمر.'],
+            ['slug' => 'brmgyat-ostart-ab-3d-padlock', 'wave' => 3, 'layout' => 'padlock', 'name' => 'أمن سيبراني 3D — قفل وحماية', 'hero_title' => 'بياناتك في أمان', 'hero_subtitle' => 'فحص ثغرات وحماية أنظمة وتدريب موظفين على الأمان الرقمي.'],
+            ['slug' => 'brmgyat-ostart-ab-3d-neural', 'wave' => 3, 'layout' => 'neural', 'name' => 'ذكاء اصطناعي 3D — شبكة ذكية', 'hero_title' => 'خلي الذكاء الاصطناعي يشتغل لك', 'hero_subtitle' => 'حلول ذكاء اصطناعي وأتمتة وشات بوت لشغلك، توفّر وقت ومجهود.'],
         ],
         'tones' => [
             'warm' => [
@@ -1272,6 +1328,9 @@ return [
             ['slug' => 'bortfolyo-omstklyn-bortfolyo-msmm-tyshyrtat-bhg-oaloan-zman', 'wave' => 2, 'name' => 'بورتفوليو مصمم تيشيرتات — بهجة وألوان زمان', 'hero_title' => 'تيشيرتات بتصميمات تفرّح', 'hero_subtitle' => 'رسومات مطبوعة على تيشيرتات وشنط، بستايل الكرتون والإعلانات القديمة.'],
             ['slug' => 'bortfolyo-omstklyn-sfh-mhnds-byanat-kod-othlyl', 'wave' => 2, 'name' => 'صفحة مهندس بيانات — كود وتحليل', 'hero_title' => 'بيانات بتتحول لقرارات', 'hero_subtitle' => 'تنظيف وتحليل بيانات ولوحات متابعة ونماذج تنبؤ، لشركات ناشئة ومتوسطة.'],
             ['slug' => 'portfolio-mstklyn-3d-canvas', 'wave' => 3, 'layout' => 'canvas', 'name' => 'معرض أعمال 3D — لوحات في الهوا', 'hero_title' => 'أعمالي بتتكلم عني', 'hero_subtitle' => 'مشاريع اشتغلتها بإيدي من الفكرة للتسليم، اتفرّج عليها واختار اللي يناسب فكرتك.'],
+            ['slug' => 'portfolio-mstklyn-3d-pencils', 'wave' => 3, 'layout' => 'pencils', 'name' => 'مصمم جرافيك 3D — أقلام وألوان', 'hero_title' => 'هوية بصرية تفرق معاك', 'hero_subtitle' => 'تصميم لوجوهات وهويات وسوشيال ميديا ومطبوعات بلمسة مختلفة.'],
+            ['slug' => 'portfolio-mstklyn-3d-brackets', 'wave' => 3, 'layout' => 'brackets', 'name' => 'مطور ويب 3D — أقواس كود', 'hero_title' => 'موقعك بكود نضيف', 'hero_subtitle' => 'برمجة مواقع ومتاجر وأنظمة ويب سريعة ومتجاوبة مع كل الشاشات.'],
+            ['slug' => 'portfolio-mstklyn-3d-quill', 'wave' => 3, 'layout' => 'quill', 'name' => 'كاتب محتوى 3D — ريشة وحبر', 'hero_title' => 'كلام يبيع ويقنع', 'hero_subtitle' => 'كتابة محتوى مواقع وإعلانات ومقالات وسكريبتات فيديو.'],
         ],
         'tones' => [
             'warm' => [
@@ -1365,6 +1424,10 @@ return [
             ['slug' => 'azyaaa-omlabs-mtgr-mlabs-fyntag-ktaa-mkhtar', 'wave' => 2, 'name' => 'متجر ملابس فينتاج — قطع مختارة', 'hero_title' => 'قطع فينتاج مالهاش زي', 'hero_subtitle' => 'جواكت وفساتين وشنط من السبعينات والتمانينات، متنضفة ومتختارة واحدة واحدة.'],
             ['slug' => 'azyaaa-omlabs-mark-tbaaa-aand-altlb-atmt-kaml', 'wave' => 2, 'name' => 'ماركة طباعة عند الطلب — أتمتة كاملة', 'hero_title' => 'صمّم واطبع من غير مخزون', 'hero_subtitle' => 'اطبع تصميماتك على تيشيرتات وشنط، وإحنا نطبع ونشحن أول ما الطلب يوصل.'],
             ['slug' => 'azyaa-omlabs-3d-atelier', 'wave' => 3, 'layout' => 'atelier', 'name' => 'بوتيك 3D — فستان على الشماعة', 'hero_title' => 'لبسك يعمل حضور', 'hero_subtitle' => 'تشكيلات جديدة كل موسم بخامات مختارة ومقاسات لكل الأجسام، وتوصيل لحد البيت.'],
+            ['slug' => 'azyaa-omlabs-3d-suit', 'wave' => 3, 'layout' => 'suit', 'name' => 'ملابس رجالي 3D — بدلة وكرافتة', 'hero_title' => 'شياكتك تبان من أول نظرة', 'hero_subtitle' => 'بدل وقمصان وكاجوال رجالي بخامات ممتازة ومقاسات كاملة.'],
+            ['slug' => 'azyaa-omlabs-3d-heels', 'wave' => 3, 'layout' => 'heels', 'name' => 'أحذية وشنط 3D — كعب وشنطة', 'hero_title' => 'كمّلي اللوك بخطوة واثقة', 'hero_subtitle' => 'أحذية وشنط حريمي بموديلات جديدة كل موسم وأسعار تناسبك.'],
+            ['slug' => 'azyaa-omlabs-3d-abaya', 'wave' => 3, 'layout' => 'abaya', 'name' => 'عبايات 3D — أناقة محتشمة', 'hero_title' => 'عباية تليق بيكي', 'hero_subtitle' => 'عبايات وطرح وإسدالات بتصميمات راقية وخامات مريحة.'],
+            ['slug' => 'azyaa-omlabs-3d-kidswear', 'wave' => 3, 'layout' => 'kidswear', 'name' => 'ملابس أطفال 3D — ألوان ومرح', 'hero_title' => 'لبس مريح لأحلى صغيّرين', 'hero_subtitle' => 'ملابس أطفال قطن مريحة بألوان مبهجة من حديثي الولادة لحد 12 سنة.'],
         ],
         'tones' => [
             'warm' => [
@@ -1458,6 +1521,10 @@ return [
             ['slug' => 'mkhabz-ohloyat-mhl-bsbos-omhlby-zmn-altybyn', 'wave' => 2, 'name' => 'محل بسبوسة ومهلبية — زمن الطيبين', 'hero_title' => 'حلويات المحل اللي على الناصية', 'hero_subtitle' => 'بسبوسة وأرز بلبن ومهلبية وجيلي، بطعم الحاجات اللي كنا بنستناها زمان.'],
             ['slug' => 'mkhabz-ohloyat-mkhbz-aly-atmt-ogod-thabt', 'wave' => 2, 'name' => 'مخبز آلي — أتمتة وجودة ثابتة', 'hero_title' => 'خبز بجودة ثابتة كل يوم', 'hero_subtitle' => 'خطوط إنتاج حديثة بتتحكم في الوزن والحرارة، وتوريد للمطاعم والفنادق بالكميات.'],
             ['slug' => 'mkhabz-ohlowyat-3d-bakery', 'wave' => 3, 'layout' => 'bakery', 'name' => 'محل تورت 3D — شمعة وفرحة', 'hero_title' => 'تورتة على مزاجك لكل مناسبة', 'hero_subtitle' => 'تورت وحلويات طازة بتتعمل بالطلب، بنكهات وتصميمات تفرّح أي مناسبة عندك.'],
+            ['slug' => 'mkhabz-ohlowyat-3d-bread', 'wave' => 3, 'layout' => 'bread', 'name' => 'فرن عيش 3D — عيش وفينو', 'hero_title' => 'عيش سخن كل صبح', 'hero_subtitle' => 'عيش بلدي وفينو وشامي ومعجنات بتطلع من الفرن طول اليوم.'],
+            ['slug' => 'mkhabz-ohlowyat-3d-kunafa', 'wave' => 3, 'layout' => 'kunafa', 'name' => 'حلويات شرقية 3D — صينية كنافة', 'hero_title' => 'حلاوة شرقي من الصينية', 'hero_subtitle' => 'كنافة وبسبوسة وبقلاوة وقطايف بسمنة بلدي ومكسرات بزيادة.'],
+            ['slug' => 'mkhabz-ohlowyat-3d-donut', 'wave' => 3, 'layout' => 'donut', 'name' => 'دونتس 3D — دونت ملوّن', 'hero_title' => 'دونت طازة بكل النكهات', 'hero_subtitle' => 'دونتس محشي ومغطّى بنكهات كتير، طازة كل يوم.'],
+            ['slug' => 'mkhabz-ohlowyat-3d-icecream', 'wave' => 3, 'layout' => 'icecream', 'name' => 'آيس كريم 3D — كون وبولتين', 'hero_title' => 'آيس كريم يبرّد يومك', 'hero_subtitle' => 'آيس كريم وجيلاتو بنكهات طبيعية ومكسرات وصوصات.'],
         ],
         'tones' => [
             'warm' => [
@@ -1554,6 +1621,8 @@ return [
             ['slug' => 'hdanat-orodat-atfal-hdan-alaaab-shaaby-bhg-zman', 'wave' => 2, 'name' => 'حضانة ألعاب شعبية — بهجة زمان', 'hero_title' => 'ألعاب زمان رجعت تاني', 'hero_subtitle' => 'استغماية ونط حبل وكراسي موسيقية، لعب جماعي بيعلّم المشاركة والضحك.'],
             ['slug' => 'hdanat-orodat-atfal-rod-robotat-kod-llsghyryn', 'wave' => 2, 'name' => 'روضة روبوتات — كود للصغيرين', 'hero_title' => 'أول خطوة في البرمجة', 'hero_subtitle' => 'روبوتات وألعاب برمجة بالمكعبات، بتعلّم الأطفال يفكروا بالترتيب ويحلّوا المشاكل.'],
             ['slug' => 'hdanat-orodat-3d-nursery', 'wave' => 3, 'layout' => 'nursery', 'name' => 'روضة 3D — نتعلّم ونلعب', 'hero_title' => 'يوم كله لعب وتعلّم', 'hero_subtitle' => 'أنشطة وألعاب تعليمية ومُعلّمات متخصصات، في مكان آمن ونضيف يحبه طفلك.'],
+            ['slug' => 'hdanat-orodat-3d-rattle', 'wave' => 3, 'layout' => 'rattle', 'name' => 'حضانة رضّع 3D — رضّاعة وخشخيشة', 'hero_title' => 'رعاية رضيعك بحب', 'hero_subtitle' => 'حضانة رضّع بمربيات متخصصات، ونوم وأكل ومتابعة على مدار اليوم.'],
+            ['slug' => 'hdanat-orodat-3d-abc', 'wave' => 3, 'layout' => 'abc', 'name' => 'روضة تأسيس 3D — حروف وأرقام', 'hero_title' => 'أول خطوة في التعلّم', 'hero_subtitle' => 'تأسيس حروف وأرقام ولغات بأنشطة وألعاب تعليمية لطفلك.'],
         ],
         'tones' => [
             'warm' => [
@@ -1647,6 +1716,9 @@ return [
             ['slug' => 'tsoyr-oantag-fydyo-astodyo-aflam-kdym-fyntag', 'wave' => 2, 'name' => 'استوديو أفلام قديمة — فينتاج', 'hero_title' => 'صور بولارويد وأفلام 35 ملي', 'hero_subtitle' => 'تصوير بكاميرات فيلم حقيقية، وطباعة فورية، وتحميض للأفلام القديمة.'],
             ['slug' => 'tsoyr-oantag-fydyo-astodyo-msh-thlathy-alabaaad-byanat-almkan', 'wave' => 2, 'name' => 'استوديو مسح ثلاثي الأبعاد — بيانات المكان', 'hero_title' => 'حوّل المكان لجولة افتراضية', 'hero_subtitle' => 'تصوير 360 ومسح ثلاثي الأبعاد للمعارض والوحدات والفنادق، يتشاف من أي جهاز.'],
             ['slug' => 'tsoyr-oentag-3d-shutter', 'wave' => 3, 'layout' => 'shutter', 'name' => 'استوديو تصوير 3D — لقطة بلقطة', 'hero_title' => 'كل لقطة بحكاية', 'hero_subtitle' => 'تصوير مناسبات ومنتجات وفيديوهات إعلانية بمعدات احترافية ومونتاج على أعلى مستوى.'],
+            ['slug' => 'tsoyr-oentag-3d-clapper', 'wave' => 3, 'layout' => 'clapper', 'name' => 'إنتاج فيديو 3D — كلاكيت وأكشن', 'hero_title' => 'فيديو يحكي قصتك', 'hero_subtitle' => 'تصوير ومونتاج إعلانات وفيديوهات سوشيال وأفلام تعريفية للشركات.'],
+            ['slug' => 'tsoyr-oentag-3d-drone', 'wave' => 3, 'layout' => 'drone', 'name' => 'تصوير جوي 3D — درون', 'hero_title' => 'لقطات من فوق تبهر', 'hero_subtitle' => 'تصوير جوي بالدرون للمشاريع والأفراح والفعاليات بدقة عالية.'],
+            ['slug' => 'tsoyr-oentag-3d-polaroid', 'wave' => 3, 'layout' => 'polaroid', 'name' => 'مصور أفراح 3D — صور تتحفظ', 'hero_title' => 'ذكريات فرحك متصورة صح', 'hero_subtitle' => 'تصوير أفراح وخطوبة وسيشن بره، وألبومات مطبوعة بجودة عالية.'],
         ],
         'tones' => [
             'warm' => [
@@ -1740,6 +1812,8 @@ return [
             ['slug' => 'aator-omsthdrat-tgmyl-mhl-kolonya-oroayh-zmn-altybyn', 'wave' => 2, 'name' => 'محل كولونيا وروائح — زمن الطيبين', 'hero_title' => 'كولونيا الجدّات رجعت', 'hero_subtitle' => 'روائح كولونيا وماء ورد وبودرة بتفكّرك بزمان، بزجاجات كلاسيك.'],
             ['slug' => 'aator-omsthdrat-tgmyl-maaml-aator-mkhss-byanat-thokk', 'wave' => 2, 'name' => 'معمل عطور مخصصة — بيانات ذوقك', 'hero_title' => 'عطرك الخاص من استبيان ذوقك', 'hero_subtitle' => 'اختبار ذوق قصير بيحدد الروايح اللي بتحبها، ونركّبلك عطر محدش عنده زيه.'],
             ['slug' => 'aator-omsthdrat-3d-essence', 'wave' => 3, 'layout' => 'essence', 'name' => 'دار عطور 3D — رذاذ يدوم', 'hero_title' => 'ريحتك بتسبقك', 'hero_subtitle' => 'عطور شرقية وفرنسية بتركيبات ثابتة، وتغليف هدايا فاخر لكل المناسبات.'],
+            ['slug' => 'aator-omsthdrat-3d-incense', 'wave' => 3, 'layout' => 'incense', 'name' => 'بخور وعود 3D — مبخرة ودخان', 'hero_title' => 'ريحة العود في بيتك', 'hero_subtitle' => 'عود وبخور ومعمول ودهن عود أصلي، وتغليف هدايا فاخر.'],
+            ['slug' => 'aator-omsthdrat-3d-soap', 'wave' => 3, 'layout' => 'soap', 'name' => 'صابون طبيعي 3D — رغوة وزيوت', 'hero_title' => 'عناية طبيعية لبشرتك', 'hero_subtitle' => 'صابون وكريمات وزيوت طبيعية معمولة يدوي من غير كيماويات.'],
         ],
         'tones' => [
             'warm' => [
@@ -1834,6 +1908,10 @@ return [
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-hdan-klab-nhary-mrh-tol-alyom', 'wave' => 2, 'name' => 'حضانة كلاب نهارية — مرح طول اليوم', 'hero_title' => 'يوم لعب لكلبك وانت في الشغل', 'hero_subtitle' => 'حضانة نهارية بلعب جماعي ومشي وراحة، وصور تطمّنك عليه كل كام ساعة.'],
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-maaml-bytry-byanat-ontayg-sryaa', 'wave' => 2, 'name' => 'معمل بيطري — بيانات ونتايج سريعة', 'hero_title' => 'تحاليل دم ونتيجة في نفس اليوم', 'hero_subtitle' => 'معمل تحاليل وأشعة متخصص للحيوانات، وتقارير بتوصل للدكتور والصاحب أونلاين.'],
             ['slug' => 'aayadat-baytry-3d-pawprint', 'wave' => 3, 'layout' => 'pawprint', 'name' => 'عيادة بيطرية 3D — صاحبك في أمان', 'hero_title' => 'صاحبك الصغير في إيد أمينة', 'hero_subtitle' => 'كشف وتطعيمات وعمليات وتجميل للقطط والكلاب، بأطباء بيطريين بيحبوا الحيوانات بجد.'],
+            ['slug' => 'aayadat-baytry-3d-cat', 'wave' => 3, 'layout' => 'cat', 'name' => 'عيادة قطط 3D — قطة مدلّعة', 'hero_title' => 'قطتك في إيد بتحبها', 'hero_subtitle' => 'كشف وتطعيمات وتعقيم وحلاقة للقطط بأطباء متخصصين.'],
+            ['slug' => 'aayadat-baytry-3d-dog', 'wave' => 3, 'layout' => 'dog', 'name' => 'عيادة كلاب 3D — صاحب وفي', 'hero_title' => 'صاحبك الوفي يستاهل أحسن رعاية', 'hero_subtitle' => 'كشف وتطعيمات وتدريب وفندقة للكلاب بكل الأحجام.'],
+            ['slug' => 'aayadat-baytry-3d-bird', 'wave' => 3, 'layout' => 'bird', 'name' => 'طيور زينة 3D — عصفورة ملوّنة', 'hero_title' => 'طيورك مغرّدة وسليمة', 'hero_subtitle' => 'علاج ورعاية طيور الزينة، وأقفاص وأكل ومستلزمات.'],
+            ['slug' => 'aayadat-baytry-3d-petbowl', 'wave' => 3, 'layout' => 'petbowl', 'name' => 'متجر أكل حيوانات 3D — طبق وعضمة', 'hero_title' => 'أكل صحي لأليفك', 'hero_subtitle' => 'أكل جاف ورطب ومكملات وإكسسوارات للقطط والكلاب، بتوصيل للبيت.'],
         ],
         'tones' => [
             'warm' => [

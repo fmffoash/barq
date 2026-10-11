@@ -6,6 +6,8 @@ use App\Models\Project;
 use App\Models\Template;
 use App\Services\TemplatePreviewService;
 use Illuminate\Http\RedirectResponse;
+use App\Console\Commands\SeedTemplateLibrary;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -31,17 +33,48 @@ class TemplateController extends Controller
         // with('variants', 'slots') كاملين — صورة شكل القالب (TemplatePreviewService) بتتعرض بس لو
         // بصمة القالب (كل خاناته + نسخته الافتراضية) مطابقة للقطة، والبصمة محتاجة كل الخانات.
         // استعلامين بس للصفحة كلها مهما كان عدد القوالب.
+        // (2026-10-11) تبويبات: الكل (من غير المتأرشف) / المفضلة (لكل يوزر) / الأرشيف (أدمن بس).
+        $view = in_array($request->query('view'), ['favorites', 'archived'], true) ? $request->query('view') : 'all';
+        if ($view === 'archived' && ! $request->user()->is_admin) {
+            $view = 'all';
+        }
+        $favoriteIds = $request->user()->favoriteTemplates()->pluck('templates.id')->all();
+
         $templates = Template::withCount(['variants', 'slots'])
             ->with(['variants', 'slots'])
+            ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'), fn ($query) => $query->whereNull('archived_at'))
+            ->when($view === 'favorites', fn ($query) => $query->whereIn('id', $favoriteIds ?: [0]))
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->trim().'%'))
             ->when($request->filled('category'), fn ($query) => $query->inCategory((string) $request->string('category')))
             ->orderBy('name')
-            ->get();
+            ->get()
+            // المفضلة الأول في "الكل"
+            ->sortBy(fn (Template $t) => in_array($t->id, $favoriteIds, true) ? 0 : 1, SORT_REGULAR)
+            ->values();
 
         $previews = app(TemplatePreviewService::class);
         $thumbnails = $templates->mapWithKeys(fn (Template $template) => [$template->id => $previews->thumbnailUrl($template)]);
 
-        return view('templates.index', compact('templates', 'categories', 'thumbnails'));
+        $archivedCount = $request->user()->is_admin ? Template::whereNotNull('archived_at')->count() : 0;
+
+        return view('templates.index', compact('templates', 'categories', 'thumbnails', 'view', 'favoriteIds', 'archivedCount'));
+    }
+
+    // مفضلة اليوزر الحالي (تشغيل/إيقاف).
+    public function favorite(Request $request, Template $template): RedirectResponse
+    {
+        $request->user()->favoriteTemplates()->toggle($template->id);
+
+        return back();
+    }
+
+    // أرشفة / رجوع من الأرشيف (أدمن). المتأرشف مايظهرش في أي اختيار قالب، والمكتبة مابترجّعوش.
+    public function archive(Template $template): RedirectResponse
+    {
+        $archived = (bool) $template->archived_at;
+        $template->forceFill(['archived_at' => $archived ? null : now(), 'is_active' => $archived])->save();
+
+        return back()->with('status', $archived ? 'القالب رجع من الأرشيف.' : 'القالب اتنقل للأرشيف — مش هيظهر في اختيار القوالب.');
     }
 
     public function create(): View
@@ -116,6 +149,16 @@ class TemplateController extends Controller
 
     public function destroy(Template $template): RedirectResponse
     {
+        // مواقع قايمة بتعتمد عليه — الحذف هيكسرها، فالأرشيف بديله.
+        if ($template->projects()->exists()) {
+            return back()->with('status', 'القالب ده عليه مشاريع، فمينفعش يتمسح — أرشفه بدل كده.');
+        }
+
+        // قالب من المكتبة: يتسجّل إنه اتمسح عشان تحديث المكتبة مايرجّعوش.
+        if ($template->license_note === SeedTemplateLibrary::LICENSE_NOTE) {
+            Setting::put(SeedTemplateLibrary::DELETED_SETTING, array_values(array_unique([...SeedTemplateLibrary::deletedSlugs(), $template->slug])));
+        }
+
         $template->delete();
 
         return redirect()

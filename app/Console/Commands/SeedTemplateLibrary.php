@@ -38,7 +38,7 @@ class SeedTemplateLibrary extends Command
 {
     // زوّدها مع أي تعديل في البيانات أو التوزيع — local/update وbarq:local-setup بيعيدوا التوليد
     // لما تختلف عن المتخزّنة في جدول settings، وعلى السيرفر خطوة في الديبلوي (شوف CLAUDE.md).
-    public const LIBRARY_VERSION = '2026-10-11.6';
+    public const LIBRARY_VERSION = '2026-10-11.7';
 
     // (2026-10-11) القالب اللي ينفع لفئة تانية يظهر فيها كمان — المفتاح أول الاسم (قبل « — »).
     // أي اسم بيبدأ بـ متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائياً (extraCategoriesFor).
@@ -212,6 +212,15 @@ class SeedTemplateLibrary extends Command
 
     public const VERSION_SETTING = 'template_library_version';
 
+    // (2026-10-11) قوالب المكتبة اللي فؤاد مسحها بإيده من صفحة القوالب — المكتبة مابترجّعهاش تاني.
+    public const DELETED_SETTING = 'deleted_template_slugs';
+
+    /** @return list<string> */
+    public static function deletedSlugs(): array
+    {
+        return array_values((array) Setting::get(self::DELETED_SETTING, []));
+    }
+
     public const LICENSE_NOTE = 'تصميم ومحتوى أصلي — صفر اعتماد على قالب خارجي.';
 
     // slugs قوالب كانت في المكتبة واتشالت من البيانات — بتتقفل (is_active=false) لو مفيش عليها
@@ -273,6 +282,84 @@ class SeedTemplateLibrary extends Command
         'shutter' => ['3D', 'مجسم', 'كاميرا'],
         'essence' => ['3D', 'مجسم', 'عطر'],
         'pawprint' => ['3D', 'مجسم', 'أثر'],
+        'dish' => ['3D', 'مجسم', 'طبق'],
+        'beanpot' => ['3D', 'مجسم', 'قدرة'],
+        'pizza' => ['3D', 'مجسم', 'بيتزا'],
+        'skewer' => ['3D', 'مجسم', 'سيخ'],
+        'juice' => ['3D', 'مجسم', 'كوباية'],
+        'tooth' => ['3D', 'مجسم', 'سنة'],
+        'stetho' => ['3D', 'مجسم', 'قلب'],
+        'joint' => ['3D', 'مجسم', 'عضمة'],
+        'eye' => ['3D', 'مجسم', 'عين'],
+        'teddy' => ['3D', 'مجسم', 'دبدوب'],
+        'capsule' => ['3D', 'مجسم', 'كبسولات'],
+        'tubes' => ['3D', 'مجسم', 'أنابيب'],
+        'drop' => ['3D', 'مجسم', 'قطرة'],
+        'barber' => ['3D', 'مجسم', 'عمود'],
+        'polish' => ['3D', 'مجسم', 'زجاجة'],
+        'stones' => ['3D', 'مجسم', 'أحجار'],
+        'lipstick' => ['3D', 'مجسم', 'روج'],
+        'yoga' => ['3D', 'مجسم', 'كورة'],
+        'boxing' => ['3D', 'مجسم', 'جوانتي'],
+        'mat' => ['3D', 'مجسم', 'مات'],
+        'swim' => ['3D', 'مجسم', 'عوامة'],
+        'villa' => ['3D', 'مجسم', 'فيلا'],
+        'chalet' => ['3D', 'مجسم', 'شاليه'],
+        'storefront' => ['3D', 'مجسم', 'محل'],
+        'key' => ['3D', 'مجسم', 'مفتاح'],
+        'dairy' => ['3D', 'مجسم', 'كرتونة'],
+        'spice' => ['3D', 'مجسم', 'برطمانات'],
+        'cart' => ['3D', 'مجسم', 'عربية'],
+        'phone' => ['3D', 'مجسم', 'موبايل'],
+        'speech' => ['3D', 'مجسم', 'فقاعات'],
+        'laptop' => ['3D', 'مجسم', 'لابتوب'],
+        'crayons' => ['3D', 'مجسم', 'ألوان'],
+        'calc' => ['3D', 'مجسم', 'آلة'],
+        'chart' => ['3D', 'مجسم', 'رسم'],
+        'stamp' => ['3D', 'مجسم', 'ورقة'],
+        'sofa' => ['3D', 'مجسم', 'كنبة'],
+        'kitchen' => ['3D', 'مجسم', 'مطبخ'],
+        'paint' => ['3D', 'مجسم', 'جردل'],
+        'saw' => ['3D', 'مجسم', 'منشار'],
+        'tire' => ['3D', 'مجسم', 'كاوتش'],
+        'battery' => ['3D', 'مجسم', 'بطارية'],
+        'oil' => ['3D', 'مجسم', 'جركن'],
+        'wash' => ['3D', 'مجسم', 'إسفنجة'],
+        'car' => ['3D', 'مجسم', 'عربية'],
+        'rings' => ['3D', 'مجسم', 'خاتمين'],
+        'partyhat' => ['3D', 'مجسم', 'طرطور'],
+        'mic' => ['3D', 'مجسم', 'مايك'],
+        'spotlight' => ['3D', 'مجسم', 'كشافات'],
+        'jet' => ['3D', 'مجسم', 'طيارة'],
+        'kaaba' => ['3D', 'مجسم', 'الكعبة'],
+        'beach' => ['3D', 'مجسم', 'شمسية'],
+        'tent' => ['3D', 'مجسم', 'خيمة'],
+        'apps' => ['3D', 'مجسم', 'موبايل'],
+        'servers' => ['3D', 'مجسم', 'سيرفرات'],
+        'padlock' => ['3D', 'مجسم', 'قفل'],
+        'neural' => ['3D', 'مجسم', 'شبكة'],
+        'pencils' => ['3D', 'مجسم', 'أقلام'],
+        'brackets' => ['3D', 'مجسم', 'أقواس'],
+        'quill' => ['3D', 'مجسم', 'ريشة'],
+        'suit' => ['3D', 'مجسم', 'بدلة'],
+        'heels' => ['3D', 'مجسم', 'كعب'],
+        'abaya' => ['3D', 'مجسم', 'عباية'],
+        'kidswear' => ['3D', 'مجسم', 'تيشيرت'],
+        'bread' => ['3D', 'مجسم', 'عيش'],
+        'kunafa' => ['3D', 'مجسم', 'صينية'],
+        'donut' => ['3D', 'مجسم', 'دونتس'],
+        'icecream' => ['3D', 'مجسم', 'آيس'],
+        'rattle' => ['3D', 'مجسم', 'رضّاعة'],
+        'abc' => ['3D', 'مجسم', 'حروف'],
+        'clapper' => ['3D', 'مجسم', 'كلاكيت'],
+        'drone' => ['3D', 'مجسم', 'درون'],
+        'polaroid' => ['3D', 'مجسم', 'صور'],
+        'incense' => ['3D', 'مجسم', 'مبخرة'],
+        'soap' => ['3D', 'مجسم', 'صابون'],
+        'cat' => ['3D', 'مجسم', 'قطة'],
+        'dog' => ['3D', 'مجسم', 'كلب'],
+        'bird' => ['3D', 'مجسم', 'عصفورة'],
+        'petbowl' => ['3D', 'مجسم', 'طبق'],
     ];
 
     // الدفعة اللي كل تصميم دخل فيها المكتبة (مش مكتوب = 1). شوف تعليق الدفعات فوق.
@@ -283,6 +370,16 @@ class SeedTemplateLibrary extends Command
         'parcel' => 3, 'scholar' => 3, 'verdict' => 3, 'blocks' => 3, 'torque' => 3,
         'festive' => 3, 'globe' => 3, 'cubic' => 3, 'canvas' => 3, 'atelier' => 3,
         'bakery' => 3, 'nursery' => 3, 'shutter' => 3, 'essence' => 3, 'pawprint' => 3,
+        'dish' => 3, 'beanpot' => 3, 'pizza' => 3, 'skewer' => 3, 'juice' => 3, 'tooth' => 3, 'stetho' => 3, 'joint' => 3,
+        'eye' => 3, 'teddy' => 3, 'capsule' => 3, 'tubes' => 3, 'drop' => 3, 'barber' => 3, 'polish' => 3, 'stones' => 3,
+        'lipstick' => 3, 'yoga' => 3, 'boxing' => 3, 'mat' => 3, 'swim' => 3, 'villa' => 3, 'chalet' => 3, 'storefront' => 3,
+        'key' => 3, 'dairy' => 3, 'spice' => 3, 'cart' => 3, 'phone' => 3, 'speech' => 3, 'laptop' => 3, 'crayons' => 3,
+        'calc' => 3, 'chart' => 3, 'stamp' => 3, 'sofa' => 3, 'kitchen' => 3, 'paint' => 3, 'saw' => 3, 'tire' => 3,
+        'battery' => 3, 'oil' => 3, 'wash' => 3, 'car' => 3, 'rings' => 3, 'partyhat' => 3, 'mic' => 3, 'spotlight' => 3,
+        'jet' => 3, 'kaaba' => 3, 'beach' => 3, 'tent' => 3, 'apps' => 3, 'servers' => 3, 'padlock' => 3, 'neural' => 3,
+        'pencils' => 3, 'brackets' => 3, 'quill' => 3, 'suit' => 3, 'heels' => 3, 'abaya' => 3, 'kidswear' => 3, 'bread' => 3,
+        'kunafa' => 3, 'donut' => 3, 'icecream' => 3, 'rattle' => 3, 'abc' => 3, 'clapper' => 3, 'drone' => 3, 'polaroid' => 3,
+        'incense' => 3, 'soap' => 3, 'cat' => 3, 'dog' => 3, 'bird' => 3, 'petbowl' => 3,
     ];
 
     // طابع كل تصميم — بيحدد نسخة النصوص (tones في ملف البيانات) والألوان والخطوط المفضّلة ليه.
@@ -302,6 +399,19 @@ class SeedTemplateLibrary extends Command
         'parcel' => 'modern', 'scholar' => 'calm', 'verdict' => 'luxury', 'blocks' => 'bold', 'torque' => 'bold',
         'festive' => 'bold', 'globe' => 'modern', 'cubic' => 'modern', 'canvas' => 'calm', 'atelier' => 'luxury',
         'bakery' => 'warm', 'nursery' => 'warm', 'shutter' => 'luxury', 'essence' => 'luxury', 'pawprint' => 'warm',
+        'dish' => 'warm', 'beanpot' => 'warm', 'pizza' => 'warm', 'skewer' => 'warm', 'juice' => 'warm', 'tooth' => 'calm',
+        'stetho' => 'calm', 'joint' => 'calm', 'eye' => 'calm', 'teddy' => 'calm', 'capsule' => 'calm', 'tubes' => 'calm',
+        'drop' => 'calm', 'barber' => 'luxury', 'polish' => 'luxury', 'stones' => 'luxury', 'lipstick' => 'luxury', 'yoga' => 'bold',
+        'boxing' => 'bold', 'mat' => 'bold', 'swim' => 'bold', 'villa' => 'modern', 'chalet' => 'modern', 'storefront' => 'modern',
+        'key' => 'modern', 'dairy' => 'modern', 'spice' => 'modern', 'cart' => 'modern', 'phone' => 'modern', 'speech' => 'calm',
+        'laptop' => 'calm', 'crayons' => 'calm', 'calc' => 'luxury', 'chart' => 'luxury', 'stamp' => 'luxury', 'sofa' => 'bold',
+        'kitchen' => 'bold', 'paint' => 'bold', 'saw' => 'bold', 'tire' => 'bold', 'battery' => 'bold', 'oil' => 'bold',
+        'wash' => 'bold', 'car' => 'bold', 'rings' => 'bold', 'partyhat' => 'bold', 'mic' => 'bold', 'spotlight' => 'bold',
+        'jet' => 'modern', 'kaaba' => 'modern', 'beach' => 'modern', 'tent' => 'modern', 'apps' => 'modern', 'servers' => 'modern',
+        'padlock' => 'modern', 'neural' => 'modern', 'pencils' => 'calm', 'brackets' => 'calm', 'quill' => 'calm', 'suit' => 'luxury',
+        'heels' => 'luxury', 'abaya' => 'luxury', 'kidswear' => 'luxury', 'bread' => 'warm', 'kunafa' => 'warm', 'donut' => 'warm',
+        'icecream' => 'warm', 'rattle' => 'warm', 'abc' => 'warm', 'clapper' => 'luxury', 'drone' => 'luxury', 'polaroid' => 'luxury',
+        'incense' => 'luxury', 'soap' => 'luxury', 'cat' => 'warm', 'dog' => 'warm', 'bird' => 'warm', 'petbowl' => 'warm',
     ];
 
     // كلمات بتدل على طابع الاسم — بتكسر التعادل في التوزيع لصالح تصميم من نفس الطابع.
@@ -460,6 +570,84 @@ class SeedTemplateLibrary extends Command
         'shutter' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
         'essence' => [['ibm-plex-arabic', 'amiri'], ['tajawal', 'el-messiri']],
         'pawprint' => [['almarai', 'el-messiri'], ['tajawal', 'baloo-bhaijaan-2']],
+        'dish' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'beanpot' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'pizza' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'skewer' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'juice' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'tooth' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'stetho' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'joint' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'eye' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'teddy' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'capsule' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'tubes' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'drop' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'barber' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'polish' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'stones' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'lipstick' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'yoga' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'boxing' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'mat' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'swim' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'villa' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'chalet' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'storefront' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'key' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'dairy' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'spice' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'cart' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'phone' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'speech' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'laptop' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'crayons' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'calc' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'chart' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'stamp' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'sofa' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'kitchen' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'paint' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'saw' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'tire' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'battery' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'oil' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'wash' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'car' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'rings' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'partyhat' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'mic' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'spotlight' => [['cairo', 'changa'], ['tajawal', 'noto-kufi-arabic']],
+        'jet' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'kaaba' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'beach' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'tent' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'apps' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'servers' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'padlock' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'neural' => [['readex-pro', 'alexandria'], ['tajawal', 'cairo']],
+        'pencils' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'brackets' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'quill' => [['ibm-plex-arabic', 'readex-pro'], ['mada', 'alexandria']],
+        'suit' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'heels' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'abaya' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'kidswear' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'bread' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'kunafa' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'donut' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'icecream' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'rattle' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'abc' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'clapper' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'drone' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'polaroid' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'incense' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'soap' => [['tajawal', 'el-messiri'], ['readex-pro', 'reem-kufi']],
+        'cat' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'dog' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'bird' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
+        'petbowl' => [['almarai', 'el-messiri'], ['cairo', 'lemonada']],
     ];
 
     private bool $hasHeadingFont = false;
@@ -482,6 +670,9 @@ class SeedTemplateLibrary extends Command
 
         foreach ($categories as $categoryIndex => $category) {
             foreach ($this->planCategory($categoryIndex, $category) as $plan) {
+                if (in_array($plan['slug'], $deleted ??= self::deletedSlugs(), true)) {
+                    continue;
+                }
                 $counts[$this->upsertTemplate($category, $plan)]++;
                 $produced[] = $plan['slug'];
             }
@@ -772,9 +963,14 @@ class SeedTemplateLibrary extends Command
             $best = null;
             $bestScore = INF;
 
+            // (2026-10-11) فئة فيها قوالب أكتر من عيلات الألوان (الأنواع الفرعية): لو مفيش عيلة فاضية، تتكرر.
+            foreach ([false, true] as $reuse) {
+            if ($best !== null) {
+                break;
+            }
             foreach ($palettes as $key => $palette) {
                 $family = $palette['family'];
-                if (isset($used[$family]) || ! in_array($palette['mode'], self::LAYOUT_MODES[$layout] ?? [$palette['mode']], true)) {
+                if ((! $reuse && isset($used[$family])) || ! in_array($palette['mode'], self::LAYOUT_MODES[$layout] ?? [$palette['mode']], true)) {
                     continue;
                 }
 
@@ -815,6 +1011,7 @@ class SeedTemplateLibrary extends Command
                 }
             }
 
+            }
             $result[$templateIndex] = $best;
             $used[self::PALETTES[$best]['family']] = true;
             str_contains(self::PALETTES[$best]['mode'], 'dark') ? $dark++ : $light++;
@@ -972,6 +1169,11 @@ class SeedTemplateLibrary extends Command
                 $template->variants()->create(['slug' => 'default'] + $variantAttributes);
 
                 return 'created';
+            }
+
+            // قالب متأرشف بإيد فؤاد: المكتبة بتحدّثه بس مابترجّعهوش ظاهر.
+            if ($template->archived_at) {
+                unset($attributes['is_active']);
             }
 
             $slots = $template->slots()->get()->keyBy('key');
@@ -1146,7 +1348,10 @@ class SeedTemplateLibrary extends Command
             return false;
         }
 
-        $slugs = array_merge(...array_map(fn (array $category) => array_column($category['templates'], 'slug'), $categories));
+        $slugs = array_values(array_diff(
+            array_merge(...array_map(fn (array $category) => array_column($category['templates'], 'slug'), $categories)),
+            self::deletedSlugs(),
+        ));
         $library = Template::query()->whereIn('slug', $slugs);
 
         if ((clone $library)->count() !== count($slugs)) {

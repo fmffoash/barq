@@ -40,6 +40,12 @@ class User extends Authenticatable
         ];
     }
 
+    // (2026-10-11) القوالب المفضلة لليوزر ده.
+    public function favoriteTemplates()
+    {
+        return $this->belongsToMany(Template::class, 'template_favorites')->withTimestamps();
+    }
+
     public function projects()
     {
         return $this->hasMany(Project::class, 'created_by');

@@ -21,9 +21,10 @@ class Depth3dTemplatesTest extends TestCase
         $this->artisan('barq:seed-template-library')->assertSuccessful();
         $templates = Template::with(['slots', 'variants'])->where('slug', 'like', '%-3d-%')->get();
 
-        $this->assertCount(20, $templates);
-        $this->assertCount(20, $templates->pluck('category')->unique(), 'one 3D design per category');
-        $this->assertCount(20, $templates->pluck('layout')->unique());
+        $scenes = count(\App\Support\SceneLibrary::all());
+        $this->assertCount($scenes, $templates, 'every drawing is its own template');
+        $this->assertCount(20, $templates->pluck('category')->unique(), 'every category has 3D designs');
+        $this->assertCount($scenes, $templates->pluck('layout')->unique());
 
         $member = User::factory()->member()->create();
 
