@@ -69,26 +69,22 @@ class UsersAndAccessTest extends TestCase
 
     // ───────── حظر / إيقاف ─────────
 
-    public function test_blocked_and_suspended_users_cannot_log_in_and_are_kicked_out(): void
+    // (2026-10-11 — فؤاد) الإيقاف ثابت لحد ما الأدمن يشغّله، والحظر اتشال
+    public function test_suspended_users_cannot_log_in_until_reactivated_and_are_kicked_out(): void
     {
-        $user = User::factory()->member()->create(['password' => Hash::make('secret-pass')]);
+        $user = User::factory()->member()->create(["password" => Hash::make("secret-pass")]);
 
-        $user->forceFill(['status' => User::BLOCKED])->save();
-        $this->post('/login', ['email' => $user->email, 'password' => 'secret-pass'])->assertSessionHasErrors('email');
+        $user->forceFill(["status" => User::SUSPENDED, "suspended_until" => null])->save();
+        $this->post("/login", ["email" => $user->email, "password" => "secret-pass"])->assertSessionHasErrors("email");
         $this->assertGuest();
 
-        $user->forceFill(['status' => User::SUSPENDED, 'suspended_until' => now()->addDays(3)])->save();
-        $this->post('/login', ['email' => $user->email, 'password' => 'secret-pass'])->assertSessionHasErrors('email');
-        $this->assertGuest();
-
-        // الإيقاف خلص = بيدخل عادي
-        $user->forceFill(['suspended_until' => now()->subMinute()])->save();
-        $this->post('/login', ['email' => $user->email, 'password' => 'secret-pass'])->assertRedirect(route('admin.dashboard'));
+        $user->forceFill(["status" => User::ACTIVE])->save();
+        $this->post("/login", ["email" => $user->email, "password" => "secret-pass"])->assertRedirect(route("admin.dashboard"));
         $this->assertAuthenticatedAs($user);
 
-        // اتحظر وهو داخل = بيخرج في أول طلب
-        $user->forceFill(['status' => User::BLOCKED])->save();
-        $this->get('/')->assertRedirect(route('login'));
+        // اتوقف وهو داخل = بيخرج في أول طلب
+        $user->forceFill(["status" => User::SUSPENDED])->save();
+        $this->get("/")->assertRedirect(route("login"));
         $this->assertGuest();
     }
 
@@ -160,11 +156,19 @@ class UsersAndAccessTest extends TestCase
         $this->put(route('users.password', $staff), ['password' => 'new-strong-pass'])->assertRedirect();
         $this->assertTrue(Hash::check('new-strong-pass', $staff->fresh()->password));
 
-        // إيقاف مؤقت / حظر / تفعيل
-        $this->put(route('users.status', $staff), ['action' => 'suspend', 'days' => 3]);
+        // تعديل البيانات كلها
+        $this->put(route('users.update', $staff), ['name' => 'موظف جديد', 'email' => 'staff2@example.com', 'is_admin' => '1'])->assertRedirect();
+        $this->assertSame('staff2@example.com', $staff->fresh()->email);
+        $this->assertTrue($staff->fresh()->is_admin);
+        $this->put(route('users.update', $staff), ['name' => 'موظف جديد', 'email' => $admin->email, 'is_admin' => '0'])->assertSessionHasErrors('email');
+        $this->put(route('users.update', $staff), ['name' => 'موظف جديد', 'email' => 'staff2@example.com', 'is_admin' => '0']);
+        $this->assertFalse($staff->fresh()->is_admin);
+
+        // إيقاف (من غير مدة) / تشغيل — الحظر اتشال
+        $this->put(route('users.status', $staff), ['action' => 'suspend']);
         $this->assertFalse($staff->fresh()->canLogIn());
-        $this->put(route('users.status', $staff), ['action' => 'block']);
-        $this->assertSame(User::BLOCKED, $staff->fresh()->status);
+        $this->assertNull($staff->fresh()->suspended_until);
+        $this->put(route('users.status', $staff), ['action' => 'block'])->assertSessionHasErrors('action');
         $this->put(route('users.status', $staff), ['action' => 'activate']);
         $this->assertTrue($staff->fresh()->canLogIn());
 
@@ -180,7 +184,9 @@ class UsersAndAccessTest extends TestCase
         $admin = User::factory()->create();
         $this->actingAs($admin);
 
-        $this->put(route('users.status', $admin), ['action' => 'block'])->assertSessionHasErrors('user');
+        $this->put(route('users.status', $admin), ['action' => 'suspend'])->assertSessionHasErrors('user');
+        $this->put(route('users.update', $admin), ['name' => $admin->name, 'email' => $admin->email, 'is_admin' => '0'])->assertSessionHasErrors('user');
+        $this->assertTrue($admin->fresh()->is_admin);
         $this->delete(route('users.destroy', $admin))->assertSessionHasErrors('user');
         $this->assertSame(User::ACTIVE, $admin->fresh()->status);
     }

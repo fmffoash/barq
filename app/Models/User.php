@@ -45,25 +45,18 @@ class User extends Authenticatable
         return $this->hasMany(Project::class, 'created_by');
     }
 
-    /** يقدر يدخل دلوقتي؟ (الإيقاف المؤقت بيخلص لوحده بعد تاريخه) */
+    /**
+     * يقدر يدخل دلوقتي؟ (2026-10-11 — فؤاد: الإيقاف ثابت لحد ما الأدمن يشغّله، والحظر اتشال)
+     * الموقوف مابيدخلش خالص لحد «تفعيل». BLOCKED فاضل كقيمة قديمة بس وبيتعامل زي الموقوف.
+     */
     public function canLogIn(): bool
     {
-        return match ($this->status) {
-            self::BLOCKED => false,
-            self::SUSPENDED => $this->suspended_until !== null && $this->suspended_until->isPast(),
-            default => true,
-        };
+        return ! in_array($this->status, [self::SUSPENDED, self::BLOCKED], true);
     }
 
     /** سبب المنع بالعربي (لصفحة الدخول) أو null */
     public function blockedReason(): ?string
     {
-        if ($this->canLogIn()) {
-            return null;
-        }
-
-        return $this->status === self::BLOCKED
-            ? 'الحساب ده متقفل. تواصل مع الأدمن.'
-            : 'الحساب ده موقوف مؤقتاً لحد '.$this->suspended_until?->timezone('Africa/Cairo')->format('Y-m-d H:i').'.';
+        return $this->canLogIn() ? null : 'الحساب ده موقوف. تواصل مع الأدمن.';
     }
 }

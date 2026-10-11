@@ -61,31 +61,48 @@ class UserController extends Controller
             ->with('generated_password', $generated ? ['name' => $user->name, 'password' => $generated] : null);
     }
 
-    public function status(Request $request, User $user): RedirectResponse
+    /** تعديل بيانات اليوزر كلها: الاسم والإيميل (اللي بيدخل بيه) والدور (2026-10-11) */
+    public function update(Request $request, User $user): RedirectResponse
     {
         $data = $request->validate([
-            'action' => ['required', Rule::in(['activate', 'block', 'suspend'])],
-            'days' => ['required_if:action,suspend', 'nullable', 'integer', 'min:1', 'max:365'],
+            'name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
+            'is_admin' => ['nullable', 'boolean'],
         ]);
+        $makeAdmin = (bool) ($data['is_admin'] ?? false);
 
-        if ($data['action'] !== 'activate' && ($error = $this->guardSelfAndLastAdmin($user))) {
+        // شيل دور الأدمن من نفسك أو من آخر أدمن = حد يتقفل برّه إدارة اليوزرات
+        if ($user->is_admin && ! $makeAdmin && ($error = $this->guardSelfAndLastAdmin($user))) {
             return back()->withErrors(['user' => $error]);
         }
 
-        $fill = match ($data['action']) {
-            'activate' => ['status' => User::ACTIVE, 'suspended_until' => null],
-            'block' => ['status' => User::BLOCKED, 'suspended_until' => null],
-            'suspend' => ['status' => User::SUSPENDED, 'suspended_until' => now()->addDays((int) $data['days'])],
-        };
-        $user->forceFill($fill)->save();
+        $user->fill(['name' => $data['name'], 'email' => $data['email']]);
+        $user->forceFill(['is_admin' => $makeAdmin])->save();
 
-        if ($data['action'] !== 'activate') {
+        return back()->with('status', "اتحفظت بيانات «{$user->name}».");
+    }
+
+    /**
+     * إيقاف / تفعيل (2026-10-11 — فؤاد): الإيقاف ثابت لحد ما الأدمن يشغّله تاني (من غير مدة)، والحظر اتشال.
+     */
+    public function status(Request $request, User $user): RedirectResponse
+    {
+        $action = $request->validate(['action' => ['required', Rule::in(['activate', 'suspend'])]])['action'];
+
+        if ($action === 'suspend' && ($error = $this->guardSelfAndLastAdmin($user))) {
+            return back()->withErrors(['user' => $error]);
+        }
+
+        $user->forceFill([
+            'status' => $action === 'suspend' ? User::SUSPENDED : User::ACTIVE,
+            'suspended_until' => null,
+        ])->save();
+
+        if ($action === 'suspend') {
             DB::table('sessions')->where('user_id', $user->id)->delete(); // بيخرج حالاً
         }
 
-        $label = ['activate' => 'اتفعّل', 'block' => 'اتحظر', 'suspend' => 'اتوقف مؤقتاً لحد '.$user->suspended_until?->timezone('Africa/Cairo')->format('Y-m-d')][$data['action']];
-
-        return back()->with('status', "«{$user->name}» {$label}.");
+        return back()->with('status', "«{$user->name}» ".($action === 'suspend' ? 'اتوقف — مش هيقدر يدخل لحد ما تشغّله.' : 'اتشغّل.'));
     }
 
     public function destroy(User $user): RedirectResponse

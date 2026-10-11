@@ -66,7 +66,7 @@
                     <th class="px-4 py-3 text-start">الحالة</th>
                     <th class="px-4 py-3 text-start">آخر دخول</th>
                     <th class="px-4 py-3 text-start">الباسورد</th>
-                    <th class="px-4 py-3 text-start">الإجراءات</th>
+                    <th class="px-4 py-3 text-start">تحكم</th>
                 </tr>
             </thead>
             <tbody>
@@ -86,10 +86,8 @@
                     </td>
                     <td class="px-4 py-3 text-slate-200">{{ $user->projects_count }}</td>
                     <td class="px-4 py-3">
-                        @if ($user->status === \App\Models\User::BLOCKED)
-                            <span class="rounded-full bg-red-900/40 px-2 py-0.5 text-xs text-red-300">محظور</span>
-                        @elseif ($user->status === \App\Models\User::SUSPENDED && ! $user->canLogIn())
-                            <span class="rounded-full bg-orange-900/40 px-2 py-0.5 text-xs text-orange-300">موقوف لحد {{ $user->suspended_until->timezone('Africa/Cairo')->format('Y-m-d') }}</span>
+                        @if (! $user->canLogIn())
+                            <span class="rounded-full bg-orange-900/40 px-2 py-0.5 text-xs text-orange-300">موقوف</span>
                         @else
                             <span class="rounded-full bg-emerald-900/40 px-2 py-0.5 text-xs text-emerald-300">شغال</span>
                         @endif
@@ -104,29 +102,45 @@
                         </form>
                     </td>
                     <td class="px-4 py-3">
-                        @unless ($me)
-                            <div class="flex flex-wrap items-center gap-1">
-                                @if ($user->status !== \App\Models\User::ACTIVE && ! $user->canLogIn())
+                        <div class="flex flex-wrap items-start gap-1">
+                            {{-- تعديل البيانات كلها: الاسم والإيميل والدور --}}
+                            <details class="w-full sm:w-auto">
+                                <summary class="cursor-pointer list-none rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 hover:bg-slate-700">✏️ تعديل</summary>
+                                <form method="POST" action="{{ route('users.update', $user) }}" class="mt-2 grid w-64 gap-2 rounded-xl border border-slate-700 bg-slate-950 p-3">
+                                    @csrf @method('PUT')
+                                    <label class="text-xs text-slate-400">الاسم
+                                        <input name="name" value="{{ $user->name }}" required maxlength="100" class="{{ $input }} mt-1">
+                                    </label>
+                                    <label class="text-xs text-slate-400">الإيميل (بيدخل بيه)
+                                        <input name="email" type="email" value="{{ $user->email }}" required dir="ltr" class="{{ $input }} mt-1">
+                                    </label>
+                                    <label class="flex items-center gap-2 text-xs text-slate-300">
+                                        <input type="hidden" name="is_admin" value="0">
+                                        <input type="checkbox" name="is_admin" value="1" @checked($user->is_admin) class="rounded border-slate-700 bg-slate-950 text-amber-500">
+                                        أدمن
+                                    </label>
+                                    <button type="submit" class="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-amber-300">حفظ</button>
+                                </form>
+                            </details>
+
+                            @unless ($me)
+                                {{-- الإيقاف ثابت لحد ما تشغّله تاني (مفيش مدة) --}}
+                                @if (! $user->canLogIn())
                                     <form method="POST" action="{{ route('users.status', $user) }}">@csrf @method('PUT')
                                         <input type="hidden" name="action" value="activate">
-                                        <button class="rounded-lg bg-emerald-800/60 px-2 py-1 text-xs text-emerald-200 hover:bg-emerald-700">تفعيل</button>
+                                        <button class="rounded-lg bg-emerald-800/60 px-2 py-1 text-xs text-emerald-200 hover:bg-emerald-700">▶ تشغيل</button>
                                     </form>
                                 @else
-                                    <form method="POST" action="{{ route('users.status', $user) }}" class="flex items-center gap-1">@csrf @method('PUT')
+                                    <form method="POST" action="{{ route('users.status', $user) }}" onsubmit="return confirm({{ \Illuminate\Support\Js::from('إيقاف «'.$user->name.'»؟ مش هيقدر يدخل لحد ما تشغّله تاني.') }})">@csrf @method('PUT')
                                         <input type="hidden" name="action" value="suspend">
-                                        <input name="days" type="number" min="1" max="365" value="7" class="w-14 rounded-lg border border-slate-700 bg-slate-950 px-1 py-1 text-xs text-white" title="عدد الأيام">
-                                        <button class="rounded-lg bg-orange-900/50 px-2 py-1 text-xs text-orange-200 hover:bg-orange-800">إيقاف مؤقت</button>
-                                    </form>
-                                    <form method="POST" action="{{ route('users.status', $user) }}" onsubmit="return confirm({{ \Illuminate\Support\Js::from('حظر «'.$user->name.'»؟ مش هيقدر يدخل لحد ما تفعّله.') }})">@csrf @method('PUT')
-                                        <input type="hidden" name="action" value="block">
-                                        <button class="rounded-lg bg-red-900/50 px-2 py-1 text-xs text-red-200 hover:bg-red-800">حظر</button>
+                                        <button class="rounded-lg bg-orange-900/50 px-2 py-1 text-xs text-orange-200 hover:bg-orange-800">⏸ إيقاف</button>
                                     </form>
                                 @endif
                                 <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm({{ \Illuminate\Support\Js::from('مسح «'.$user->name.'» نهائياً؟ مشاريعه هتتنقل لحسابك.') }})">@csrf @method('DELETE')
                                     <button class="rounded-lg bg-slate-800 px-2 py-1 text-xs text-red-300 hover:bg-red-900/60">🗑 مسح</button>
                                 </form>
-                            </div>
-                        @endunless
+                            @endunless
+                        </div>
                     </td>
                 </tr>
             @endforeach

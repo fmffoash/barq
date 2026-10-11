@@ -74,6 +74,7 @@ Route::middleware(['auth', 'session.valid'])->group(function () {
     Route::middleware('admin')->group(function (): void {
         Route::get('users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
         Route::post('users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+        Route::put('users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
         Route::put('users/{user}/password', [\App\Http\Controllers\UserController::class, 'password'])->name('users.password');
         Route::put('users/{user}/status', [\App\Http\Controllers\UserController::class, 'status'])->name('users.status');
         Route::delete('users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
