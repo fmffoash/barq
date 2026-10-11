@@ -16,9 +16,15 @@ const { chromium } = require('playwright');
         try {
             await page.goto(job.url, { waitUntil: 'networkidle', timeout: 45000 });
             await page.evaluate(() => document.fonts.ready);
-            await page.evaluate(() => Promise.all([...document.images]
-                .filter((img) => !img.complete)
-                .map((img) => new Promise((resolve) => { img.onload = img.onerror = resolve; }))));
+            // Only images that are actually loading: a loading="lazy" image far below the fold never
+            // starts, so waiting for its onload hung forever (taller heroes in the 2026-10-11 layouts
+            // pushed galleries out of Chromium's lazy-load distance). Capped at 10s either way.
+            await page.evaluate(() => Promise.race([
+                Promise.all([...document.images]
+                    .filter((img) => !img.complete && img.loading !== 'lazy')
+                    .map((img) => new Promise((resolve) => { img.onload = img.onerror = resolve; }))),
+                new Promise((resolve) => setTimeout(resolve, 10000)),
+            ]));
             await page.screenshot({ path: job.out, type: 'jpeg', quality: 70 });
             console.log(`ok ${job.slug}`);
         } catch (error) {
