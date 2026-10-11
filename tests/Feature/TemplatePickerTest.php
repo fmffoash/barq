@@ -46,6 +46,31 @@ class TemplatePickerTest extends TestCase
         $this->assertSame('مخصوص لـ«عيادة أسنان»', $pick['reason']);
     }
 
+    // الدفعة 2 (2026-10-11): التخصصات الجديدة في المكتبة الحقيقية بتتختار من كلام فؤاد أو نوع النشاط
+    // على جوجل — والبرجر مبقاش بيروح لقالب البيتزا.
+    public function test_second_wave_specialties_are_picked_from_the_real_library(): void
+    {
+        $this->artisan('barq:seed-template-library')->assertSuccessful();
+
+        $cases = [
+            ['عيادات وخدمات طبية', 'Dr. Samy · Orthopedic Surgeon', 'عيادة عظام'],
+            ['عيادات وخدمات طبية', 'صيدلية الشفاء', 'صيدلية'],
+            ['عيادات وخدمات طبية', 'مركز ليزك لتصحيح النظر', 'مركز ليزك'],
+            ['مطاعم وكافيهات', 'مطعم برجر في المعادي', 'مطعم برجر'],
+            ['مطاعم وكافيهات', 'Burger restaurant', 'مطعم برجر'],
+            ['مطاعم وكافيهات', 'Pizza place', 'بيتزا وفاست فود'],
+            ['مطاعم وكافيهات', 'مطعم شاورما ومناقيش', 'مطعم شامي'],
+            ['جيم ولياقة بدنية', 'أكاديمية كاراتيه للأطفال', 'أكاديمية كاراتيه'],
+            ['مخابز وحلويات', 'Donuts shop', 'محل دونتس'],
+            ['عطور ومستحضرات تجميل', 'محل بخور ودهن عود', 'محل بخور وعود'],
+        ];
+
+        foreach ($cases as [$category, $context, $specialty]) {
+            $picked = $this->picker()->pick($category, $context)['template'];
+            $this->assertSame($specialty, trim(explode('—', $picked->name)[0]), $context);
+        }
+    }
+
     public function test_the_style_decides_when_the_specialty_does_not(): void
     {
         $t = $this->medical();

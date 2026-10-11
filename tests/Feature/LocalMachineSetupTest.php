@@ -121,7 +121,7 @@ class LocalMachineSetupTest extends TestCase
                 ->assertSuccessful();
 
             $this->assertSame(['owner@example.com'], User::pluck('email')->all());
-            $this->assertSame(301, Template::count(), 'the existing template stays, the 300 library templates are added');
+            $this->assertSame(501, Template::count(), 'the existing template stays, the 500 library templates are added');
             $this->assertTrue(file_exists($linkDir.'/storage'));
         } finally {
             File::deleteDirectory($linkDir);

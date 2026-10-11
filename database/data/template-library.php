@@ -1,7 +1,13 @@
 <?php
 
 // بيانات مكتبة القوالب الأصلية (barq:seed-template-library — app/Console/Commands/SeedTemplateLibrary.php).
-// 20 فئة × 15 قالب. كل النصوص عربية أصلية اتكتبت خصيصاً للمكتبة — صفر نسخ من مصدر خارجي.
+// 20 فئة × 25 قالب. كل النصوص عربية أصلية اتكتبت خصيصاً للمكتبة — صفر نسخ من مصدر خارجي.
+//
+// - 'wave' => 2: قوالب الدفعة التانية (2026-10-11، 10 لكل فئة بتصميمات أحدث). كل دفعة بتتوزّع على
+//   التصميمات/الألوان لوحدها، فإضافة دفعة جديدة مبتغيّرش شكل القوالب القديمة (شوف SeedTemplateLibrary).
+//   قالب جديد في دفعة 2 = اسم فيه كلمة من LAYOUT_KEYWORDS بتاعة تصميم من تصميمات الدفعة، وتخصص (قبل "—")
+//   مش مكرر في الفئة — الاختيار بالاسم في الشات (FollowUpIntent::namedTemplate) بيعتمد عليه.
+//   انتبه: المطابقة جزء من كلمة، فالاسم كله (حتى التخصص) بيتحسب ("تحاليل" فيها "ليل" بتاعة نيون).
 //
 // - 'slug' ثابت عن قصد: هو الـslug اللي القالب اتعمل بيه أول مرة (Str::slug(الفئة + الاسم القديم)).
 //   تغيير الاسم بعد كده بيحدّث نفس الصف بدل ما يعمل قالب مكرر. متغيّرش أي slug موجود.
@@ -39,6 +45,17 @@ return [
             ['slug' => 'mtaaam-okafyhat-kafyh-shy-nthaf-obsat', 'name' => 'كافيه صحي — منيو متكامل', 'hero_title' => 'أكل صحي من غير ما تتنازل عن الطعم', 'hero_subtitle' => 'سموذي وبولات وسلطات طازة، والسعرات مكتوبة جنب كل صنف.'],
             ['slug' => 'mtaaam-okafyhat-mtaam-fakhr-lyly-tabaa-anyk', 'name' => 'مطعم فاخر ليلي — طابع أنيق', 'hero_title' => 'أمسية أنيقة على ضوء الشموع', 'hero_subtitle' => 'أطباق راقية ومشروبات مختارة في أجواء هادية تليق بمناسباتك الخاصة.'],
             ['slug' => 'mtaaam-okafyhat-kafyh-sharaa-tabaa-shbaby', 'name' => 'كافيه شارع — رحلة قهوة يومية', 'hero_title' => 'قهوتك على السريع… وبمزاج', 'hero_subtitle' => 'كوباية تاخدها معاك في طريقك، أو استراحة قصيرة مع الصحاب.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'mtaaam-okafyhat-mhl-aasyr-osmothy-ashrak-kl-sbh', 'wave' => 2, 'name' => 'محل عصير وسموذي — إشراقة كل صبح', 'hero_title' => 'عصير فريش يصحّيك', 'hero_subtitle' => 'عصاير طبيعية وسموذي بفواكه الموسم بتتعصر قدامك، من غير سكر مضاف ولا مواد حافظة.'],
+            ['slug' => 'mtaaam-okafyhat-mtaam-brgr-ktl-lony-otaam-mkhtlf', 'wave' => 2, 'name' => 'مطعم برجر — كتل لونية وطعم مختلف', 'hero_title' => 'برجر سميك على أصوله', 'hero_subtitle' => 'لحمة طازة بتتفرم كل يوم، وعيش بيتخبز عندنا، وصوصات من وصفاتنا الخاصة.'],
+            ['slug' => 'mtaaam-okafyhat-mtaam-nbaty-mn-alard-ltbkk', 'wave' => 2, 'name' => 'مطعم نباتي — من الأرض لطبقك', 'hero_title' => 'أكل نباتي مليان طعم', 'hero_subtitle' => 'خضار وبقوليات من مزارع محلية، وأطباق نباتية مشبعة حتى لمحبي اللحمة.'],
+            ['slug' => 'mtaaam-okafyhat-mtbkh-ogbat-mghz-ntham-asboaay-mhsob', 'wave' => 2, 'name' => 'مطبخ وجبات مجهّزة — نظام أسبوعي محسوب', 'hero_title' => 'وجباتك للأسبوع جاهزة في التلاجة', 'hero_subtitle' => 'اختار باقتك، وإحنا نطبخ ونغلّف ونوصّل وجبات متوازنة بالسعرات لحد بابك.'],
+            ['slug' => 'mtaaam-okafyhat-styk-haos-mshhd-aal-algmr', 'wave' => 2, 'name' => 'ستيك هاوس — مشهد على الجمر', 'hero_title' => 'ستيك مستوي على مزاجك', 'hero_subtitle' => 'قطعيات لحم مختارة بتتشوي على نار عالية، وتتقدّم مع صوصات وأطباق جانبية تليق بيها.'],
+            ['slug' => 'mtaaam-okafyhat-mtaam-shamy-dyaf-aarby', 'wave' => 2, 'name' => 'مطعم شامي — ضيافة عربية', 'hero_title' => 'مشاوي ومقبلات شامية على أصولها', 'hero_subtitle' => 'شاورما وفتة ومناقيش ومقبلات طازة، بنكهات الشام وكرم الضيافة العربية.'],
+            ['slug' => 'mtaaam-okafyhat-mtbkh-tosyl-mnyo-aonlayn', 'wave' => 2, 'name' => 'مطبخ توصيل — منيو أونلاين', 'hero_title' => 'اطلب أكلك في كام ضغطة', 'hero_subtitle' => 'منيو أونلاين بالصور والأسعار، وتتبّع لطلبك من المطبخ لحد باب البيت.'],
+            ['slug' => 'mtaaam-okafyhat-mtaam-kshry-ks-mn-ost-albld', 'wave' => 2, 'name' => 'مطعم كشري — قصة من وسط البلد', 'hero_title' => 'طبق كشري بطعم مصر', 'hero_subtitle' => 'من عربية صغيرة لمحل كبير، ولسه بنعمل الكشري بنفس الخلطة ونفس الصلصة.'],
+            ['slug' => 'mtaaam-okafyhat-ftatry-taam-zmn-altybyn', 'wave' => 2, 'name' => 'فطاطري — طعم زمن الطيبين', 'hero_title' => 'فطير مشلتت وحلو زي زمان', 'hero_subtitle' => 'فطير بالسمنة البلدي وحشوات حادقة وحلوة، معمول على الفرن بإيدين بتفهم.'],
+            ['slug' => 'mtaaam-okafyhat-kafyh-msah-aaml-kho-okod', 'wave' => 2, 'name' => 'كافيه مساحة عمل — قهوة وكود', 'hero_title' => 'اشتغل وقهوتك جنبك', 'hero_subtitle' => 'إنترنت سريع ومكاتب مريحة وفيشة لكل كرسي، وقهوة بتتعمل لحد ما مشروعك يخلص.'],
         ],
         'tones' => [
             'warm' => [
@@ -121,6 +138,17 @@ return [
             ['slug' => 'aayadat-okhdmat-tby-aayad-aayon-roy-aodh', 'name' => 'عيادة عيون — تقنية متطورة', 'hero_title' => 'شوف الدنيا أوضح', 'hero_subtitle' => 'فحص نظر شامل وعلاج وعمليات تصحيح بأجهزة تشخيص متطورة.'],
             ['slug' => 'aayadat-okhdmat-tby-mrkz-toary-astgab-sryaa', 'name' => 'مركز طوارئ — استجابة سريعة', 'hero_title' => 'جاهزين لك في أي لحظة', 'hero_subtitle' => 'استقبال طوارئ على مدار الساعة، وفريق بيتحرك بسرعة ودقة من أول دقيقة.'],
             ['slug' => 'aayadat-okhdmat-tby-aayad-nfsy-daam-bhdoaa', 'name' => 'عيادة نفسية — حكايتك تتسمع', 'hero_title' => 'مساحة آمنة تتكلم فيها براحتك', 'hero_subtitle' => 'جلسات فردية وأسرية بسرية تامة، مع متخصصين بيسمعوك من غير أحكام.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'aayadat-okhdmat-tby-mrkz-lyzk-roy-bashrak-gdyd', 'wave' => 2, 'name' => 'مركز ليزك — رؤية بإشراقة جديدة', 'hero_title' => 'ودّع النضارة بأمان', 'hero_subtitle' => 'فحص شامل للقرنية وعمليات تصحيح نظر بأحدث أجهزة الليزر، ومتابعة لحد ما تطمّن.'],
+            ['slug' => 'aayadat-okhdmat-tby-aayad-aatham-khtot-oadh-llaalag', 'wave' => 2, 'name' => 'عيادة عظام — خطوط واضحة للعلاج', 'hero_title' => 'مفاصلك وعضمك في أمان', 'hero_subtitle' => 'تشخيص إصابات الملاعب وآلام الضهر والمفاصل، وخطة علاج واضحة من غير مبالغة.'],
+            ['slug' => 'aayadat-okhdmat-tby-aayad-tb-asr-hnan-oraaay', 'wave' => 2, 'name' => 'عيادة طب أسرة — حنان ورعاية', 'hero_title' => 'طبيب العيلة اللي يعرفكم كلكم', 'hero_subtitle' => 'متابعة صحة الكبار والصغار في مكان واحد، وملف لكل فرد في البيت.'],
+            ['slug' => 'aayadat-okhdmat-tby-aayad-skr-oghdd-ntham-mtabaa', 'wave' => 2, 'name' => 'عيادة سكر وغدد — نظام متابعة', 'hero_title' => 'سكرك تحت السيطرة', 'hero_subtitle' => 'متابعة دورية للسكر والغدة الدرقية والهرمونات، ونظام أكل وعلاج مكتوب لكل حالة.'],
+            ['slug' => 'aayadat-okhdmat-tby-mrkz-grah-tgmyl-lkt-kbl-obaad', 'wave' => 2, 'name' => 'مركز جراحة تجميل — لقطة قبل وبعد', 'hero_title' => 'نتيجة طبيعية تليق بيك', 'hero_subtitle' => 'استشارات وعمليات تجميل بإشراف استشاريين، وصور قبل وبعد حقيقية لحالاتنا.'],
+            ['slug' => 'aayadat-okhdmat-tby-aayad-anf-oathn-raaay-broh-aarby', 'wave' => 2, 'name' => 'عيادة أنف وأذن — رعاية بروح عربية', 'hero_title' => 'سمعك ونفسك في أمان', 'hero_subtitle' => 'علاج الجيوب الأنفية والتهابات الأذن والحنجرة، بمناظير حديثة وكشف هادي.'],
+            ['slug' => 'aayadat-okhdmat-tby-mns-kshf-aonlayn-dktork-aal-almobayl', 'wave' => 2, 'name' => 'منصة كشف أونلاين — دكتورك على الموبايل', 'hero_title' => 'استشارة طبية من غير ما تتحرك', 'hero_subtitle' => 'احجز مكالمة فيديو مع طبيب متخصص، واستلم روشتتك وتقريرك أونلاين.'],
+            ['slug' => 'aayadat-okhdmat-tby-aayad-ntk-otkhatb-ks-kl-klm', 'wave' => 2, 'name' => 'عيادة نطق وتخاطب — قصة كل كلمة', 'hero_title' => 'أول كلمة ليها فرحة', 'hero_subtitle' => 'تقييم وجلسات نطق وتخاطب للأطفال والكبار، مع خطة بيتابعها الأهل معانا في كل جلسة.'],
+            ['slug' => 'aayadat-okhdmat-tby-sydly-bhg-alkhdm-alkryb', 'wave' => 2, 'name' => 'صيدلية — بهجة الخدمة القريبة', 'hero_title' => 'صيدلية الحي اللي بتعرفك', 'hero_subtitle' => 'أدوية ومستلزمات طبية ومنتجات عناية، واستشارة صيدلي وتوصيل لحد البيت.'],
+            ['slug' => 'aayadat-okhdmat-tby-maaml-orath-ogynat-byanat-dkyk', 'wave' => 2, 'name' => 'معمل وراثة وجينات — بيانات دقيقة', 'hero_title' => 'تحاليل جينية بنتايج دقيقة', 'hero_subtitle' => 'فحوصات وراثية قبل الجواز والحمل، وتقارير مفهومة مع استشارة متخصص.'],
         ],
         'tones' => [
             'warm' => [
@@ -203,6 +231,17 @@ return [
             ['slug' => 'salonat-otgmyl-salon-shbaby-aloan-gryy', 'name' => 'صالون شبابي — تريند وألوان', 'hero_title' => 'ألوان جريئة ولوك مختلف', 'hero_subtitle' => 'هايلايت وألوان فانتازيا وقصّات التريند، لأي حد بيحب يجرّب.'],
             ['slug' => 'salonat-otgmyl-mrkz-tgmyl-tby-aalm-ogmal', 'name' => 'مركز تجميل طبي — نتائج خطوة بخطوة', 'hero_title' => 'جمال بإشراف طبي', 'hero_subtitle' => 'خطة علاج بالمراحل لمشاكل البشرة والشعر، مع متابعة النتيجة كل جلسة.'],
             ['slug' => 'salonat-otgmyl-salon-mnzly-rah-bytk', 'name' => 'صالون منزلي — راحة بيتك', 'hero_title' => 'الصالون يجيلك لحد بيتك', 'hero_subtitle' => 'شعر ومكياج وعناية في بيتك، بنفس الأدوات والجودة من غير مشوار.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'salonat-otgmyl-astodyo-rmosh-ohoagb-lmaa-alnthr', 'wave' => 2, 'name' => 'استوديو رموش وحواجب — لمعة النظرة', 'hero_title' => 'نظرة أوضح من غير مجهود', 'hero_subtitle' => 'رفع رموش وتشكيل حواجب بمواد آمنة، ونتيجة تفضل معاكي أسابيع.'],
+            ['slug' => 'salonat-otgmyl-salon-ksat-ksyr-ashkal-hndsy', 'wave' => 2, 'name' => 'صالون قصات قصيرة — أشكال هندسية', 'hero_title' => 'قصة قصيرة بخطوط مظبوطة', 'hero_subtitle' => 'قصات بوب وبيكسي وتدرّجات محسوبة على شكل وشّك، مع نصايح للتصفيف اليومي.'],
+            ['slug' => 'salonat-otgmyl-salon-mntgat-aadoy-aanay-naaam', 'wave' => 2, 'name' => 'صالون منتجات عضوية — عناية ناعمة', 'hero_title' => 'شعرك يستاهل مكونات نضيفة', 'hero_subtitle' => 'صبغات وعلاجات للشعر بمكونات عضوية خالية من الأمونيا والبارابين.'],
+            ['slug' => 'salonat-otgmyl-salon-kyrly-rotyn-mnthm-llshaar-almgaad', 'wave' => 2, 'name' => 'صالون كيرلي — روتين منظم للشعر المجعد', 'hero_title' => 'تموّجاتك تبان على حقيقتها', 'hero_subtitle' => 'قص وترطيب مخصص للشعر الكيرلي، وروتين منظم تمشي عليه في البيت.'],
+            ['slug' => 'salonat-otgmyl-astodyo-tghyz-tsoyr-lkt-mthaly', 'wave' => 2, 'name' => 'استوديو تجهيز تصوير — لقطة مثالية', 'hero_title' => 'جاهزة قدام أي كاميرا', 'hero_subtitle' => 'مكياج وتسريحة مخصوصين للتصوير والإعلانات وجلسات الفوتوسيشن.'],
+            ['slug' => 'salonat-otgmyl-hmam-mghrby-asal-alastrkhaaa', 'wave' => 2, 'name' => 'حمّام مغربي — أصالة الاسترخاء', 'hero_title' => 'طقوس الحمّام المغربي الأصيلة', 'hero_subtitle' => 'بخار وصابون بلدي وتقشير وماسكات طبيعية، في جو هادي يرجّعك جديدة.'],
+            ['slug' => 'salonat-otgmyl-mtgr-adoat-salonat-mntgat-ahtrafy-aonlayn', 'wave' => 2, 'name' => 'متجر أدوات صالونات — منتجات احترافية أونلاين', 'hero_title' => 'كل أدوات الصالون في مكان واحد', 'hero_subtitle' => 'سشوارات ومكاوي ومقصات ومنتجات أصلية، بتوصيل لكل المحافظات.'],
+            ['slug' => 'salonat-otgmyl-salon-hn-ks-kl-nksh', 'wave' => 2, 'name' => 'صالون حنّة — قصة كل نقشة', 'hero_title' => 'حنّة بنقوش تحكي فرحتك', 'hero_subtitle' => 'نقوش حنّة هندي وخليجي وسوداني للعرايس والمناسبات، بحنّة طبيعية لونها ثابت.'],
+            ['slug' => 'salonat-otgmyl-hlak-klasyk-ksat-fyntag', 'wave' => 2, 'name' => 'حلاق كلاسيك — قصات فينتاج', 'hero_title' => 'حلاقة بالموس وقصات أيام زمان', 'hero_subtitle' => 'ذقن بالفوطة السخنة وقصات كلاسيك مظبوطة، في محل بروح الستينات.'],
+            ['slug' => 'salonat-otgmyl-astsharat-sbgh-alshaar-thkaaa-astnaaay-ykhtar-drgtk', 'wave' => 2, 'name' => 'استشارات صبغة الشعر — ذكاء اصطناعي يختار درجتك', 'hero_title' => 'درجة صبغة تليق ببشرتك', 'hero_subtitle' => 'تحليل لون البشرة والعين بالكاميرا، واقتراح درجات صبغة تناسبك قبل ما تبدئي.'],
         ],
         'tones' => [
             'warm' => [
@@ -284,6 +323,17 @@ return [
             ['slug' => 'gym-olyak-bdny-gym-ahtrafy-tghyzat-mtkaml', 'name' => 'جيم احترافي — تجهيزات متكاملة', 'hero_title' => 'كل اللي محتاجه في مكان واحد', 'hero_subtitle' => 'أجهزة احترافية ومنطقة أوزان حرة وكارديو وساونا وتغذية.'],
             ['slug' => 'gym-olyak-bdny-astodyo-tdryb-shkhsy-ntayg-mrkz', 'name' => 'استوديو تدريب شخصي — خطة خطوة بخطوة', 'hero_title' => 'هدفك بخطة واضحة', 'hero_subtitle' => 'مدرب شخصي بيحطلك خطة بالأسابيع ويتابع تقدمك خطوة بخطوة.'],
             ['slug' => 'gym-olyak-bdny-nady-shbaby-tak-gyl-gdyd', 'name' => 'نادي شبابي — حركة وإبداع', 'hero_title' => 'طاقة جيل جديد', 'hero_subtitle' => 'تمارين وتحديات ورياضات جماعية لشباب بيحب يتحرك ويجرّب.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'gym-olyak-bdny-astodyo-sbynyng-adaaa-oaykaaa', 'wave' => 2, 'name' => 'استوديو سبينينج — إضاءة وإيقاع', 'hero_title' => 'دوّس بكل طاقتك على الإيقاع', 'hero_subtitle' => 'حصص عجل ثابت جماعية بموسيقى وإضاءة، ومدرب بيشجّعك لآخر دقيقة.'],
+            ['slug' => 'gym-olyak-bdny-sal-kalystnks-ashkal-algsm-boznk', 'wave' => 2, 'name' => 'صالة كاليستنكس — أشكال الجسم بوزنك', 'hero_title' => 'قوتك من وزن جسمك', 'hero_subtitle' => 'عقلة ومتوازي وتمارين وزن الجسم، بتدرّج مدروس من أول ضغطة لحد الحركات المتقدمة.'],
+            ['slug' => 'gym-olyak-bdny-nady-gry-akhdr-omftoh', 'wave' => 2, 'name' => 'نادي جري — أخضر ومفتوح', 'hero_title' => 'اجري معانا كل جمعة الصبح', 'hero_subtitle' => 'مجموعات جري لكل المستويات في أماكن خضرا، وخطط تمرين لسباقات 5 و10 كيلو.'],
+            ['slug' => 'gym-olyak-bdny-mrkz-tghthy-ryady-ntham-mhsob', 'wave' => 2, 'name' => 'مركز تغذية رياضية — نظام محسوب', 'hero_title' => 'أكلك على قد تمرينك', 'hero_subtitle' => 'حساب سعرات وماكروز وخطة أكل بتتعدّل كل أسبوعين حسب نتيجتك.'],
+            ['slug' => 'gym-olyak-bdny-akadymy-karatyh-mshhd-albtol', 'wave' => 2, 'name' => 'أكاديمية كاراتيه — مشهد البطولة', 'hero_title' => 'انضباط وثقة على الطاتامي', 'hero_subtitle' => 'كاراتيه وتايكوندو للأطفال والكبار، بأحزمة واختبارات وبطولات رسمية.'],
+            ['slug' => 'gym-olyak-bdny-nady-frosy-asal-alkhyl-alaarby', 'wave' => 2, 'name' => 'نادي فروسية — أصالة الخيل العربي', 'hero_title' => 'اركب خيل عربي أصيل', 'hero_subtitle' => 'دروس فروسية للمبتدئين والمتقدمين، وجولات ركوب في الصحرا وقت الغروب.'],
+            ['slug' => 'gym-olyak-bdny-ttbyk-tmaryn-aonlayn-mdrbk-fy-gybk', 'wave' => 2, 'name' => 'تطبيق تمارين أونلاين — مدربك في جيبك', 'hero_title' => 'برنامجك على الموبايل', 'hero_subtitle' => 'خطط تمرين بالفيديو، وتتبّع لتقدّمك، ومدرب يرد عليك على الشات.'],
+            ['slug' => 'gym-olyak-bdny-nady-tns-ks-kl-drb', 'wave' => 2, 'name' => 'نادي تنس — قصة كل ضربة', 'hero_title' => 'ملاعب تنس للكبار والصغار', 'hero_subtitle' => 'تدريب تنس وبادل بمدربين معتمدين، وحجز ملاعب بالساعة طول اليوم.'],
+            ['slug' => 'gym-olyak-bdny-astodyo-zomba-bhg-aal-almzyka', 'wave' => 2, 'name' => 'استوديو زومبا — بهجة على المزيكا', 'hero_title' => 'حرّق وانت بتضحك', 'hero_subtitle' => 'حصص زومبا ولاتيني بخطوات سهلة، وسعرات بتتحرق من غير ما تحس.'],
+            ['slug' => 'gym-olyak-bdny-gym-aghz-mtsl-byanat-adayk', 'wave' => 2, 'name' => 'جيم أجهزة متصلة — بيانات أدائك', 'hero_title' => 'كل عدّة بتسجّل تمرينك', 'hero_subtitle' => 'أجهزة متصلة بتطبيق بيحفظ الأوزان والعدّات، وتقرير أسبوعي بتقدّمك.'],
         ],
         'tones' => [
             'warm' => [
@@ -366,6 +416,17 @@ return [
             ['slug' => 'aakarat-shrk-tmoyl-aakary-tmlk-ashl', 'name' => 'شركة تمويل عقاري — دليلك للتملّك', 'hero_title' => 'تملّك بيتك بقسط يناسبك', 'hero_subtitle' => 'حلول تمويل عقاري واضحة الشروط، ومستشار يشرحلك كل خطوة قبل ما تمضي.'],
             ['slug' => 'aakarat-mktb-aakary-shbaby-bsat-aasry', 'name' => 'مكتب عقاري شبابي — بساطة عصرية', 'hero_title' => 'أول شقة ليك… أسهل مما تتخيل', 'hero_subtitle' => 'وحدات مناسبة للشباب والأزواج الجداد، بمقدمات صغيرة وإجراءات سهلة.'],
             ['slug' => 'aakarat-maard-aakary-tgrb-tfaaaly', 'name' => 'معرض عقاري — تجربة رقمية مبتكرة', 'hero_title' => 'اتفرّج على وحدتك قبل ما تزورها', 'hero_subtitle' => 'جولات افتراضية ومخططات تفاعلية لكل الوحدات، واحجز معاينتك أونلاين.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'aakarat-shkk-fndky-ashrak-kl-sbah', 'wave' => 2, 'name' => 'شقق فندقية — إشراقة كل صباح', 'hero_title' => 'إقامة فندقية بخصوصية بيتك', 'hero_subtitle' => 'شقق مفروشة بالكامل بخدمة تنظيف واستقبال، للإيجار اليومي والشهري.'],
+            ['slug' => 'aakarat-abrag-skny-khtot-oadh', 'wave' => 2, 'name' => 'أبراج سكنية — خطوط واضحة', 'hero_title' => 'شقتك في برج متكامل الخدمات', 'hero_subtitle' => 'شقق بمساحات مختلفة في أبراج بأمن وجراج وأسانسيرات، بأنظمة سداد مرنة.'],
+            ['slug' => 'aakarat-fylat-ryfy-hya-khdra', 'wave' => 2, 'name' => 'فيلات ريفية — حياة خضرا', 'hero_title' => 'بيت وسط الخضرة والهدوء', 'hero_subtitle' => 'فيلات بحدايق خاصة على أطراف المدينة، بعيد عن الزحمة وقريب من كل حاجة.'],
+            ['slug' => 'aakarat-mktb-tkyym-aakary-tkryr-mnthm', 'wave' => 2, 'name' => 'مكتب تقييم عقاري — تقرير منظم', 'hero_title' => 'اعرف القيمة الحقيقية لعقارك', 'hero_subtitle' => 'تقييم معتمد للشقق والأراضي والمحلات، بتقرير مكتوب تقدر تقدّمه للبنك أو المشتري.'],
+            ['slug' => 'aakarat-ksor-llbyaa-gol-synmayy', 'wave' => 2, 'name' => 'قصور للبيع — جولة سينمائية', 'hero_title' => 'قصور بمواصفات استثنائية', 'hero_subtitle' => 'منازل مستقلة بمساحات كبيرة وحمامات سباحة، وجولات تصوير كاملة قبل الزيارة.'],
+            ['slug' => 'aakarat-byot-kdym-mrmm-roh-aarby', 'wave' => 2, 'name' => 'بيوت قديمة مرمّمة — روح عربية', 'hero_title' => 'بيوت بروح المعمار القديم', 'hero_subtitle' => 'بيوت ومباني تاريخية متجددة بالكامل، بأسقف عالية ومشربيات وأحواش.'],
+            ['slug' => 'aakarat-mns-aakarat-aonlayn-abhth-balkhryt', 'wave' => 2, 'name' => 'منصة عقارات أونلاين — ابحث بالخريطة', 'hero_title' => 'دوّر على شقتك من الموبايل', 'hero_subtitle' => 'آلاف الوحدات بالصور والأسعار والفلاتر، وتواصل مباشر مع المالك.'],
+            ['slug' => 'aakarat-shrk-askan-ks-agyal', 'wave' => 2, 'name' => 'شركة إسكان — قصة أجيال', 'hero_title' => 'بنينا لآبائكم ونبني ليكم', 'hero_subtitle' => 'مشاريع سكنية سلّمناها في ميعادها على مدار سنين، وعملاء رجعوا لنا تاني.'],
+            ['slug' => 'aakarat-shkk-msyf-bhg-alsyf', 'wave' => 2, 'name' => 'شقق مصيف — بهجة الصيف', 'hero_title' => 'مصيف العيلة على الشط', 'hero_subtitle' => 'شقق مصيف للإيجار بالأسبوع في أقرب نقطة للبحر، بأسعار مناسبة للعيلة.'],
+            ['slug' => 'aakarat-mns-astthmar-aakary-byanat-alsok', 'wave' => 2, 'name' => 'منصة استثمار عقاري — بيانات السوق', 'hero_title' => 'استثمر في العقار بقرار مدروس', 'hero_subtitle' => 'تحليلات أسعار ومناطق ونسب عائد، تساعدك تختار الوحدة اللي هتكسب منها.'],
         ],
         'tones' => [
             'warm' => [
@@ -448,6 +509,17 @@ return [
             ['slug' => 'mtagr-alktrony-mtgr-mod-sryaa-trynd-dayma', 'name' => 'متجر موضة سريعة — تريند دايماً', 'hero_title' => 'التريند وصل… الحقه', 'hero_subtitle' => 'قطع جديدة كل أسبوع بأسعار شبابية، وكميات محدودة من كل موديل.'],
             ['slug' => 'mtagr-alktrony-mtgr-fakhr-tgrb-tsok-raky', 'name' => 'متجر فاخر — توقيع خاص', 'hero_title' => 'تسوّق بذوق رفيع', 'hero_subtitle' => 'ماركات مختارة وقطع حصرية، وخدمة عملاء شخصية لكل طلب.'],
             ['slug' => 'mtagr-alktrony-mtgr-mhly-daam-snaaa-bldk', 'name' => 'متجر محلي — منصة لصناعة بلدك', 'hero_title' => 'صنع بإيد مصرية', 'hero_subtitle' => 'منتجات حرفيين وورش محلية بجودة عالية، وكل شراء بيدعم صناعة بلدك.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'mtagr-alktrony-mtgr-adaaa-odykor-doaa-yghyr-almkan', 'wave' => 2, 'name' => 'متجر إضاءة وديكور — ضوء يغيّر المكان', 'hero_title' => 'إضاءة تغيّر شكل بيتك', 'hero_subtitle' => 'نجف وأباجورات وشرايط ليد بتصميمات مختلفة، وتوصيل وتركيب لحد البيت.'],
+            ['slug' => 'mtagr-alktrony-mtgr-athath-modrn-ashkal-oaloan', 'wave' => 2, 'name' => 'متجر أثاث مودرن — أشكال وألوان', 'hero_title' => 'قطع أثاث بتصميم مختلف', 'hero_subtitle' => 'كراسي وترابيزات ورفوف بخطوط بسيطة وألوان جريئة، تكمّل أي مساحة.'],
+            ['slug' => 'mtagr-alktrony-mtgr-mntgat-aadoy-mn-alard-lsfrtk', 'wave' => 2, 'name' => 'متجر منتجات عضوية — من الأرض لسفرتك', 'hero_title' => 'أكل نضيف من مزارع موثوقة', 'hero_subtitle' => 'خضار وعسل وزيوت وبقوليات عضوية، بتوصل طازة في نفس اليوم.'],
+            ['slug' => 'mtagr-alktrony-mtgr-adoat-mktby-trtyb-kl-hag', 'wave' => 2, 'name' => 'متجر أدوات مكتبية — ترتيب كل حاجة', 'hero_title' => 'مكتب مرتب وشغل أسرع', 'hero_subtitle' => 'أدوات مكتبية ومنظمات وملفات ودفاتر، بأسعار جملة للشركات والمدارس.'],
+            ['slug' => 'mtagr-alktrony-mtgr-kamyrat-kl-lkt-aodh', 'wave' => 2, 'name' => 'متجر كاميرات — كل لقطة أوضح', 'hero_title' => 'معدات تصوير للمحترفين والهواة', 'hero_subtitle' => 'كاميرات وعدسات وإضاءة وحوامل أصلية بضمان، واستشارة قبل ما تشتري.'],
+            ['slug' => 'mtagr-alktrony-mtgr-antykat-othf-zkhrf-shrky', 'wave' => 2, 'name' => 'متجر أنتيكات وتحف — زخرفة شرقية', 'hero_title' => 'تحف ونحاسيات بروح زمان', 'hero_subtitle' => 'قطع نحاس وخشب أرابيسك وسجاد يدوي، كل قطعة ليها حكاية.'],
+            ['slug' => 'mtagr-alktrony-mtgr-aghz-thky-mntgat-btshl-yomk', 'wave' => 2, 'name' => 'متجر أجهزة ذكية — منتجات بتسهّل يومك', 'hero_title' => 'بيتك أذكى بضغطة', 'hero_subtitle' => 'لمبات وكاميرات ومفاتيح ذكية بتتحكم فيها من الموبايل، مع شرح تركيب سهل.'],
+            ['slug' => 'mtagr-alktrony-mtgr-mntgat-ydoy-ks-kl-ktaa', 'wave' => 2, 'name' => 'متجر منتجات يدوية — قصة كل قطعة', 'hero_title' => 'حاجات معمولة بإيدين بتحب شغلها', 'hero_subtitle' => 'شنط وخزف ومفارش وهدايا يدوية من حرفيين محليين، كل قطعة مختلفة عن التانية.'],
+            ['slug' => 'mtagr-alktrony-mtgr-alaaab-fydyo-kdym-zmn-altybyn', 'wave' => 2, 'name' => 'متجر ألعاب فيديو قديمة — زمن الطيبين', 'hero_title' => 'رجّع ذكريات الأتاري والسيجا', 'hero_subtitle' => 'أجهزة وألعاب كلاسيكية متصلّحة ومتجرّبة، وإكسسوارات لهواة الجمع.'],
+            ['slug' => 'mtagr-alktrony-mtgr-ktaa-kmbyotr-byanat-kl-ktaa', 'wave' => 2, 'name' => 'متجر قطع كمبيوتر — بيانات كل قطعة', 'hero_title' => 'جمّع جهازك على مزاجك', 'hero_subtitle' => 'كروت شاشة وبروسيسورات ورامات أصلية، مع أداة تتأكد إن القطع متوافقة.'],
         ],
         'tones' => [
             'warm' => [
@@ -529,6 +601,17 @@ return [
             ['slug' => 'taalym-odorat-tdryby-maahd-kyad-osoak-aman-aola', 'name' => 'معهد قيادة وسواقة — وقتك محسوب', 'hero_title' => 'رخصتك في إيدك بأسرع وقت', 'hero_subtitle' => 'حصص عملي ونظري بمواعيد مرنة، ومدربين صبورين لحد ما تسوق بثقة.'],
             ['slug' => 'taalym-odorat-tdryby-akadymy-tgar-astthmar-fy-nfsk', 'name' => 'أكاديمية تجارة — دليلك للاستثمار', 'hero_title' => 'افهم الفلوس قبل ما تستثمرها', 'hero_subtitle' => 'دورات في التجارة والاستثمار والمحاسبة بلغة بسيطة وأمثلة من الواقع.'],
             ['slug' => 'taalym-odorat-tdryby-mrkz-tdryb-ryady-ahtraf-tdrygy', 'name' => 'مركز تدريب رياضي — طاقة شبابية', 'hero_title' => 'من الهواية للاحتراف', 'hero_subtitle' => 'أكاديميات كورة وسباحة وألعاب قتالية للناشئين، بمدربين معتمدين.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'taalym-odorat-tdryby-mns-taalym-thaty-ashrak-yomy', 'wave' => 2, 'name' => 'منصة تعليم ذاتي — إشراقة يومية', 'hero_title' => 'درس صغير كل يوم بيفرق', 'hero_subtitle' => 'دروس قصيرة تفاعلية في دقايق، وتذكير يومي يخليك ملتزم بهدفك.'],
+            ['slug' => 'taalym-odorat-tdryby-mrkz-ryadyat-ashkal-oarkam', 'wave' => 2, 'name' => 'مركز رياضيات — أشكال وأرقام', 'hero_title' => 'الرياضيات بقت أسهل', 'hero_subtitle' => 'شرح بالأشكال والأمثلة لكل المراحل، وتمارين بتتدرّج لحد ما المسألة تبقى سهلة.'],
+            ['slug' => 'taalym-odorat-tdryby-mdrs-zraaa-llatfal-taalm-akhdr', 'wave' => 2, 'name' => 'مدرسة زراعة للأطفال — تعلّم أخضر', 'hero_title' => 'أطفالك يتعلموا من الطبيعة', 'hero_subtitle' => 'أنشطة زراعة وعلوم في الهوا الطلق، بيتعلموا فيها يلاحظوا ويجرّبوا ويسألوا.'],
+            ['slug' => 'taalym-odorat-tdryby-mrkz-thdyr-amthanat-doly-ntham-mthakr', 'wave' => 2, 'name' => 'مركز تحضير امتحانات دولية — نظام مذاكرة', 'hero_title' => 'جاهز لـIELTS وSAT بثقة', 'hero_subtitle' => 'اختبارات تجريبية حقيقية، وخطة مذاكرة أسبوعية، وتصحيح مفصّل لكل امتحان.'],
+            ['slug' => 'taalym-odorat-tdryby-akadymy-tmthyl-oakhrag-mn-alkoalys-llshash', 'wave' => 2, 'name' => 'أكاديمية تمثيل وإخراج — من الكواليس للشاشة', 'hero_title' => 'حلمك على الشاشة يبدأ هنا', 'hero_subtitle' => 'ورش تمثيل وإخراج وكتابة سيناريو بمحترفين من الوسط، ومشروع تخرج حقيقي.'],
+            ['slug' => 'taalym-odorat-tdryby-mrkz-kht-aarby-asal-alhrf', 'wave' => 2, 'name' => 'مركز خط عربي — أصالة الحرف', 'hero_title' => 'اكتب أحلى خط عربي', 'hero_subtitle' => 'دورات نسخ ورقعة وثلث وديواني للمبتدئين والمتقدمين، بإجازة معتمدة في الآخر.'],
+            ['slug' => 'taalym-odorat-tdryby-mns-akhtbarat-aonlayn-ntayg-balarkam', 'wave' => 2, 'name' => 'منصة اختبارات أونلاين — نتايج بالأرقام', 'hero_title' => 'اختبر نفسك وشوف مستواك', 'hero_subtitle' => 'بنك أسئلة لكل المواد، وتقرير بنقط القوة والضعف بعد كل اختبار.'],
+            ['slug' => 'taalym-odorat-tdryby-nady-kraaa-kss-lkl-sn', 'wave' => 2, 'name' => 'نادي قراءة — قصص لكل سن', 'hero_title' => 'حبّب ولادك في القراية', 'hero_subtitle' => 'نادي قراءة أسبوعي للأطفال والشباب، ومكتبة كتب عربي وإنجليزي للاستعارة.'],
+            ['slug' => 'taalym-odorat-tdryby-mrkz-shtrng-oalaaab-thhny-bhg-altfkyr', 'wave' => 2, 'name' => 'مركز شطرنج وألعاب ذهنية — بهجة التفكير', 'hero_title' => 'شطرنج وألغاز تشغّل دماغك', 'hero_subtitle' => 'تدريب شطرنج وروبيك وألعاب ذهنية للأطفال، وبطولات شهرية بجوايز.'],
+            ['slug' => 'taalym-odorat-tdryby-maaskr-ttoyr-oyb-kod-mn-aol-yom', 'wave' => 2, 'name' => 'معسكر تطوير ويب — كود من أول يوم', 'hero_title' => 'من الصفر لأول وظيفة', 'hero_subtitle' => 'معسكر مكثف 16 أسبوع، مشاريع حقيقية، ومتابعة لحد ما تقدّم على أول شغل.'],
         ],
         'tones' => [
             'warm' => [
@@ -611,6 +694,17 @@ return [
             ['slug' => 'astsharat-omhama-astsharat-amtthal-hmay-shrktk', 'name' => 'استشارات امتثال — حماية بأدوات حديثة', 'hero_title' => 'شركتك ملتزمة… ومحمية', 'hero_subtitle' => 'مراجعة امتثال وسياسات داخلية وتدريب فرق، قبل ما المخالفة تحصل.'],
             ['slug' => 'astsharat-omhama-mktb-mhama-gnayy-dfaaa-koy', 'name' => 'مكتب محاماة جنائي — دفاع جريء', 'hero_title' => 'دفاع قوي في كل مرحلة', 'hero_subtitle' => 'تمثيل في التحقيقات والمحاكم، بخبرة في القضايا الجنائية المعقدة.'],
             ['slug' => 'astsharat-omhama-astsharat-ryad-aaamal-antlak-shyh', 'name' => 'استشارات ريادة أعمال — سرعة وثقة', 'hero_title' => 'فكرتك تستاهل تبدأ صح', 'hero_subtitle' => 'تأسيس شركات وتسجيل علامات وعقود شركاء، بسرعة ومن غير ثغرات.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'astsharat-omhama-mktb-mlky-fkry-ashrak-lfkrtk', 'wave' => 2, 'name' => 'مكتب ملكية فكرية — إشراقة لفكرتك', 'hero_title' => 'احمي فكرتك وعلامتك التجارية', 'hero_subtitle' => 'تسجيل علامات تجارية وبراءات اختراع وحقوق نشر، ومتابعة لحد الشهادة.'],
+            ['slug' => 'astsharat-omhama-mktb-mhama-shrkat-khtot-oadh', 'wave' => 2, 'name' => 'مكتب محاماة شركات — خطوط واضحة', 'hero_title' => 'عقود شركتك محكمة من البداية', 'hero_subtitle' => 'تأسيس شركات وصياغة عقود وحوكمة، بلغة واضحة تفهمها قبل ما توقّع.'],
+            ['slug' => 'astsharat-omhama-astsharat-byyy-aaamal-khdra', 'wave' => 2, 'name' => 'استشارات بيئية — أعمال خضرا', 'hero_title' => 'مشروعك متوافق مع البيئة', 'hero_subtitle' => 'دراسات أثر بيئي وتراخيص وشهادات استدامة، لمصانع ومشاريع من كل الأحجام.'],
+            ['slug' => 'astsharat-omhama-mktb-mhasb-omragaa-hsabat-mnthm', 'wave' => 2, 'name' => 'مكتب محاسبة ومراجعة — حسابات منظمة', 'hero_title' => 'دفاترك مظبوطة طول السنة', 'hero_subtitle' => 'مسك دفاتر وقوايم مالية ومراجعة سنوية، وتقارير شهرية تفهم منها شغلك.'],
+            ['slug' => 'astsharat-omhama-mktb-mhama-aaalam-otrfyh-koalys-alaakod', 'wave' => 2, 'name' => 'مكتب محاماة إعلام وترفيه — كواليس العقود', 'hero_title' => 'حماية قانونية لصنّاع المحتوى', 'hero_subtitle' => 'عقود إنتاج وحقوق بث وتراخيص موسيقى، لشركات الإنتاج والمؤثرين والفنانين.'],
+            ['slug' => 'astsharat-omhama-mktb-kdaya-moaryth-asal-oaadl', 'wave' => 2, 'name' => 'مكتب قضايا مواريث — أصالة وعدل', 'hero_title' => 'حقوق الورثة من غير خلافات', 'hero_subtitle' => 'حصر تركات وقسمة ميراث وإعلام وراثة، بحلول ودية قبل المحاكم.'],
+            ['slug' => 'astsharat-omhama-mns-astsharat-kanony-aonlayn-mhamy-fy-gybk', 'wave' => 2, 'name' => 'منصة استشارات قانونية أونلاين — محامي في جيبك', 'hero_title' => 'اسأل محامي في دقايق', 'hero_subtitle' => 'استشارة مكتوبة أو مكالمة فيديو مع محامي متخصص، وأسعار واضحة قبل ما تبدأ.'],
+            ['slug' => 'astsharat-omhama-mktb-kdaya-aamaly-ks-kl-hk', 'wave' => 2, 'name' => 'مكتب قضايا عمالية — قصة كل حق', 'hero_title' => 'حقك في شغلك محفوظ', 'hero_subtitle' => 'قضايا فصل تعسفي ومستحقات ومكافآت نهاية خدمة، للعمال والموظفين.'],
+            ['slug' => 'astsharat-omhama-astsharat-almshroaaat-alsghyr-bhg-albday', 'wave' => 2, 'name' => 'استشارات المشروعات الصغيرة — بهجة البداية', 'hero_title' => 'مشروعك الصغير بخطوات قانونية صح', 'hero_subtitle' => 'سجل تجاري وبطاقة ضريبية وعقود إيجار وشراكة، بأسعار تناسب البداية.'],
+            ['slug' => 'astsharat-omhama-mktb-kanon-albrmgyat-hmay-byanat', 'wave' => 2, 'name' => 'مكتب قانون البرمجيات — حماية بيانات', 'hero_title' => 'شركتك متوافقة مع قوانين البيانات', 'hero_subtitle' => 'سياسات خصوصية وعقود برمجيات وامتثال لقوانين حماية البيانات الشخصية.'],
         ],
         'tones' => [
             'warm' => [
@@ -693,6 +787,17 @@ return [
             ['slug' => 'mkaolat-odykor-shrk-anshaaaat-bnyan-mtyn', 'name' => 'شركة إنشاءات — تنفيذ على مراحل', 'hero_title' => 'نبني على أساس متين', 'hero_subtitle' => 'إنشاءات خرسانية ومباني سكنية وتجارية بجدول تنفيذ واضح لكل مرحلة.'],
             ['slug' => 'mkaolat-odykor-astodyo-dykor-shbaby-aloan-gryy', 'name' => 'استوديو ديكور شبابي — ألوان جريئة', 'hero_title' => 'أوضتك… بستايلك', 'hero_subtitle' => 'ديكورات شبابية بألوان جريئة وحلول ذكية للمساحات الصغيرة وبميزانية معقولة.'],
             ['slug' => 'mkaolat-odykor-mkaolat-trmym-ahyaaa-almsahat', 'name' => 'مقاولات ترميم — إحياء المساحات', 'hero_title' => 'نرجّع لبيتك روحه', 'hero_subtitle' => 'ترميم البيوت القديمة وتجديد الشقق مع الحفاظ على طابعها الأصلي.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'mkaolat-odykor-shrk-adaaa-maamary-doaa-aal-altfasyl', 'wave' => 2, 'name' => 'شركة إضاءة معمارية — ضوء على التفاصيل', 'hero_title' => 'إضاءة بتبيّن جمال المبنى', 'hero_subtitle' => 'تصميم وتنفيذ إضاءة واجهات وحدايق ومساحات داخلية، بأنظمة موفّرة للكهربا.'],
+            ['slug' => 'mkaolat-odykor-shrk-mtabkh-tkoyn-aamly', 'wave' => 2, 'name' => 'شركة مطابخ — تكوين عملي', 'hero_title' => 'مطبخ على مقاس بيتك', 'hero_subtitle' => 'تصميم وتفصيل مطابخ ودواليب بخامات مقاومة للرطوبة، وتركيب في ميعاده.'],
+            ['slug' => 'mkaolat-odykor-shrk-nbatat-dakhly-akhdr-fy-kl-rkn', 'wave' => 2, 'name' => 'شركة نباتات داخلية — أخضر في كل ركن', 'hero_title' => 'نباتات بتحيي بيتك ومكتبك', 'hero_subtitle' => 'توريد وتنسيق نباتات داخلية وأحواض، ومتابعة ري ورعاية دورية.'],
+            ['slug' => 'mkaolat-odykor-shrk-adar-mshroaaat-anshayy-tkhtyt-omtabaa', 'wave' => 2, 'name' => 'شركة إدارة مشروعات إنشائية — تخطيط ومتابعة', 'hero_title' => 'مشروعك ماشي على الجدول', 'hero_subtitle' => 'تخطيط وجدولة وإشراف هندسي، وتقارير أسبوعية بالتكلفة ونسبة الإنجاز.'],
+            ['slug' => 'mkaolat-odykor-astodyo-tsmym-thlathy-alabaaad-mshhd-kbl-altnfyth', 'wave' => 2, 'name' => 'استوديو تصميم ثلاثي الأبعاد — مشهد قبل التنفيذ', 'hero_title' => 'شوف بيتك قبل ما يتبني', 'hero_subtitle' => 'تصميمات ثري دي واقعية وفيديو جولة كاملة، قبل ما تصرف جنيه على التنفيذ.'],
+            ['slug' => 'mkaolat-odykor-orsh-arabysk-omshrbyat-zkhrf-ydoy', 'wave' => 2, 'name' => 'ورشة أرابيسك ومشربيات — زخرفة يدوية', 'hero_title' => 'خشب أرابيسك بإيد صنايعية', 'hero_subtitle' => 'مشربيات وأبواب وفواصل خشب محفور يدوي، لبيوت وفنادق ومطاعم.'],
+            ['slug' => 'mkaolat-odykor-shrk-anthm-byot-thky-thkm-aonlayn', 'wave' => 2, 'name' => 'شركة أنظمة بيوت ذكية — تحكم أونلاين', 'hero_title' => 'تحكّم في بيتك من الموبايل', 'hero_subtitle' => 'إضاءة وتكييف وستاير وكاميرات بتشتغل بتطبيق واحد، تركيب وضمان.'],
+            ['slug' => 'mkaolat-odykor-orsh-ngar-ks-alkhshb', 'wave' => 2, 'name' => 'ورشة نجارة — قصة الخشب', 'hero_title' => 'أثاث خشب متين يعيش سنين', 'hero_subtitle' => 'تفصيل غرف نوم وسفرة وأبواب من خشب طبيعي، بتشطيب يدوي على مهل.'],
+            ['slug' => 'mkaolat-odykor-shrk-dhanat-oork-hayt-aloan-zman', 'wave' => 2, 'name' => 'شركة دهانات وورق حائط — ألوان زمان', 'hero_title' => 'حيطان بألوان بتفرح', 'hero_subtitle' => 'دهانات وورق حائط وتأثيرات ديكور، بعينات تشوفها على الحيطة قبل التنفيذ.'],
+            ['slug' => 'mkaolat-odykor-mktb-hsr-kmyat-byanat-oatmt', 'wave' => 2, 'name' => 'مكتب حصر كميات — بيانات وأتمتة', 'hero_title' => 'حصر كميات وتكلفة قبل ما تبدأ', 'hero_subtitle' => 'حصر مواد وتسعير بنود من الرسومات، ببرامج حديثة وتقرير مفصّل بكل بند.'],
         ],
         'tones' => [
             'warm' => [
@@ -774,6 +879,17 @@ return [
             ['slug' => 'syan-okhdmat-syarat-mrkz-ktaa-ghyar-asly-omdmon', 'name' => 'مركز قطع غيار — قوة الأصلي', 'hero_title' => 'قطعة أصلي… مشوار أطول', 'hero_subtitle' => 'قطع غيار أصلية ومضمونة لأشهر الماركات، وتوصيل للورش والأفراد.'],
             ['slug' => 'syan-okhdmat-syarat-orsh-syan-astol-hlol-llshrkat', 'name' => 'ورشة صيانة أسطول — صيانة خطوة بخطوة', 'hero_title' => 'أسطولك شغال من غير توقف', 'hero_subtitle' => 'عقود صيانة دورية للشركات بجدول واضح وتقارير لكل عربية.'],
             ['slug' => 'syan-okhdmat-syarat-mrkz-aanay-shaml-aarbytk-zy-algdyd', 'name' => 'مركز عناية شامل — راحة بال لعربيتك', 'hero_title' => 'سيب العربية وروّح مرتاح', 'hero_subtitle' => 'استلام من البيت وصيانة كاملة وتسليم نضيفة لحد عندك.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'syan-okhdmat-syarat-mrkz-tthlyl-ohmay-tlaaa-lmaa-daym', 'wave' => 2, 'name' => 'مركز تظليل وحماية طلاء — لمعة دائمة', 'hero_title' => 'عربيتك تلمع زي أول يوم', 'hero_subtitle' => 'نانو سيراميك وفيلم حماية وتظليل زجاج بضمان، بمواد أصلية.'],
+            ['slug' => 'syan-okhdmat-syarat-orsh-aafsh-ozoaya-khtot-oadh', 'wave' => 2, 'name' => 'ورشة عفشة وزوايا — خطوط واضحة', 'hero_title' => 'عربيتك ماشية سليمة ومتزنة', 'hero_subtitle' => 'ضبط زوايا وترصيص وإصلاح عفشة ومساعدين، وفحص كامل قبل وبعد.'],
+            ['slug' => 'syan-okhdmat-syarat-ghsyl-syarat-bdon-myah-aanay-khdra', 'wave' => 2, 'name' => 'غسيل سيارات بدون مياه — عناية خضرا', 'hero_title' => 'غسيل عربيتك من غير ولا جردل مية', 'hero_subtitle' => 'غسيل بمواد صديقة للبيئة بيوصلك لحد مكانك، وبيوفّر آلاف اللترات كل يوم.'],
+            ['slug' => 'syan-okhdmat-syarat-maard-syarat-mstaaml-ntham-fhs-odman', 'wave' => 2, 'name' => 'معرض سيارات مستعملة — نظام فحص وضمان', 'hero_title' => 'عربية مستعملة من غير قلق', 'hero_subtitle' => 'كل عربية بتتفحص 150 نقطة، وبتتباع بتقرير واضح وضمان على الموتور.'],
+            ['slug' => 'syan-okhdmat-syarat-mrkz-taadyl-syarat-lkt-aal-altryk', 'wave' => 2, 'name' => 'مركز تعديل سيارات — لقطة على الطريق', 'hero_title' => 'عربيتك بشكل يلفت كل العيون', 'hero_subtitle' => 'تعديلات بودي كيت وجنوط وعادم وإضاءة، بتنفيذ احترافي وتصوير قبل وبعد.'],
+            ['slug' => 'syan-okhdmat-syarat-mktb-tagyr-syarat-bsoak-dyaf-aarby', 'wave' => 2, 'name' => 'مكتب تأجير سيارات بسواق — ضيافة عربية', 'hero_title' => 'رحلتك بسواق محترم وعربية نضيفة', 'hero_subtitle' => 'عربيات حديثة بسواقين خبرة للمطار والمشاوير والسفر بين المحافظات.'],
+            ['slug' => 'syan-okhdmat-syarat-ttbyk-hgz-syan-aonlayn-fy-dkyk', 'wave' => 2, 'name' => 'تطبيق حجز صيانة — أونلاين في دقيقة', 'hero_title' => 'احجز صيانتك من الموبايل', 'hero_subtitle' => 'اختار الخدمة والميعاد وشوف السعر قبل ما توصل، وتابع حالة عربيتك لايف.'],
+            ['slug' => 'syan-okhdmat-syarat-orsh-mykanyka-ks-thk-mn-alab-llabn', 'wave' => 2, 'name' => 'ورشة ميكانيكا — قصة ثقة من الأب للابن', 'hero_title' => 'ميكانيكي بيعرف عربيتك بالصوت', 'hero_subtitle' => 'إصلاح موتور وفتيس وعفشة بإيدين خبرة سنين، وأسعار محترمة من غير مفاجآت.'],
+            ['slug' => 'syan-okhdmat-syarat-orsh-trmym-syarat-klasyk-fyntag', 'wave' => 2, 'name' => 'ورشة ترميم سيارات كلاسيك — فينتاج', 'hero_title' => 'رجّع العربية القديمة لعزّها', 'hero_subtitle' => 'ترميم كامل لسيارات الستينات والسبعينات، من الصاج للدهان للفرش.'],
+            ['slug' => 'syan-okhdmat-syarat-mrkz-brmg-mfatyh-kod-dkyk', 'wave' => 2, 'name' => 'مركز برمجة مفاتيح — كود دقيق', 'hero_title' => 'برمجة مفاتيح وكمبيوتر العربية', 'hero_subtitle' => 'تشخيص بالكمبيوتر وبرمجة ريموت ومفاتيح وكمبيوتر موتور لكل الماركات.'],
         ],
         'tones' => [
             'warm' => [
@@ -855,6 +971,17 @@ return [
             ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-aaayad-mylad-ahtfal-mmyz', 'name' => 'منظّم أعياد ميلاد — حيوية وفرحة', 'hero_title' => 'احتفال على قد فرحتك', 'hero_subtitle' => 'أعياد ميلاد بأفكار جديدة وثيمات ملونة لكل الأعمار.'],
             ['slug' => 'tnthym-faaalyat-omnasbat-astodyo-mnasbat-fakhr-rfahy-kaml', 'name' => 'استوديو مناسبات فاخر — رفاهية كاملة', 'hero_title' => 'ليلة بمستوى استثنائي', 'hero_subtitle' => 'تنظيم مناسبات خاصة بتفاصيل فاخرة وضيافة راقية وخصوصية تامة.'],
             ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-faaalyat-khargy-tbyaa-oahtfal', 'name' => 'منظّم فعاليات خارجية — طبيعة وإبداع', 'hero_title' => 'احتفال تحت السما', 'hero_subtitle' => 'حفلات في الحدائق والشواطئ بخيام وإضاءة وتجهيزات كاملة.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-hflat-tkhrg-ashrak-albday', 'wave' => 2, 'name' => 'منظّم حفلات تخرج — إشراقة البداية', 'hero_title' => 'حفلة تخرج تليق بتعبك', 'hero_subtitle' => 'قاعة وديكور وتصوير وفقرات، وروب وكاب لكل الخريجين بتنسيق واحد.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-shrk-bothat-maaard-tkoyn-ylft-alnthr', 'wave' => 2, 'name' => 'شركة بوثات معارض — تكوين يلفت النظر', 'hero_title' => 'بوث معرضك يجذب الزوار', 'hero_subtitle' => 'تصميم وتنفيذ بوثات وأجنحة معارض، من الفكرة لحد الفك بعد آخر يوم.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-byby-shaor-lms-ltyf', 'wave' => 2, 'name' => 'منظّم بيبي شاور — لمسة لطيفة', 'hero_title' => 'استقبال البيبي بحب', 'hero_subtitle' => 'ديكورات باستيل وكيكة وهدايا وألعاب للضيوف، بتفاصيل على ذوقك.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-shrk-tnthym-maaard-tkhtyt-kaml', 'wave' => 2, 'name' => 'شركة تنظيم معارض — تخطيط كامل', 'hero_title' => 'معرضك من غير صداع', 'hero_subtitle' => 'حجز مكان وتصاريح وتسويق وتسجيل زوار، وخطة تشغيل مكتوبة بالساعة.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-shrk-antag-hflat-mosyky-aard-aol', 'wave' => 2, 'name' => 'شركة إنتاج حفلات موسيقية — عرض أول', 'hero_title' => 'حفلتك على مسرح حقيقي', 'hero_subtitle' => 'مسرح وصوت وشاشات وفريق إنتاج كامل، لحفلات من 100 لـ5000 شخص.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-lyaly-hn-dyaf-aarby', 'wave' => 2, 'name' => 'منظّم ليالي حنّة — ضيافة عربية', 'hero_title' => 'ليلة حنّة بطابع عربي أصيل', 'hero_subtitle' => 'خيمة وجلسات عربي وفرقة شعبية وقهوة عربي، لليلة تفضل في الذاكرة.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-mns-hgz-kaaaat-aonlayn-karn-oahgz', 'wave' => 2, 'name' => 'منصة حجز قاعات أونلاين — قارن واحجز', 'hero_title' => 'قاعتك بأحسن سعر في دقايق', 'hero_subtitle' => 'قارن بين القاعات بالصور والأسعار والتقييمات، واحجز بعربون أونلاين.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-mkdm-hflat-ks-alaarosyn', 'wave' => 2, 'name' => 'مقدّم حفلات — قصة العروسين', 'hero_title' => 'كلمة حلوة في أهم لحظة', 'hero_subtitle' => 'تقديم فقرات الفرح والخطوبة، وحكاية العروسين بتتقال بشكل يفرّح الكل.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-mnthm-hflat-althmanynat-rytro', 'wave' => 2, 'name' => 'منظّم حفلات الثمانينات — ريترو', 'hero_title' => 'حفلة بطعم الأيام الحلوة', 'hero_subtitle' => 'ديكور وأغاني وأزياء وألعاب من الثمانينات والتسعينات، ليوم يرجّعكم ورا.'],
+            ['slug' => 'tnthym-faaalyat-omnasbat-shrk-tthakr-otsgyl-faaalyat-byanat-alhdor', 'wave' => 2, 'name' => 'شركة تذاكر وتسجيل فعاليات — بيانات الحضور', 'hero_title' => 'تذاكر وتسجيل من غير طوابير', 'hero_subtitle' => 'تذاكر إلكترونية بكود QR، وتسجيل دخول سريع، وتقرير لحظي بأعداد الحضور.'],
         ],
         'tones' => [
             'warm' => [
@@ -936,6 +1063,17 @@ return [
             ['slug' => 'sfr-osyah-okal-tyran-asraa-altrk-llsfr', 'name' => 'وكالة طيران — أسرع الطرق للسفر', 'hero_title' => 'تذكرتك في دقايق', 'hero_subtitle' => 'حجز طيران داخلي ودولي بأفضل الأسعار وتعديل سهل للمواعيد.'],
             ['slug' => 'sfr-osyah-shrk-syah-byyy-sfr-msool', 'name' => 'شركة سياحة بيئية — طبيعة وإبداع', 'hero_title' => 'سافر وحافظ على الطبيعة', 'hero_subtitle' => 'رحلات للمحميات والواحات وإقامات بيئية بتحترم المكان وأهله.'],
             ['slug' => 'sfr-osyah-mnthm-motmrat-syahy-gmaa-byn-alaaml-oalsfr', 'name' => 'منظّم مؤتمرات سياحية — تنظيم عصري', 'hero_title' => 'شغل وسفر في رحلة واحدة', 'hero_subtitle' => 'تنظيم مؤتمرات ورحلات حوافز للشركات في وجهات مميزة.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'sfr-osyah-rhlat-alshfk-alktby-shfk-sahr', 'wave' => 2, 'name' => 'رحلات الشفق القطبي — شفق ساحر', 'hero_title' => 'شوف الشفق القطبي بعينك', 'hero_subtitle' => 'رحلات شتوية للنرويج وفنلندا، ببرنامج متكامل وإقامة في أكواخ زجاج.'],
+            ['slug' => 'sfr-osyah-shrk-rhlat-mdn-aoroba-khtot-oadh', 'wave' => 2, 'name' => 'شركة رحلات مدن أوروبا — خطوط واضحة', 'hero_title' => 'أوروبا في 10 أيام', 'hero_subtitle' => 'باقات مدن بخطة يومية واضحة، فنادق في قلب المدن، ومرشد بيتكلم عربي.'],
+            ['slug' => 'sfr-osyah-shrk-tkhyym-mn-alard-llsma', 'wave' => 2, 'name' => 'شركة تخييم — من الأرض للسما', 'hero_title' => 'ليلة تحت النجوم', 'hero_subtitle' => 'رحلات تخييم في الصحرا والجبال، بخيم ومعدات ووجبات ومرشد خبرة.'],
+            ['slug' => 'sfr-osyah-mktb-sfr-alshrkat-ntham-sfr', 'wave' => 2, 'name' => 'مكتب سفر الشركات — نظام سفر', 'hero_title' => 'سفر الشركات منظّم ومحسوب', 'hero_subtitle' => 'حجوزات طيران وفنادق للموظفين، بسياسة سفر واضحة وتقارير مصاريف شهرية.'],
+            ['slug' => 'sfr-osyah-rhlat-sfary-mshhd-mn-albry', 'wave' => 2, 'name' => 'رحلات سفاري — مشهد من البرية', 'hero_title' => 'سفاري حقيقي بين الأسود والفيلة', 'hero_subtitle' => 'رحلات لكينيا وتنزانيا مع مرشدين محليين، وإقامة في لودجات وسط المحميات.'],
+            ['slug' => 'sfr-osyah-rhlat-almghrb-oalandls-roh-aarby', 'wave' => 2, 'name' => 'رحلات المغرب والأندلس — روح عربية', 'hero_title' => 'على خطى الحضارة في الأندلس', 'hero_subtitle' => 'فاس ومراكش وغرناطة وقرطبة، ببرنامج ثقافي ومرشد بيحكي تاريخ كل مكان.'],
+            ['slug' => 'sfr-osyah-ttbyk-hgz-rhlat-aonlayn-bakl-saar', 'wave' => 2, 'name' => 'تطبيق حجز رحلات — أونلاين بأقل سعر', 'hero_title' => 'رحلتك كلها في تطبيق واحد', 'hero_subtitle' => 'طيران وفنادق وتنقلات بأسعار مقارنة، وتذاكرك وحجوزاتك على الموبايل.'],
+            ['slug' => 'sfr-osyah-rhlat-maa-rhal-kss-mn-altryk', 'wave' => 2, 'name' => 'رحلات مع رحّالة — قصص من الطريق', 'hero_title' => 'سافر مع حد شاف الدنيا', 'hero_subtitle' => 'رحلات جماعية صغيرة يقودها رحّالة، لأماكن مش في كتالوجات السياحة العادية.'],
+            ['slug' => 'sfr-osyah-rhlat-ktar-klasyky-fyntag', 'wave' => 2, 'name' => 'رحلات قطار كلاسيكية — فينتاج', 'hero_title' => 'رحلة قطر زي زمان', 'hero_subtitle' => 'رحلات بقطارات النوم للأقصر وأسوان، بعربيات مرمّمة وأكل على الطريقة القديمة.'],
+            ['slug' => 'sfr-osyah-mns-tamyn-sfr-atmt-kaml', 'wave' => 2, 'name' => 'منصة تأمين سفر — أتمتة كاملة', 'hero_title' => 'تأمين سفر في دقيقتين', 'hero_subtitle' => 'وثيقة تأمين طبي للسفر بتطلع فوراً، وتغطية معتمدة للسفارات.'],
         ],
         'tones' => [
             'warm' => [
@@ -1017,6 +1155,17 @@ return [
             ['slug' => 'brmgyat-ostart-ab-shrk-astdaf-moakaa-sraa-oastkrar', 'name' => 'شركة استضافة مواقع — سرعة واستقرار', 'hero_title' => 'موقعك شغال دايماً وبسرعة', 'hero_subtitle' => 'استضافة سحابية بسرعة عالية ونسخ احتياطي يومي ودعم فني فوري.'],
             ['slug' => 'brmgyat-ostart-ab-mns-tothyf-rkmy-frstk-altaly', 'name' => 'منصة توظيف رقمي — اعرض أعمالك', 'hero_title' => 'وظيفتك الجاية مستنياك', 'hero_subtitle' => 'اعرض شغلك ومهاراتك، والشركات المناسبة توصلك بنفسها.'],
             ['slug' => 'brmgyat-ostart-ab-start-ab-tak-mtgdd-mstkbl-akhdr', 'name' => 'ستارت أب طاقة متجددة — قوة الطبيعة', 'hero_title' => 'طاقة نظيفة لبيتك وشغلك', 'hero_subtitle' => 'أنظمة طاقة شمسية بتوفر في فاتورة الكهربا وبتحافظ على البيئة.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'brmgyat-ostart-ab-ttbyk-sh-nfsy-roh-gdyd', 'wave' => 2, 'name' => 'تطبيق صحة نفسية — روح جديدة', 'hero_title' => 'دقايق هدوء كل يوم', 'hero_subtitle' => 'تأمل وتمارين تنفس ومذكرات يومية، ومحتوى بالعربي من متخصصين.'],
+            ['slug' => 'brmgyat-ostart-ab-astodyo-tsmym-oaghat-ashkal-otgrb', 'wave' => 2, 'name' => 'استوديو تصميم واجهات — أشكال وتجربة', 'hero_title' => 'واجهات سهلة وحلوة', 'hero_subtitle' => 'تصميم UI/UX لتطبيقات ومواقع، من البحث مع المستخدمين لحد النموذج التفاعلي.'],
+            ['slug' => 'brmgyat-ostart-ab-start-ab-zraaay-akhdr-baltknologya', 'wave' => 2, 'name' => 'ستارت أب زراعي — أخضر بالتكنولوجيا', 'hero_title' => 'مزرعتك على الموبايل', 'hero_subtitle' => 'حساسات للتربة والري بتقولك إمتى تسقي وتسمّد، وتوفير في المية ومحصول أحسن.'],
+            ['slug' => 'brmgyat-ostart-ab-brnamg-mhasb-ntham-lkl-alhsabat', 'wave' => 2, 'name' => 'برنامج محاسبة — نظام لكل الحسابات', 'hero_title' => 'حساباتك في مكان واحد', 'hero_subtitle' => 'فواتير ومخزون ومرتبات وضرايب، وتقارير جاهزة بضغطة.'],
+            ['slug' => 'brmgyat-ostart-ab-mns-bth-omhto-mshhd-baad-mshhd', 'wave' => 2, 'name' => 'منصة بث ومحتوى — مشهد بعد مشهد', 'hero_title' => 'أفلام ومسلسلات عربي في أي وقت', 'hero_subtitle' => 'مكتبة محتوى عربي على كل الأجهزة، وتحميل للمشاهدة من غير نت.'],
+            ['slug' => 'brmgyat-ostart-ab-ttbyk-kran-oathkar-roh-aarby', 'wave' => 2, 'name' => 'تطبيق قرآن وأذكار — روح عربية', 'hero_title' => 'وردك اليومي معاك في كل مكان', 'hero_subtitle' => 'مصحف بتلاوات مختلفة، وأذكار وتنبيهات للصلاة، وتتبّع لختمتك.'],
+            ['slug' => 'brmgyat-ostart-ab-mns-mbyaaat-crm-loh-thkm-thky', 'wave' => 2, 'name' => 'منصة مبيعات CRM — لوحة تحكم ذكية', 'hero_title' => 'كل عملائك وصفقاتك قدامك', 'hero_subtitle' => 'متابعة عملاء ومراحل بيع وتذكيرات، ولوحة بتقولك فين الفرصة الجاية.'],
+            ['slug' => 'brmgyat-ostart-ab-shrk-ttoyr-mtagr-ks-ngah-kl-mtgr', 'wave' => 2, 'name' => 'شركة تطوير متاجر — قصة نجاح كل متجر', 'hero_title' => 'متجرك الإلكتروني من أول يوم', 'hero_subtitle' => 'تصميم وبرمجة متاجر بربط دفع وشحن، وعملاء كبروا معانا.'],
+            ['slug' => 'brmgyat-ostart-ab-astodyo-alaaab-mobayl-mrh-bksl', 'wave' => 2, 'name' => 'استوديو ألعاب موبايل — مرح بكسل', 'hero_title' => 'ألعاب بسيطة بتسلّي جداً', 'hero_subtitle' => 'ألعاب موبايل بستايل البكسل الكلاسيكي، للاعبين من كل الأعمار حول العالم.'],
+            ['slug' => 'brmgyat-ostart-ab-start-ab-thkaaa-astnaaay-atmt-alshghl', 'wave' => 2, 'name' => 'ستارت أب ذكاء اصطناعي — أتمتة الشغل', 'hero_title' => 'خلّي الذكاء الاصطناعي يشتغل عنك', 'hero_subtitle' => 'أدوات بتقرا الإيميلات والفواتير وترد على العملاء، وتوفر ساعات كل يوم.'],
         ],
         'tones' => [
             'warm' => [
@@ -1098,6 +1247,17 @@ return [
             ['slug' => 'bortfolyo-omstklyn-sfh-mdrb-mstkl-nmo-shkhsy', 'name' => 'صفحة مدرب مستقل — طاقة وتحدي', 'hero_title' => 'نسخة أقوى منك مستنياك', 'hero_subtitle' => 'جلسات تدريب وكوتشينج فردية بخطة واضحة ومتابعة حقيقية.'],
             ['slug' => 'bortfolyo-omstklyn-bortfolyo-msmm-dakhly-roy-aamly', 'name' => 'بورتفوليو مصمم داخلي — مساحات راقية', 'hero_title' => 'بيوت بتعكس أصحابها', 'hero_subtitle' => 'تصميم داخلي راقي بلمسة شخصية، من المخطط لحد آخر قطعة ديكور.'],
             ['slug' => 'bortfolyo-omstklyn-sfh-msok-rkmy-ntayg-kabl-llkyas', 'name' => 'صفحة مسوق رقمي — نتائج قابلة للقياس', 'hero_title' => 'إعلانات بترجع فلوسها', 'hero_subtitle' => 'إدارة حملات وسوشيال ميديا بتقارير شهرية وأرقام واضحة.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'bortfolyo-omstklyn-bortfolyo-msmm-thry-dy-tohg-otfasyl', 'wave' => 2, 'name' => 'بورتفوليو مصمم ثري دي — توهج وتفاصيل', 'hero_title' => 'عوالم ثري دي بتتحرك', 'hero_subtitle' => 'موديلينج وإضاءة ورندر لمنتجات وشخصيات ومشاهد، لشركات وألعاب وإعلانات.'],
+            ['slug' => 'bortfolyo-omstklyn-bortfolyo-msmm-mlskat-ktl-lony', 'wave' => 2, 'name' => 'بورتفوليو مصمم ملصقات — كتل لونية', 'hero_title' => 'بوسترات بتتشاف من بعيد', 'hero_subtitle' => 'تصميم ملصقات وأغلفة وهويات للحفلات والمهرجانات، بلغة بصرية جريئة.'],
+            ['slug' => 'bortfolyo-omstklyn-sfh-rsam-ktb-atfal-rsm-naaam', 'wave' => 2, 'name' => 'صفحة رسامة كتب أطفال — رسم ناعم', 'hero_title' => 'رسومات بتحكي للأطفال', 'hero_subtitle' => 'رسم كتب أطفال وقصص مصوّرة بألوان مائية، لدور نشر ومؤلفين مستقلين.'],
+            ['slug' => 'bortfolyo-omstklyn-sfh-mdyr-msharyaa-tkhtyt-otslym', 'wave' => 2, 'name' => 'صفحة مدير مشاريع — تخطيط وتسليم', 'hero_title' => 'مشاريعك تتسلّم في ميعادها', 'hero_subtitle' => 'إدارة مشاريع تقنية وتسويقية، بخطط واضحة وتقارير أسبوعية وفرق متناغمة.'],
+            ['slug' => 'bortfolyo-omstklyn-bortfolyo-mkhrg-mshhd-bahsas', 'wave' => 2, 'name' => 'بورتفوليو مخرج — مشهد بإحساس', 'hero_title' => 'أفلام قصيرة وإعلانات بإحساس', 'hero_subtitle' => 'إخراج إعلانات وفيديوهات شركات وأفلام قصيرة، من الفكرة لحد العرض.'],
+            ['slug' => 'bortfolyo-omstklyn-bortfolyo-khtat-zkhrf-alhrf', 'wave' => 2, 'name' => 'بورتفوليو خطاط — زخرفة الحرف', 'hero_title' => 'حروف عربي بتتحول لفن', 'hero_subtitle' => 'لوحات خط عربي وشعارات بالخط وكتابة دعوات، بإيد خطاط بخبرة.'],
+            ['slug' => 'bortfolyo-omstklyn-sfh-mtor-ttbykat-mntgat-aal-almtagr', 'wave' => 2, 'name' => 'صفحة مطور تطبيقات — منتجات على المتاجر', 'hero_title' => 'تطبيقات منشورة ومستخدمين حقيقيين', 'hero_subtitle' => 'تطوير تطبيقات iOS وأندرويد من الفكرة للنشر، بأرقام تحميل وتقييمات حقيقية.'],
+            ['slug' => 'bortfolyo-omstklyn-sfh-mhrr-mthkrat-kstk-bklamk', 'wave' => 2, 'name' => 'صفحة محررة مذكرات — قصتك بكلامك', 'hero_title' => 'ذكرياتك تستاهل تتكتب', 'hero_subtitle' => 'بنسجّل ذكرياتك ونصيغها في كتاب مطبوع، هدية تفضل للعيلة سنين.'],
+            ['slug' => 'bortfolyo-omstklyn-bortfolyo-msmm-tyshyrtat-bhg-oaloan-zman', 'wave' => 2, 'name' => 'بورتفوليو مصمم تيشيرتات — بهجة وألوان زمان', 'hero_title' => 'تيشيرتات بتصميمات تفرّح', 'hero_subtitle' => 'رسومات مطبوعة على تيشيرتات وشنط، بستايل الكرتون والإعلانات القديمة.'],
+            ['slug' => 'bortfolyo-omstklyn-sfh-mhnds-byanat-kod-othlyl', 'wave' => 2, 'name' => 'صفحة مهندس بيانات — كود وتحليل', 'hero_title' => 'بيانات بتتحول لقرارات', 'hero_subtitle' => 'تنظيف وتحليل بيانات ولوحات متابعة ونماذج تنبؤ، لشركات ناشئة ومتوسطة.'],
         ],
         'tones' => [
             'warm' => [
@@ -1179,6 +1339,17 @@ return [
             ['slug' => 'azyaaa-omlabs-mark-mlabs-mstdam-anak-msool', 'name' => 'ماركة ملابس مستدامة — تصميم مبتكر', 'hero_title' => 'موضة بتحترم الكوكب', 'hero_subtitle' => 'خامات طبيعية وإنتاج محلي مسؤول وتصميمات بتعيش سنين.'],
             ['slug' => 'azyaaa-omlabs-botyk-aarays-yom-la-yns', 'name' => 'بوتيك عرايس — يوم لا يُنسى', 'hero_title' => 'فستان أحلامك مستنيكي', 'hero_subtitle' => 'فساتين زفاف وخطوبة بتفصيل على المقاس من أول بروفة لليلة الفرح.'],
             ['slug' => 'azyaaa-omlabs-mtgr-ahthy-oshnt-lms-akhyr-llatlal', 'name' => 'متجر أحذية وشنط — لمسة أخيرة للإطلالة', 'hero_title' => 'خطوة شيك في كل مشوار', 'hero_subtitle' => 'أحذية وشنط جلد بموديلات كلاسيك وعصرية تكمّل إطلالتك.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'azyaaa-omlabs-botyk-aloan-bastyl-aloan-naaam', 'wave' => 2, 'name' => 'بوتيك ألوان باستيل — ألوان ناعمة', 'hero_title' => 'ألوان هادية لإطلالة رايقة', 'hero_subtitle' => 'تشكيلة قطع بدرجات الباستيل، تتنسق مع بعض بسهولة لأي مشوار.'],
+            ['slug' => 'azyaaa-omlabs-mark-stryt-oyr-ktl-lony', 'wave' => 2, 'name' => 'ماركة ستريت وير — كتل لونية', 'hero_title' => 'ستايل الشارع بطريقتنا', 'hero_subtitle' => 'هوديز وتيشيرتات أوفر سايز بطبعات حصرية وكميات محدودة.'],
+            ['slug' => 'azyaaa-omlabs-mark-bygamat-omlabs-byt-naaam-omryh', 'wave' => 2, 'name' => 'ماركة بيجامات وملابس بيت — ناعمة ومريحة', 'hero_title' => 'راحتك في البيت تبدأ من هنا', 'hero_subtitle' => 'بيجامات وملابس بيت قطن ناعم، بمقاسات من S لـ3XL.'],
+            ['slug' => 'azyaaa-omlabs-mtgr-yonyform-ntham-lkl-moss', 'wave' => 2, 'name' => 'متجر يونيفورم — نظام لكل مؤسسة', 'hero_title' => 'زي موحد يليق بفريقك', 'hero_subtitle' => 'تفصيل يونيفورم للمستشفيات والمطاعم والشركات والمدارس، بكميات ومواعيد مظبوطة.'],
+            ['slug' => 'azyaaa-omlabs-atylyh-bdl-rgaly-lkt-mthaly', 'wave' => 2, 'name' => 'أتيليه بدل رجالي — لقطة مثالية', 'hero_title' => 'بدلة متفصّلة على مقاسك', 'hero_subtitle' => 'قماش إيطالي وتفصيل يدوي على أكتر من بروفة، لمناسباتك المهمة.'],
+            ['slug' => 'azyaaa-omlabs-botyk-aabayat-okfatyn-nkosh-shrky', 'wave' => 2, 'name' => 'بوتيك عبايات وقفاطين — نقوش شرقية', 'hero_title' => 'عبايات وقفاطين بتطريز يدوي', 'hero_subtitle' => 'تصميمات خليجي ومغربي بخامات مختارة، وتفصيل على المقاس.'],
+            ['slug' => 'azyaaa-omlabs-mtgr-ntharat-shmsy-aonlayn-grb-kbl-ma-tshtry', 'wave' => 2, 'name' => 'متجر نظارات شمسية أونلاين — جرّب قبل ما تشتري', 'hero_title' => 'نظارتك المناسبة لشكل وشّك', 'hero_subtitle' => 'جرّب النظارة على وشّك بالكاميرا قبل الطلب، وتوصيل واسترجاع مجاني.'],
+            ['slug' => 'azyaaa-omlabs-orsh-khyat-ks-kl-ghrz', 'wave' => 2, 'name' => 'ورشة خياطة — قصة كل غرزة', 'hero_title' => 'تفصيل وتعديل بإيد أسطى', 'hero_subtitle' => 'تفصيل فساتين وجلاليب وتعديل مقاسات، بتشطيب نضيف وميعاد مظبوط.'],
+            ['slug' => 'azyaaa-omlabs-mtgr-mlabs-fyntag-ktaa-mkhtar', 'wave' => 2, 'name' => 'متجر ملابس فينتاج — قطع مختارة', 'hero_title' => 'قطع فينتاج مالهاش زي', 'hero_subtitle' => 'جواكت وفساتين وشنط من السبعينات والتمانينات، متنضفة ومتختارة واحدة واحدة.'],
+            ['slug' => 'azyaaa-omlabs-mark-tbaaa-aand-altlb-atmt-kaml', 'wave' => 2, 'name' => 'ماركة طباعة عند الطلب — أتمتة كاملة', 'hero_title' => 'صمّم واطبع من غير مخزون', 'hero_subtitle' => 'اطبع تصميماتك على تيشيرتات وشنط، وإحنا نطبع ونشحن أول ما الطلب يوصل.'],
         ],
         'tones' => [
             'warm' => [
@@ -1260,6 +1431,17 @@ return [
             ['slug' => 'mkhabz-ohloyat-mkhbz-aaayly-osfat-mn-algd', 'name' => 'مخبز عائلي — تشكيلة متكاملة', 'hero_title' => 'كل اللي بيتك محتاجه من الفرن', 'hero_subtitle' => 'عيش وفينو ومعجنات وكيك للعيلة كلها في مكان واحد.'],
             ['slug' => 'mkhabz-ohloyat-mhl-gylato-oays-krym-antaaash-fy-kl-nkh', 'name' => 'محل جيلاتو وآيس كريم — انتعاش في كل نكهة', 'hero_title' => 'نكهة ساقعة لكل مزاج', 'hero_subtitle' => 'جيلاتو طبيعي بنكهات فواكه ومكسرات بيتعمل طازة كل يوم.'],
             ['slug' => 'mkhabz-ohloyat-batysry-fakhr-tgrb-astthnayy', 'name' => 'باتيسري فاخر — حلويات ليلية مميزة', 'hero_title' => 'حلو السهرة بلمسة فاخرة', 'hero_subtitle' => 'تشكيلة مختارة من الحلويات الراقية للعزومات والسهرات الخاصة.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'mkhabz-ohloyat-mhl-donts-lmaa-skr', 'wave' => 2, 'name' => 'محل دونتس — لمعة سكر', 'hero_title' => 'دونتس طازة بكل الألوان', 'hero_subtitle' => 'دونتس محشية ومغطاة بأكتر من 20 نكهة، بتتعمل طازة كل ساعتين.'],
+            ['slug' => 'mkhabz-ohloyat-mhl-kokyz-mzyn-ashkal-mlon', 'wave' => 2, 'name' => 'محل كوكيز مزيّن — أشكال ملوّنة', 'hero_title' => 'كوكيز على الشكل اللي تحبه', 'hero_subtitle' => 'بسكويت مزيّن بالآيسنج للمناسبات والشركات، بأي شكل ولون وطباعة لوجو.'],
+            ['slug' => 'mkhabz-ohloyat-mkhbz-sordo-mn-alard-llfrn', 'wave' => 2, 'name' => 'مخبز سوردو — من الأرض للفرن', 'hero_title' => 'عيش بخميرة طبيعية وتخمير بطيء', 'hero_subtitle' => 'سوردو وعيش حبوب كاملة بدقيق مطحون على الحجر، من غير محسّنات.'],
+            ['slug' => 'mkhabz-ohloyat-msnaa-hloyat-gml-ntham-toryd', 'wave' => 2, 'name' => 'مصنع حلويات جملة — نظام توريد', 'hero_title' => 'حلويات لمحلّك كل يوم', 'hero_subtitle' => 'توريد يومي للكافيهات والفنادق والسوبر ماركت، بجودة ثابتة ومواعيد مظبوطة.'],
+            ['slug' => 'mkhabz-ohloyat-mhl-hloyat-bthymat-alaflam-lkt-mn-fylmk', 'wave' => 2, 'name' => 'محل حلويات بثيمات الأفلام — لقطة من فيلمك', 'hero_title' => 'تورتة من عالم فيلمك المفضل', 'hero_subtitle' => 'تورت وحلويات بثيمات أفلام وكرتون وشخصيات، بتفاصيل تبهر الضيوف.'],
+            ['slug' => 'mkhabz-ohloyat-mhl-kaak-alaayd-asal-altaam', 'wave' => 2, 'name' => 'محل كعك العيد — أصالة الطعم', 'hero_title' => 'كعك العيد بالسمنة البلدي', 'hero_subtitle' => 'كعك وبسكويت وغريبة وبيتي فور، بالوصفة اللي اتعودنا عليها كل عيد.'],
+            ['slug' => 'mkhabz-ohloyat-mtgr-hloyat-aonlayn-atlb-oastlm', 'wave' => 2, 'name' => 'متجر حلويات أونلاين — اطلب واستلم', 'hero_title' => 'حلوياتك المفضلة توصلك', 'hero_subtitle' => 'اطلب أونلاين من منيو بالصور، واختار ميعاد التوصيل اللي يناسبك.'],
+            ['slug' => 'mkhabz-ohloyat-frn-aaysh-fyno-ks-kl-sbh', 'wave' => 2, 'name' => 'فرن عيش فينو — قصة كل صبح', 'hero_title' => 'عيش سخن من الفرن كل صبح', 'hero_subtitle' => 'فينو وشامي وبقسماط ومخبوزات يومية، بنفس الريحة اللي بتصحّي الحي.'],
+            ['slug' => 'mkhabz-ohloyat-mhl-bsbos-omhlby-zmn-altybyn', 'wave' => 2, 'name' => 'محل بسبوسة ومهلبية — زمن الطيبين', 'hero_title' => 'حلويات المحل اللي على الناصية', 'hero_subtitle' => 'بسبوسة وأرز بلبن ومهلبية وجيلي، بطعم الحاجات اللي كنا بنستناها زمان.'],
+            ['slug' => 'mkhabz-ohloyat-mkhbz-aly-atmt-ogod-thabt', 'wave' => 2, 'name' => 'مخبز آلي — أتمتة وجودة ثابتة', 'hero_title' => 'خبز بجودة ثابتة كل يوم', 'hero_subtitle' => 'خطوط إنتاج حديثة بتتحكم في الوزن والحرارة، وتوريد للمطاعم والفنادق بالكميات.'],
         ],
         'tones' => [
             'warm' => [
@@ -1344,6 +1526,17 @@ return [
             ['slug' => 'hdanat-orodat-atfal-hdan-aaayly-dfaa-albyt', 'name' => 'حضانة عائلية — دفء البيت', 'hero_title' => 'كأنه في بيته', 'hero_subtitle' => 'جو عائلي دافي ومربيات حنينين بيعاملوا طفلك كواحد منهم.'],
             ['slug' => 'hdanat-orodat-atfal-rod-thnayy-allgh-antlak-aaalmy', 'name' => 'روضة ثنائية اللغة — انطلاقة عالمية', 'hero_title' => 'لغتين وفرص أكتر', 'hero_subtitle' => 'برنامج ثنائي اللغة بمعايير عالمية يحضّر طفلك لمستقبل أوسع.'],
             ['slug' => 'hdanat-orodat-atfal-hdan-fakhr-raaay-mtkaml', 'name' => 'حضانة فاخرة — رعاية متكاملة', 'hero_title' => 'رعاية متكاملة بأعلى مستوى', 'hero_subtitle' => 'مساحات واسعة ووجبات صحية ورعاية طبية وأنشطة مختارة بعناية.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'hdanat-orodat-atfal-rod-hsy-ashrak-alhoas', 'wave' => 2, 'name' => 'روضة حسية — إشراقة الحواس', 'hero_title' => 'تجارب بتنمّي الحواس', 'hero_subtitle' => 'غرف حسية بألوان وأصوات وملمس مختلف، بتساعد الطفل يستكشف ويهدى.'],
+            ['slug' => 'hdanat-orodat-atfal-rod-bnaaa-omkaabat-ashkal-oaloan', 'wave' => 2, 'name' => 'روضة بناء ومكعبات — أشكال وألوان', 'hero_title' => 'مهندسين صغيرين بيبنوا ويتعلموا', 'hero_subtitle' => 'ألعاب بناء ومكعبات وأشكال بتعلّم الطفل الحساب والتفكير والصبر.'],
+            ['slug' => 'hdanat-orodat-atfal-hdan-ghab-akhdr-tol-alyom', 'wave' => 2, 'name' => 'حضانة غابة — أخضر طول اليوم', 'hero_title' => 'طفولة في الهوا الطلق', 'hero_subtitle' => 'يوم كامل بين الزرع والحيوانات واللعب في الطبيعة، بأمان وإشراف كامل.'],
+            ['slug' => 'hdanat-orodat-atfal-hdan-rdaa-ntham-yomy-mhsob', 'wave' => 2, 'name' => 'حضانة رضّع — نظام يومي محسوب', 'hero_title' => 'رعاية رضيعك بنظام وهدوء', 'hero_subtitle' => 'مواعيد نوم ورضعات مسجّلة، وتقرير يومي للأم بكل اللي حصل.'],
+            ['slug' => 'hdanat-orodat-atfal-rod-msrh-odrama-mshhd-odhk', 'wave' => 2, 'name' => 'روضة مسرح ودراما — مشهد وضحكة', 'hero_title' => 'مسرحنا الصغير بيكبّر ثقتهم', 'hero_subtitle' => 'عروض مسرح وعرايس وتمثيل، بتعلّم الأطفال يعبّروا عن نفسهم قدام الناس.'],
+            ['slug' => 'hdanat-orodat-atfal-rod-aarby-asal-allgh', 'wave' => 2, 'name' => 'روضة عربية — أصالة اللغة', 'hero_title' => 'لغتنا الجميلة من أول حرف', 'hero_subtitle' => 'تأسيس قراءة وكتابة عربي بالحكايات والأناشيد، وقيم بتكبر مع الطفل.'],
+            ['slug' => 'hdanat-orodat-atfal-hdan-bkamyrat-aonlayn-tabaa-tflk', 'wave' => 2, 'name' => 'حضانة بكاميرات أونلاين — تابع طفلك', 'hero_title' => 'شوف طفلك وانت في الشغل', 'hero_subtitle' => 'كاميرات مباشرة بتطبيق آمن للأهل، وتحديثات بالصور طول اليوم.'],
+            ['slug' => 'hdanat-orodat-atfal-rod-hkayat-ks-kl-yom', 'wave' => 2, 'name' => 'روضة حكايات — قصة كل يوم', 'hero_title' => 'كل يوم حكاية جديدة', 'hero_subtitle' => 'أنشطة مبنية على القصص والكتب المصوّرة، بتنمّي الخيال واللغة والاستماع.'],
+            ['slug' => 'hdanat-orodat-atfal-hdan-alaaab-shaaby-bhg-zman', 'wave' => 2, 'name' => 'حضانة ألعاب شعبية — بهجة زمان', 'hero_title' => 'ألعاب زمان رجعت تاني', 'hero_subtitle' => 'استغماية ونط حبل وكراسي موسيقية، لعب جماعي بيعلّم المشاركة والضحك.'],
+            ['slug' => 'hdanat-orodat-atfal-rod-robotat-kod-llsghyryn', 'wave' => 2, 'name' => 'روضة روبوتات — كود للصغيرين', 'hero_title' => 'أول خطوة في البرمجة', 'hero_subtitle' => 'روبوتات وألعاب برمجة بالمكعبات، بتعلّم الأطفال يفكروا بالترتيب ويحلّوا المشاكل.'],
         ],
         'tones' => [
             'warm' => [
@@ -1425,6 +1618,17 @@ return [
             ['slug' => 'tsoyr-oantag-fydyo-astodyo-tsoyr-fakhr-tgrb-raky', 'name' => 'استوديو تصوير فاخر — تجربة راقية', 'hero_title' => 'جلسة تصوير بتجربة كاملة', 'hero_subtitle' => 'ستايلينج ومكياج وإضاءة سينمائية وألبوم مطبوع فاخر.'],
             ['slug' => 'tsoyr-oantag-fydyo-msor-shkhsy-kstk-baadsty', 'name' => 'مصور شخصي — ذكرى دافئة', 'hero_title' => 'حكايتك في صور', 'hero_subtitle' => 'جلسات شخصية وعائلية بإحساس طبيعي وصور تفضل معاك سنين.'],
             ['slug' => 'tsoyr-oantag-fydyo-astodyo-montag-thryr-ahtrafy', 'name' => 'استوديو مونتاج — قصة واضحة', 'hero_title' => 'المونتاج اللي بيحكي الحكاية', 'hero_subtitle' => 'مونتاج وتلوين وصوت لفيديوهاتك بقصة واضحة وإيقاع مظبوط.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'tsoyr-oantag-fydyo-msor-hflat-mosyky-tohg-almsrh', 'wave' => 2, 'name' => 'مصور حفلات موسيقية — توهج المسرح', 'hero_title' => 'صور الحفلة بأضوائها', 'hero_subtitle' => 'تصوير حفلات وكونسيرتات وسهرات، بإضاءة صعبة ونتيجة واضحة.'],
+            ['slug' => 'tsoyr-oantag-fydyo-msor-aamar-khtot-oashkal', 'wave' => 2, 'name' => 'مصور عمارة — خطوط وأشكال', 'hero_title' => 'مباني بزوايا مختلفة', 'hero_subtitle' => 'تصوير معماري للمباني والديكورات الداخلية، لمكاتب التصميم والمطورين.'],
+            ['slug' => 'tsoyr-oantag-fydyo-msor-hoaml-omoalyd-glsat-naaam', 'wave' => 2, 'name' => 'مصورة حوامل ومواليد — جلسات ناعمة', 'hero_title' => 'أول صور لأجمل بداية', 'hero_subtitle' => 'جلسات حمل ومواليد في استوديو دافي، بأمان كامل على المولود.'],
+            ['slug' => 'tsoyr-oantag-fydyo-astodyo-sor-basbor-ntham-sryaa', 'wave' => 2, 'name' => 'استوديو صور باسبور — نظام سريع', 'hero_title' => 'صورتك الرسمية في 5 دقايق', 'hero_subtitle' => 'صور باسبور وفيزا وكارنيهات بمقاسات كل السفارات، ونسخة ديجيتال معاها.'],
+            ['slug' => 'tsoyr-oantag-fydyo-sanaa-aflam-othayky-koalys-hkyky', 'wave' => 2, 'name' => 'صانع أفلام وثائقية — كواليس حقيقية', 'hero_title' => 'حكايات حقيقية على الشاشة', 'hero_subtitle' => 'إنتاج أفلام وثائقية وقصص شركات، بتصوير ومونتاج بروح سينما.'],
+            ['slug' => 'tsoyr-oantag-fydyo-msor-mtaaam-odyaf-dyaf-aarby', 'wave' => 2, 'name' => 'مصور مطاعم وضيافة — ضيافة عربية', 'hero_title' => 'صور أكل تفتح النفس', 'hero_subtitle' => 'تصوير أطباق ومنيوهات وأماكن، للمطاعم والكافيهات والفنادق.'],
+            ['slug' => 'tsoyr-oantag-fydyo-astodyo-sor-almtagr-mntg-gahz-llbyaa', 'wave' => 2, 'name' => 'استوديو صور المتاجر — منتج جاهز للبيع', 'hero_title' => 'صور منتجات جاهزة للمتاجر', 'hero_subtitle' => 'صور بخلفية بيضا وصور استخدام وفيديو قصير، بمقاسات كل منصات البيع.'],
+            ['slug' => 'tsoyr-oantag-fydyo-msor-yom-alaayl-ks-yomkm', 'wave' => 2, 'name' => 'مصور يوم العيلة — قصة يومكم', 'hero_title' => 'يوم عادي بيتحوّل لذكرى', 'hero_subtitle' => 'تصوير توثيقي ليوم كامل في حياة العيلة، من الفطار لحد النوم.'],
+            ['slug' => 'tsoyr-oantag-fydyo-astodyo-aflam-kdym-fyntag', 'wave' => 2, 'name' => 'استوديو أفلام قديمة — فينتاج', 'hero_title' => 'صور بولارويد وأفلام 35 ملي', 'hero_subtitle' => 'تصوير بكاميرات فيلم حقيقية، وطباعة فورية، وتحميض للأفلام القديمة.'],
+            ['slug' => 'tsoyr-oantag-fydyo-astodyo-msh-thlathy-alabaaad-byanat-almkan', 'wave' => 2, 'name' => 'استوديو مسح ثلاثي الأبعاد — بيانات المكان', 'hero_title' => 'حوّل المكان لجولة افتراضية', 'hero_subtitle' => 'تصوير 360 ومسح ثلاثي الأبعاد للمعارض والوحدات والفنادق، يتشاف من أي جهاز.'],
         ],
         'tones' => [
             'warm' => [
@@ -1506,6 +1710,17 @@ return [
             ['slug' => 'aator-omsthdrat-tgmyl-mtgr-aanay-balshaar-sh-olmaaan', 'name' => 'متجر عناية بالشعر — عناية عصرية', 'hero_title' => 'شعر صحي ولامع', 'hero_subtitle' => 'شامبوهات وماسكات وزيوت لكل نوع شعر، وروتين مقترح ليكِ.'],
             ['slug' => 'aator-omsthdrat-tgmyl-botyk-mkyag-ahtrafy-lkl-mnasb', 'name' => 'بوتيك مكياج احترافي — تصميم مبتكر لكل لوك', 'hero_title' => 'أدوات المحترفين في إيدك', 'hero_subtitle' => 'مكياج احترافي وفرش وباليتات لخبيرات التجميل وعاشقات المكياج.'],
             ['slug' => 'aator-omsthdrat-tgmyl-mhl-aator-mmyz-tokyaak-alfryd', 'name' => 'محل عطور مميزة — روائح ليلية', 'hero_title' => 'عطر السهرة اللي ميتنسيش', 'hero_subtitle' => 'عطور مسائية دافية بنفحات عود وفانيليا لليالي الخاصة.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'aator-omsthdrat-tgmyl-mtgr-shmoaa-maatr-doaa-oryh', 'wave' => 2, 'name' => 'متجر شموع معطرة — ضوء وريحة', 'hero_title' => 'شموع بريحة تهدّي المكان', 'hero_subtitle' => 'شموع صويا يدوية بزيوت عطرية، بأحجام وروائح لكل أوضة.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-mark-aanay-yomy-ashkal-oaloan', 'wave' => 2, 'name' => 'ماركة عناية يومية — أشكال وألوان', 'hero_title' => 'منتجات حلوة من برّه ومن جوّه', 'hero_subtitle' => 'مستحضرات عناية بتغليف ملوّن ومركّبات فعّالة، لروتين يومي بسيط.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-mtgr-sabon-tbyaay-mn-alard', 'wave' => 2, 'name' => 'متجر صابون طبيعي — من الأرض', 'hero_title' => 'صابون يدوي بزيت الزيتون', 'hero_subtitle' => 'صابون وزيوت وبلسم معمولين يدوي بمكونات طبيعية، لبشرة وشعر صحيين.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-mtgr-aator-gml-ntham-toryd', 'wave' => 2, 'name' => 'متجر عطور جملة — نظام توريد', 'hero_title' => 'عطور أصلية بأسعار الجملة', 'hero_subtitle' => 'توريد عطور ومستحضرات للمحلات والصالونات، بفواتير رسمية وشحن سريع.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-dar-aator-nysh-aard-aol-llroayh', 'wave' => 2, 'name' => 'دار عطور نيش — عرض أول للروائح', 'hero_title' => 'روائح نادرة بإصدارات محدودة', 'hero_subtitle' => 'عطور نيش من دور عالمية ومحلية، بعينات تجرّبها قبل الزجاجة الكاملة.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-mhl-bkhor-oaaod-roh-aarby', 'wave' => 2, 'name' => 'محل بخور وعود — روح عربية', 'hero_title' => 'عود وبخور بريحة البيت الكبير', 'hero_subtitle' => 'دهن عود ومعمول وبخور مختار، ومباخر وهدايا للمناسبات.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-sndok-aanay-shhry-mntgat-btoslk', 'wave' => 2, 'name' => 'صندوق عناية شهري — منتجات بتوصلك', 'hero_title' => 'صندوق عناية كل شهر', 'hero_subtitle' => 'اشتراك شهري بمنتجات عناية مختارة على نوع بشرتك، وتقدر توقّف في أي وقت.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-mark-aator-mhly-ks-kl-zgag', 'wave' => 2, 'name' => 'ماركة عطور محلية — قصة كل زجاجة', 'hero_title' => 'عطر اتعمل بإيدينا من الأول', 'hero_subtitle' => 'تركيبات بنخلطها في معملنا الصغير، وكل عطر وراه ذكرى وإلهام.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-mhl-kolonya-oroayh-zmn-altybyn', 'wave' => 2, 'name' => 'محل كولونيا وروائح — زمن الطيبين', 'hero_title' => 'كولونيا الجدّات رجعت', 'hero_subtitle' => 'روائح كولونيا وماء ورد وبودرة بتفكّرك بزمان، بزجاجات كلاسيك.'],
+            ['slug' => 'aator-omsthdrat-tgmyl-maaml-aator-mkhss-byanat-thokk', 'wave' => 2, 'name' => 'معمل عطور مخصصة — بيانات ذوقك', 'hero_title' => 'عطرك الخاص من استبيان ذوقك', 'hero_subtitle' => 'اختبار ذوق قصير بيحدد الروايح اللي بتحبها، ونركّبلك عطر محدش عنده زيه.'],
         ],
         'tones' => [
             'warm' => [
@@ -1588,6 +1803,17 @@ return [
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-aayad-bytry-aaayly-thk-mn-zman', 'name' => 'عيادة بيطرية عائلية — ثقة من زمان', 'hero_title' => 'دكتور العيلة لحيواناتها', 'hero_subtitle' => 'متابعة حيواناتك الأليفة من صغرها، بملف كامل وعلاقة ثقة.'],
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-mrkz-tbny-hyoanat-byt-gdyd-ohb', 'name' => 'مركز تبني حيوانات — معرض أصدقاء جدد', 'hero_title' => 'صديقك الجديد مستنيك', 'hero_subtitle' => 'قطط وكلاب متطعمة ومستنية بيت يحبها، اتعرف عليهم بالصور.'],
             ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-aayad-bytry-hdyth-tkny-mttor', 'name' => 'عيادة بيطرية حديثة — تقنية متطورة', 'hero_title' => 'طب بيطري بأحدث التقنيات', 'hero_subtitle' => 'سونار وأشعة رقمية ومعمل تحاليل، وملف إلكتروني لكل حيوان.'],
+            // الدفعة 2 (2026-10-11) — تصميمات أحدث، تخصصات جديدة.
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-mrkz-asnan-hyoanat-lmaa-abtsam', 'wave' => 2, 'name' => 'مركز أسنان حيوانات — لمعة ابتسامة', 'hero_title' => 'أسنان حيوانك صحية ونضيفة', 'hero_subtitle' => 'تنظيف جير وخلع وعلاج لثة للقطط والكلاب، بتخدير آمن ومتابعة.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-mtgr-akssoarat-hyoanat-ashkal-mlon', 'wave' => 2, 'name' => 'متجر إكسسوارات حيوانات — أشكال ملوّنة', 'hero_title' => 'حاجات حلوة لصاحبك الصغير', 'hero_subtitle' => 'أطواق وسراير وألعاب وملابس بتصميمات ملوّنة، لكل المقاسات.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-mtgr-akl-hyoanat-tbyaay-mn-alard', 'wave' => 2, 'name' => 'متجر أكل حيوانات طبيعي — من الأرض', 'hero_title' => 'أكل طبيعي لصحة أحسن', 'hero_subtitle' => 'أكل كلاب وقطط من مكونات طبيعية من غير مواد حافظة، بتوصيل اشتراك شهري.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-mrkz-ttaaymat-osfr-hyoanat-ntham-mtabaa', 'wave' => 2, 'name' => 'مركز تطعيمات وسفر حيوانات — نظام متابعة', 'hero_title' => 'ورق حيوانك جاهز للسفر', 'hero_subtitle' => 'تطعيمات وشرايح وشهادات صحية وجواز سفر، بمواعيد منظمة وتذكير قبل كل جرعة.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-astodyo-tsoyr-hyoanat-alyf-lkt-lsahbk', 'wave' => 2, 'name' => 'استوديو تصوير حيوانات أليفة — لقطة لصاحبك', 'hero_title' => 'صور احترافية لأحلى صاحب', 'hero_subtitle' => 'جلسات تصوير للقطط والكلاب في الاستوديو أو في البيت، بصبر وحب.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-aayad-bytry-llkhyl-asal-oraaay', 'wave' => 2, 'name' => 'عيادة بيطرية للخيل — أصالة ورعاية', 'hero_title' => 'رعاية بيطرية للخيل العربي', 'hero_subtitle' => 'كشف وتطعيم وعلاج إصابات وتغذية للخيول، بزيارات للإسطبل.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-ttbyk-raaay-hyoanat-aonlayn-tbybk-aal-almobayl', 'wave' => 2, 'name' => 'تطبيق رعاية حيوانات أونلاين — طبيبك على الموبايل', 'hero_title' => 'استشارة بيطرية من البيت', 'hero_subtitle' => 'كلّم دكتور بيطري بالفيديو، واحفظ ملف حيوانك وتطعيماته على التطبيق.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-gmaay-ankath-hyoanat-kss-ankath', 'wave' => 2, 'name' => 'جمعية إنقاذ حيوانات — قصص إنقاذ', 'hero_title' => 'كل حيوان يستاهل فرصة تانية', 'hero_subtitle' => 'إنقاذ وعلاج وتعقيم حيوانات الشارع، وتبنّي بمتابعة بعد ما يروح بيته الجديد.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-hdan-klab-nhary-mrh-tol-alyom', 'wave' => 2, 'name' => 'حضانة كلاب نهارية — مرح طول اليوم', 'hero_title' => 'يوم لعب لكلبك وانت في الشغل', 'hero_subtitle' => 'حضانة نهارية بلعب جماعي ومشي وراحة، وصور تطمّنك عليه كل كام ساعة.'],
+            ['slug' => 'aayadat-bytry-okhdmat-hyoanat-alyf-maaml-bytry-byanat-ontayg-sryaa', 'wave' => 2, 'name' => 'معمل بيطري — بيانات ونتايج سريعة', 'hero_title' => 'تحاليل دم ونتيجة في نفس اليوم', 'hero_subtitle' => 'معمل تحاليل وأشعة متخصص للحيوانات، وتقارير بتوصل للدكتور والصاحب أونلاين.'],
         ],
         'tones' => [
             'warm' => [

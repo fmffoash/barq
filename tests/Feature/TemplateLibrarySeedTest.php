@@ -13,6 +13,8 @@ use Tests\TestCase;
 // مكتبة القوالب (2026-10-10، فؤاد: "راجع القوالب اللي متكررة"): قبل كده الـ15 قالب في كل فئة كانوا
 // بنفس العنوان والوصف والصور والخط، وألوانهم 7-9 عيلات بس. التستات دي بتقفل التنوع ده، وبتتأكد إن
 // تحديث المكتبة ميغيّرش شكل أي موقع قايم.
+// (2026-10-11) الدفعة 2: 10 قوالب زيادة لكل فئة (500 إجمالي) على 10 تصميمات جديدة — من غير ما الـ300
+// القديمين يتغيّروا.
 class TemplateLibrarySeedTest extends TestCase
 {
     use RefreshDatabase;
@@ -22,11 +24,11 @@ class TemplateLibrarySeedTest extends TestCase
         $this->artisan('barq:seed-template-library')->assertSuccessful();
     }
 
-    public function test_every_category_has_fifteen_genuinely_different_templates(): void
+    public function test_every_category_has_twenty_five_genuinely_different_templates(): void
     {
         $this->seedLibrary();
 
-        $this->assertSame(300, Template::count());
+        $this->assertSame(500, Template::count());
 
         $byCategory = Template::with(['variants', 'slots'])->get()->groupBy('category');
         $this->assertCount(20, $byCategory);
@@ -36,10 +38,11 @@ class TemplateLibrarySeedTest extends TestCase
             $heroTitles = $templates->map(fn (Template $t) => $t->slots->firstWhere('key', 'hero_title')->default_value);
             $families = $variants->map(fn ($v) => collect(SeedTemplateLibrary::PALETTES)->first(fn ($p) => $p['colors'] == $v->colors_json)['family'] ?? $v->colors_json['primary']);
 
-            $this->assertCount(15, $templates, $category);
-            $this->assertSame(15, $templates->pluck('layout')->unique()->count(), "{$category}: layouts");
-            $this->assertSame(15, $heroTitles->unique()->count(), "{$category}: hero titles");
-            $this->assertGreaterThanOrEqual(12, $families->unique()->count(), "{$category}: colour families");
+            $this->assertCount(25, $templates, $category);
+            $this->assertSame(25, $templates->pluck('layout')->unique()->count(), "{$category}: layouts");
+            $this->assertSame(25, $heroTitles->unique()->count(), "{$category}: hero titles");
+            $this->assertSame(25, $templates->map(fn (Template $t) => trim(explode('—', $t->name)[0]))->unique()->count(), "{$category}: specialties");
+            $this->assertSame(25, $families->unique()->count(), "{$category}: colour families");
             $this->assertGreaterThanOrEqual(6, $variants->pluck('font')->merge($variants->pluck('heading_font'))->unique()->count(), "{$category}: fonts");
             $this->assertGreaterThanOrEqual(2, $templates->map(fn (Template $t) => $t->slots->firstWhere('key', 'hero_image')->default_value)->unique()->count(), "{$category}: cover photos");
         }
@@ -92,10 +95,10 @@ class TemplateLibrarySeedTest extends TestCase
         $before = Template::max('updated_at');
 
         $this->artisan('barq:seed-template-library')
-            ->expectsOutputToContain('0 قالب جديد، 0 محدّث، 300 من غير تغيير')
+            ->expectsOutputToContain('0 قالب جديد، 0 محدّث، 500 من غير تغيير')
             ->assertSuccessful();
 
-        $this->assertSame(300, Template::count());
+        $this->assertSame(500, Template::count());
         $this->assertSame($before, Template::max('updated_at'));
         $this->artisan('barq:seed-template-library --if-outdated')->expectsOutputToContain('up to date')->assertSuccessful();
     }
@@ -122,6 +125,41 @@ class TemplateLibrarySeedTest extends TestCase
         $this->assertSame($oldColors, $site->colors_override_json);
         $this->assertSame('cairo', $site->font_override);
         $this->assertNotSame('وصف قديم', $template->slots()->where('key', 'hero_subtitle')->value('default_value'), 'the library itself did update');
+    }
+
+    public function test_the_second_wave_uses_every_new_layout_and_never_changes_the_first_wave(): void
+    {
+        $newLayouts = ['aurora', 'bauhaus', 'organic', 'swiss', 'cinematic', 'mashrabiya', 'showcase', 'story', 'retro', 'terminal'];
+        $command = app(SeedTemplateLibrary::class);
+
+        foreach (SeedTemplateLibrary::libraryData() as $index => $category) {
+            $full = $command->planCategory($index, $category, []);
+            // الدفعة 1 لوحدها (زي ما كانت المكتبة قبل الإضافة) لازم تطلع بالحرف نفس النتيجة.
+            $firstWaveOnly = $category;
+            $firstWaveOnly['templates'] = array_values(array_filter($category['templates'], fn (array $t) => ($t['wave'] ?? 1) === 1));
+            $this->assertCount(15, $firstWaveOnly['templates'], $category['category']);
+            $this->assertSame($command->planCategory($index, $firstWaveOnly, []), array_slice($full, 0, 15), "{$category['category']}: first wave changed");
+
+            $secondWave = array_slice($full, 15);
+            $this->assertEqualsCanonicalizing($newLayouts, array_column($secondWave, 'layout'), "{$category['category']}: second wave layouts");
+            foreach ($secondWave as $plan) {
+                $this->assertSame(2, $category['templates'][array_search($plan['slug'], array_column($category['templates'], 'slug'), true)]['wave']);
+            }
+        }
+    }
+
+    public function test_layouts_that_need_a_dark_or_light_background_always_get_one(): void
+    {
+        $command = app(SeedTemplateLibrary::class);
+        $needs = ['neon' => 'dark', 'signature' => 'dark', 'cinematic' => 'dark', 'terminal' => 'dark', 'bauhaus' => 'light', 'retro' => 'light'];
+
+        foreach (SeedTemplateLibrary::libraryData() as $index => $category) {
+            foreach ($command->planCategory($index, $category, []) as $plan) {
+                if (isset($needs[$plan['layout']])) {
+                    $this->assertStringContainsString($needs[$plan['layout']], SeedTemplateLibrary::PALETTES[$plan['palette']]['mode'], "{$plan['name']} ({$plan['layout']})");
+                }
+            }
+        }
     }
 
     private function contrast(string $a, string $b): float
