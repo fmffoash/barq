@@ -37,7 +37,9 @@ class TemplatePicker
         'تخسيس' => ['nutritionist', 'dietitian', 'diet', 'تغذيه', 'رجيم'],
         'طوارئ' => ['emergency', 'اسعاف'],
         'مستشفي' => ['hospital'],
-        'بيتزا' => ['pizza', 'برجر', 'burger', 'فاست', 'سندوتشات'],
+        // برجر بقى ليه قالب لوحده (الدفعة 2، 2026-10-11) — مبقاش مرادف للبيتزا.
+        'بيتزا' => ['pizza', 'فاست', 'سندوتشات'],
+        'برجر' => ['burger', 'burgers'],
         'بحري' => ['seafood', 'fish', 'سمك', 'اسماك', 'جمبري'],
         'مشويات' => ['grill', 'barbecue', 'bbq', 'kebab', 'كباب', 'كفته', 'مشاوي'],
         'كافيه' => ['cafe', 'coffee', 'قهوه', 'كوفي'],
@@ -71,6 +73,33 @@ class TemplatePicker
         'مكياج' => ['makeup', 'ميكب', 'ميك اب'],
         'لغات' => ['language', 'english', 'انجليزي'],
         'برمجه' => ['coding', 'programming', 'developer'],
+        // تخصصات الدفعة 2 (2026-10-11).
+        'عظام' => ['orthopedic', 'orthopedist', 'عضم', 'مفاصل', 'كسور'],
+        'ليزك' => ['lasik', 'تصحيح نظر', 'تصحيح النظر'],
+        'غدد' => ['endocrinologist', 'diabetes', 'سكري', 'هرمونات'],
+        'تخاطب' => ['speech therapy', 'speech therapist', 'تاخر كلام'],
+        'صيدليه' => ['pharmacy', 'pharmacist', 'اجزخانه', 'اجزاخانه'],
+        'شامي' => ['syrian', 'شاورما', 'مناقيش'],
+        'نباتي' => ['vegan', 'vegetarian', 'نباتيين'],
+        'ستيك' => ['steak', 'steakhouse'],
+        'كشري' => ['koshary', 'koshari'],
+        'فطاطري' => ['فطير', 'مشلتت'],
+        'سموذي' => ['juice', 'smoothie', 'عصاير', 'عصائر'],
+        'حنه' => ['henna', 'حنا'],
+        'رموش' => ['lashes', 'eyelash', 'حواجب'],
+        'كاراتيه' => ['karate', 'تايكوندو', 'taekwondo', 'judo', 'جودو'],
+        'فروسيه' => ['horse riding', 'equestrian', 'خيل', 'خيول'],
+        'تنس' => ['tennis', 'بادل', 'padel'],
+        'زومبا' => ['zumba'],
+        'سبينينج' => ['spinning', 'cycling'],
+        'دونتس' => ['donuts', 'doughnuts', 'دوناتس'],
+        'سوردو' => ['sourdough'],
+        'بخور' => ['oud', 'incense', 'عود', 'دهن عود'],
+        'شموع' => ['candles', 'candle'],
+        'صابون' => ['soap'],
+        'يونيفورم' => ['uniform', 'uniforms', 'زي موحد'],
+        'عبايات' => ['abaya', 'abayas', 'قفطان'],
+        'فينتاج' => ['vintage', 'thrift'],
     ];
 
     // كلمات الطابع اللي فؤاد/النموذج بيقولها ← كلمات بتوصفه في أسماء القوالب وشخصيات التصميمات.
@@ -181,10 +210,15 @@ class TemplatePicker
         $part = PastedText::normalizeArabic(trim(explode('—', $name, 2)[0]));
         $tokens = preg_split('/[^\p{L}\p{N}]+/u', $part, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        return array_values(array_map(
-            fn ($t) => preg_replace('/^(وال|بال|ال|و|ب|ل)(?=\p{L}{3,})/u', '', $t) ?? $t,
-            $tokens,
-        ));
+        return array_values(array_map(fn ($t) => self::stem($t), $tokens));
+    }
+
+    // كلمة من غير "ال"/"و"/"ب"/"ل" في أولها — نفس الشكل في أسماء القوالب ومفاتيح المرادفات ("برجر" ←
+    // "رجر"، "بيتزا" ← "يتزا"). قبل 2026-10-11 مفاتيح المرادفات كانت بتتضاف من غيره، فأي مرادف لتخصص
+    // أوله ب/و/ل (pizza/barber/seafood/vet...) مكانش بيطابق قالبه خالص.
+    private static function stem(string $token): string
+    {
+        return preg_replace('/^(وال|بال|ال|و|ب|ل)(?=\p{L}{3,})/u', '', $token) ?? $token;
     }
 
     /**
@@ -198,7 +232,7 @@ class TemplatePicker
                 $variant = PastedText::normalizeArabic($variant);
                 $hit = str_contains($variant, ' ') ? str_contains($joined, ' '.$variant.' ') : isset($words[$variant]);
                 if ($hit) {
-                    $words[PastedText::normalizeArabic($canonical)] = true;
+                    $words[self::stem(PastedText::normalizeArabic($canonical))] = true;
                     break;
                 }
             }

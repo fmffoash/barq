@@ -22,6 +22,9 @@ class Template extends Model
         'split', 'magazine', 'bento', 'minimal', 'bold',
         'glass', 'timeline', 'stack', 'diagonal', 'framed',
         'neon', 'duotone', 'signature',
+        // الدفعة التانية (2026-10-11) — 10 تصميمات أحدث، كل واحد بهيرو مختلف عن الـ16 اللي قبله.
+        'aurora', 'bauhaus', 'organic', 'swiss', 'cinematic',
+        'mashrabiya', 'showcase', 'story', 'retro', 'terminal',
     ];
 
     protected $fillable = [
@@ -69,6 +72,9 @@ class Template extends Model
             'bold' => 'بولد', 'glass' => 'جلاس', 'timeline' => 'تايم لاين',
             'stack' => 'ستاك', 'diagonal' => 'دياجونال', 'framed' => 'فريمد',
             'neon' => 'نيون', 'duotone' => 'دوتون', 'signature' => 'سيجنتشر',
+            'aurora' => 'أورورا', 'bauhaus' => 'باوهاوس', 'organic' => 'أورجانيك',
+            'swiss' => 'سويسري', 'cinematic' => 'سينمائي', 'mashrabiya' => 'مشربية',
+            'showcase' => 'شوكيس', 'story' => 'حكاية', 'retro' => 'ريترو', 'terminal' => 'تيرمينال',
             default => 'كلاسيك',
         };
     }

@@ -15,10 +15,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-// بيولّد/يحدّث مكتبة القوالب الأصلية — 20 فئة × 15 قالب (البيانات كلها في
+// بيولّد/يحدّث مكتبة القوالب الأصلية — 20 فئة × 25 قالب (البيانات كلها في
 // database/data/template-library.php). من 2026-10-10 كل قالب في الفئة مختلف فعلاً عن إخواته:
 // عنوان ووصف هيرو خاصين بيه، نصوص باقي الصفحة حسب طابع تصميمه (LAYOUT_TONE)، صورة غلاف
 // وترتيب معرض مختلفين، خط متن + خط عناوين حسب التصميم، ولون من عيلة لون مش متكررة في الفئة.
+//
+// دفعات (2026-10-11): أول 15 قالب في كل فئة "الدفعة 1" (الـ300 الأصليين)، والـ10 الجداد ('wave' => 2
+// في البيانات) "الدفعة 2". كل دفعة بتتوزّع لوحدها وبالترتيب: الدفعة 1 على تصميماتها/ألوانها القديمة
+// بس (LAYOUT_WAVES/PALETTES 'wave') فنتيجتها بالحرف زي ما كانت قبل الإضافة، والدفعة 2 بتاخد اللي فاضل
+// من غير ما تكرر تصميم ولا عيلة لون في الفئة. أي دفعة جديدة بعد كده: نفس الفكرة برقم 3.
 //
 // الأمر آمن يتعاد في أي وقت (على السيرفر كمان، فيه مشاريع فؤاد الحقيقية):
 // - الـslug ثابت في البيانات، فتغيير اسم قالب بيحدّث نفس الصف بدل ما يكرره.
@@ -28,12 +33,12 @@ use Illuminate\Support\Str;
 // - مبيكتبش حاجة لو مفيش فرق، ولو اتشغّل بـ--if-outdated بيتخطّى نفسه لو المكتبة على آخر نسخة.
 #[Signature('barq:seed-template-library
     {--if-outdated : Skip when the library in the database is already at the current LIBRARY_VERSION}')]
-#[Description('توليد/تحديث مكتبة قوالب أصلية تغطي فئات نشاط شائعة (15 قالب لكل فئة)')]
+#[Description('توليد/تحديث مكتبة قوالب أصلية تغطي فئات نشاط شائعة (25 قالب لكل فئة)')]
 class SeedTemplateLibrary extends Command
 {
     // زوّدها مع أي تعديل في البيانات أو التوزيع — local/update وbarq:local-setup بيعيدوا التوليد
     // لما تختلف عن المتخزّنة في جدول settings، وعلى السيرفر خطوة في الديبلوي (شوف CLAUDE.md).
-    public const LIBRARY_VERSION = '2026-10-10.1';
+    public const LIBRARY_VERSION = '2026-10-11.1';
 
     public const VERSION_SETTING = 'template_library_version';
 
@@ -66,6 +71,23 @@ class SeedTemplateLibrary extends Command
         'neon' => ['ليلي', 'ليل', 'شبابي', 'تريند', 'نادي', 'أجواء عصرية', 'ألوان مرحة'],
         'duotone' => ['فني', 'فنون', 'تصميم مبتكر', 'رقمي', 'سيبراني', 'تقنية', 'مبتكر', 'هوية بصرية', 'إبداع بلا حدود', 'إبداع بلا قيود', 'حركة وإبداع', 'خبرة نادرة', 'تقنية متطورة', 'تقنية تخدم صحتك', 'حماية رقمية', 'طبيعة وإبداع'],
         'signature' => ['فاخر', 'فاخرة', 'توقيع', 'توقيعك', 'نخبة', 'رفاهية', 'رفاهية كاملة', 'رفاهية بلا حدود'],
+        // الدفعة 2 (2026-10-11)
+        'aurora' => ['ضوء', 'إضاءة', 'لمعة', 'توهج', 'شفق', 'إشراقة', 'ألوان ناعمة', 'روح جديدة', 'تجربة ذكية'],
+        'bauhaus' => ['هندسي', 'هندسية', 'أشكال', 'تكوين', 'خطوط واضحة', 'كتل لونية', 'جرأة هندسية'],
+        'organic' => ['عضوي', 'عضوية', 'أخضر', 'خضرا', 'نبات', 'من الأرض', 'ناعم', 'ناعمة', 'حنان', 'لطيف', 'لطيفة'],
+        'swiss' => ['منظم', 'منظمة', 'نظام', 'ترتيب', 'وضوح', 'تخطيط', 'دقة سويسرية', 'معلومة واضحة'],
+        'cinematic' => ['سينما', 'سينمائي', 'سينمائية', 'مشهد', 'لقطة', 'فيلم', 'كواليس', 'عرض أول'],
+        'mashrabiya' => ['شرقي', 'شرقية', 'زخرفة', 'مشربية', 'ضيافة عربية', 'أصالة', 'روح عربية', 'نقوش'],
+        'showcase' => ['منتج', 'منتجات', 'أونلاين', 'تجربة رقمية', 'ذكي', 'ذكية', 'لوحة تحكم', 'بالأرقام'],
+        'story' => ['قصة', 'قصص', 'قصتك', 'قصتنا', 'سرد', 'فصول', 'من البداية', 'رحلتنا', 'ذكرياتك'],
+        'retro' => ['ريترو', 'زمن الطيبين', 'فينتاج', 'السبعينات', 'مرح', 'مرحة', 'فرفشة', 'بهجة', 'ألوان زمان'],
+        'terminal' => ['كود', 'برمجة', 'مطورين', 'سحابي', 'سحابية', 'أتمتة', 'ذكاء اصطناعي', 'بيانات', 'سطر أوامر'],
+    ];
+
+    // الدفعة اللي كل تصميم دخل فيها المكتبة (مش مكتوب = 1). شوف تعليق الدفعات فوق.
+    private const LAYOUT_WAVES = [
+        'aurora' => 2, 'bauhaus' => 2, 'organic' => 2, 'swiss' => 2, 'cinematic' => 2,
+        'mashrabiya' => 2, 'showcase' => 2, 'story' => 2, 'retro' => 2, 'terminal' => 2,
     ];
 
     // طابع كل تصميم — بيحدد نسخة النصوص (tones في ملف البيانات) والألوان والخطوط المفضّلة ليه.
@@ -76,6 +98,11 @@ class SeedTemplateLibrary extends Command
         'bold' => 'bold', 'diagonal' => 'bold', 'neon' => 'bold',
         'minimal' => 'calm', 'magazine' => 'calm', 'split' => 'calm',
         'modern' => 'modern', 'bento' => 'modern', 'timeline' => 'modern', 'gallery' => 'modern', 'duotone' => 'modern',
+        'organic' => 'warm',
+        'cinematic' => 'luxury', 'mashrabiya' => 'luxury',
+        'bauhaus' => 'bold', 'retro' => 'bold',
+        'swiss' => 'calm', 'story' => 'calm',
+        'aurora' => 'modern', 'showcase' => 'modern', 'terminal' => 'modern',
     ];
 
     // كلمات بتدل على طابع الاسم — بتكسر التعادل في التوزيع لصالح تصميم من نفس الطابع.
@@ -134,25 +161,33 @@ class SeedTemplateLibrary extends Command
         'plum' => ['family' => 'plum', 'mode' => 'mid-dark', 'colors' => ['primary' => '#f6ad8f', 'background' => '#3a1d36', 'surface' => '#4a2745', 'text' => '#fcefe9', 'muted' => '#dcbccf']],
         'coffee' => ['family' => 'coffee', 'mode' => 'mid-dark', 'colors' => ['primary' => '#e0a765', 'background' => '#2e2019', 'surface' => '#3d2b21', 'text' => '#f8efe4', 'muted' => '#d0b9a3']],
         'ocean' => ['family' => 'ocean', 'mode' => 'mid-dark', 'colors' => ['primary' => '#ffd166', 'background' => '#0f3b4c', 'surface' => '#164a5e', 'text' => '#eef8fb', 'muted' => '#b3d3dd']],
+        // الدفعة 2 (2026-10-11) — 25 قالب في الفئة محتاجين عيلات أكتر (عيلة مختلفة لكل قالب).
+        'orange' => ['family' => 'orange', 'mode' => 'dark', 'wave' => 2, 'colors' => ['primary' => '#fb923c', 'background' => '#140d08', 'surface' => '#20150d', 'text' => '#fff7ed', 'muted' => '#c4a68e']],
+        'orange-light' => ['family' => 'orange', 'mode' => 'light', 'wave' => 2, 'colors' => ['primary' => '#c2410c', 'background' => '#fff7ed', 'surface' => '#ffedd5', 'text' => '#2b1608', 'muted' => '#8a5634']],
+        'terracotta' => ['family' => 'terracotta', 'mode' => 'mid-light', 'wave' => 2, 'colors' => ['primary' => '#a63d22', 'background' => '#f3e0d3', 'surface' => '#ead0bd', 'text' => '#2b140c', 'muted' => '#6b3f2f']],
+        'lavender' => ['family' => 'lavender', 'mode' => 'mid-light', 'wave' => 2, 'colors' => ['primary' => '#6941b8', 'background' => '#ece7f6', 'surface' => '#ddd4ee', 'text' => '#1e1533', 'muted' => '#54476e']],
+        'mustard' => ['family' => 'mustard', 'mode' => 'mid-light', 'wave' => 2, 'colors' => ['primary' => '#24505e', 'background' => '#f5e6b3', 'surface' => '#ecd893', 'text' => '#272007', 'muted' => '#5a4d1f']],
+        'midnight' => ['family' => 'midnight', 'mode' => 'mid-dark', 'wave' => 2, 'colors' => ['primary' => '#7dd3fc', 'background' => '#1a1d3a', 'surface' => '#24284c', 'text' => '#eef1ff', 'muted' => '#b6bce0']],
+        'wine' => ['family' => 'wine', 'mode' => 'mid-dark', 'wave' => 2, 'colors' => ['primary' => '#f2c88a', 'background' => '#3a1220', 'surface' => '#4a1a2b', 'text' => '#fbeff2', 'muted' => '#dcb6c2']],
     ];
 
     // عيلات ألوان قريبة من بعض في العين — كل ما يتاخد من نفس المجموعة في الفئة، الباقي بيبعد.
     private const PALETTE_GROUPS = [
-        ['blue', 'indigo', 'denim', 'navy', 'sky'],
+        ['blue', 'indigo', 'denim', 'navy', 'sky', 'midnight'],
         ['cyan', 'sky', 'teal', 'ocean'],
         ['emerald', 'teal', 'forest', 'sage', 'lime', 'olive'],
-        ['amber', 'gold', 'sand', 'coffee'],
-        ['ruby', 'rose', 'burgundy', 'pink'],
-        ['violet', 'indigo', 'fuchsia', 'plum', 'pink'],
+        ['amber', 'gold', 'sand', 'coffee', 'orange', 'terracotta', 'mustard'],
+        ['ruby', 'rose', 'burgundy', 'pink', 'wine'],
+        ['violet', 'indigo', 'fuchsia', 'plum', 'pink', 'lavender'],
     ];
 
     // العيلات اللي تناسب كل طابع (الأول أنسب).
     private const TONE_HUES = [
-        'luxury' => ['gold', 'navy', 'burgundy', 'plum', 'coffee', 'slate', 'violet', 'forest', 'emerald', 'rose', 'indigo', 'ocean'],
-        'bold' => ['ruby', 'amber', 'fuchsia', 'lime', 'blue', 'pink', 'cyan', 'violet', 'ocean', 'rose', 'sky', 'indigo'],
-        'calm' => ['sage', 'sky', 'teal', 'denim', 'slate', 'olive', 'emerald', 'sand', 'indigo', 'cyan', 'blue', 'rose'],
-        'warm' => ['sand', 'amber', 'coffee', 'olive', 'burgundy', 'rose', 'forest', 'gold', 'ruby', 'emerald', 'pink', 'teal'],
-        'modern' => ['indigo', 'cyan', 'blue', 'violet', 'teal', 'sky', 'emerald', 'ocean', 'pink', 'lime', 'fuchsia', 'denim'],
+        'luxury' => ['gold', 'navy', 'burgundy', 'plum', 'coffee', 'slate', 'violet', 'forest', 'emerald', 'rose', 'indigo', 'ocean', 'wine', 'midnight'],
+        'bold' => ['ruby', 'amber', 'fuchsia', 'lime', 'blue', 'pink', 'cyan', 'violet', 'ocean', 'rose', 'sky', 'indigo', 'orange', 'mustard'],
+        'calm' => ['sage', 'sky', 'teal', 'denim', 'slate', 'olive', 'emerald', 'sand', 'indigo', 'cyan', 'blue', 'rose', 'lavender', 'midnight'],
+        'warm' => ['sand', 'amber', 'coffee', 'olive', 'burgundy', 'rose', 'forest', 'gold', 'ruby', 'emerald', 'pink', 'teal', 'terracotta', 'mustard'],
+        'modern' => ['indigo', 'cyan', 'blue', 'violet', 'teal', 'sky', 'emerald', 'ocean', 'pink', 'lime', 'fuchsia', 'denim', 'midnight', 'orange', 'lavender'],
     ];
 
     private const TONE_MODES = [
@@ -168,6 +203,11 @@ class SeedTemplateLibrary extends Command
     private const LAYOUT_MODES = [
         'neon' => ['dark'],
         'signature' => ['dark', 'mid-dark'],
+        // شريط فيلم/نافذة أوامر: هويتهم داكنة. باوهاوس/ريترو: كتل لون نص صلبة على خلفية فاتحة.
+        'cinematic' => ['dark', 'mid-dark'],
+        'terminal' => ['dark', 'mid-dark'],
+        'bauhaus' => ['light', 'mid-light'],
+        'retro' => ['light', 'mid-light'],
     ];
 
     // خطوط كل تصميم: [خط المتن، خط العناوين] — كله عربي مستضاف محلياً (resources/css/app.css)
@@ -191,6 +231,16 @@ class SeedTemplateLibrary extends Command
         'neon' => [['changa', 'reem-kufi'], ['tajawal', 'reem-kufi'], ['alexandria', 'changa']],
         'duotone' => [['readex-pro', 'reem-kufi'], ['alexandria', 'changa'], ['mada', 'reem-kufi']],
         'signature' => [['tajawal', 'amiri'], ['ibm-plex-arabic', 'el-messiri'], ['markazi-text', 'amiri']],
+        'aurora' => [['readex-pro', 'alexandria'], ['tajawal', 'readex-pro'], ['alexandria', 'changa']],
+        'bauhaus' => [['ibm-plex-arabic', 'noto-kufi-arabic'], ['cairo', 'noto-kufi-arabic'], ['mada', 'changa']],
+        'organic' => [['almarai', 'lemonada'], ['tajawal', 'baloo-bhaijaan-2'], ['almarai', 'el-messiri']],
+        'swiss' => [['ibm-plex-arabic', 'alexandria'], ['mada', 'ibm-plex-arabic'], ['readex-pro', 'noto-kufi-arabic']],
+        'cinematic' => [['tajawal', 'el-messiri'], ['ibm-plex-arabic', 'amiri'], ['readex-pro', 'reem-kufi']],
+        'mashrabiya' => [['almarai', 'amiri'], ['markazi-text', 'el-messiri'], ['tajawal', 'reem-kufi']],
+        'showcase' => [['readex-pro', 'cairo'], ['tajawal', 'alexandria'], ['ibm-plex-arabic', 'readex-pro']],
+        'story' => [['ibm-plex-arabic', 'markazi-text'], ['mada', 'amiri'], ['almarai', 'el-messiri']],
+        'retro' => [['cairo', 'baloo-bhaijaan-2'], ['tajawal', 'lemonada'], ['almarai', 'changa']],
+        'terminal' => [['ibm-plex-arabic', 'changa'], ['readex-pro', 'noto-kufi-arabic'], ['mada', 'alexandria']],
     ];
 
     private bool $hasHeadingFont = false;
@@ -256,9 +306,24 @@ class SeedTemplateLibrary extends Command
     {
         $templates = $category['templates'];
         $pinned ??= $this->pinnedLayouts($templates);
-        $layouts = self::assignLayouts(array_column($templates, 'name'), $pinned);
-        $palettes = self::paletteKeysFor($categoryIndex, $category['hues'] ?? [], $layouts, $category['max_dark'] ?? 7);
-        $fonts = self::fontsFor($categoryIndex, $category, $layouts);
+
+        // كل دفعة لوحدها وبالترتيب، وبتكمّل على اللي اتاخد في الدفعات اللي قبلها.
+        $layouts = [];
+        $palettes = [];
+        $fonts = [];
+        foreach (self::waves($templates) as $wave => $indexes) {
+            $names = array_intersect_key(array_column($templates, 'name'), array_flip($indexes));
+            $available = array_values(array_diff(
+                array_filter(Template::LAYOUTS, fn (string $layout) => (self::LAYOUT_WAVES[$layout] ?? 1) <= $wave),
+                $layouts,
+                array_diff_key($pinned, $names),
+            ));
+            $waveLayouts = self::assignLayouts($names, array_intersect_key($pinned, $names), $available);
+
+            $palettes += self::paletteKeysFor($categoryIndex, $category['hues'] ?? [], $waveLayouts, $category['max_dark'] ?? 7, $palettes, $wave);
+            $fonts += self::fontsFor($categoryIndex, $category, $waveLayouts, $fonts);
+            $layouts += $waveLayouts;
+        }
 
         $plans = [];
         foreach ($templates as $templateIndex => $entry) {
@@ -285,20 +350,38 @@ class SeedTemplateLibrary extends Command
     }
 
     /**
+     * فهارس قوالب الفئة مقسّمة على الدفعات ('wave' في البيانات، الافتراضي 1)، بترتيب الدفعة.
+     *
+     * @param  list<array<string, mixed>>  $templates
+     * @return array<int, list<int>>
+     */
+    public static function waves(array $templates): array
+    {
+        $waves = [];
+        foreach ($templates as $index => $entry) {
+            $waves[(int) ($entry['wave'] ?? 1)][] = $index;
+        }
+        ksort($waves);
+
+        return $waves;
+    }
+
+    /**
      * توزيع أمثل للتصميمات على أسماء الفئة: كل تصميم مرة واحدة بالكتير، ومجموع تطابق كلمات
      * الأسماء مع LAYOUT_KEYWORDS أعلى ما يمكن (Hungarian algorithm — مش greedy، الـgreedy القديم
      * كان بيدّي الاسم الأول أحسن تصميم حتى لو ده بيحرم اسم تاني من التصميم الوحيد اللي يناسبه).
      * التعادل بيتكسر لصالح تصميم من نفس طابع الاسم (TONE_KEYWORDS).
      *
-     * @param  list<string>  $names
+     * @param  array<int, string>  $names  فهرس القالب في الفئة => اسمه
      * @param  array<int, string>  $pinned  أسماء ليها تصميم ثابت (قوالب عليها مشاريع قايمة)
+     * @param  list<string>|null  $available  التصميمات المتاحة (null = كلها)
      * @return array<int, string>
      */
-    public static function assignLayouts(array $names, array $pinned = []): array
+    public static function assignLayouts(array $names, array $pinned = [], ?array $available = null): array
     {
         $result = $pinned;
         $freeNames = array_values(array_diff(array_keys($names), array_keys($pinned)));
-        $freeLayouts = array_values(array_diff(Template::LAYOUTS, $pinned));
+        $freeLayouts = array_values(array_diff($available ?? Template::LAYOUTS, $pinned));
 
         if ($freeNames === []) {
             ksort($result);
@@ -432,14 +515,19 @@ class SeedTemplateLibrary extends Command
      * ومزيج من الخلفيات الداكنة/الفاتحة/الملوّنة (مش كله داكن ولا كله فاتح).
      *
      * @param  list<string>  $categoryHues  العيلات اللي تناسب الفئة (الأول أنسب)
-     * @param  array<int, string>  $layouts
-     * @param  int  $maxDark  أقصى عدد خلفيات داكنة قبل ما الاختيار يميل للفاتح (حضانات/عيادات أقل)
+     * @param  array<int, string>  $layouts  قوالب الدفعة دي بس (فهرس => تصميم)
+     * @param  int  $maxDark  أقصى عدد خلفيات داكنة من كل 15 قالب قبل ما الاختيار يميل للفاتح
+     * @param  array<int, string>  $taken  لوحات الدفعات اللي قبلها في نفس الفئة (عيلاتها مبتتكررش)
+     * @param  int  $wave  لوحات الدفعات اللي بعدها (PALETTES 'wave') مش متاحة
      * @return array<int, string> فهرس القالب => مفتاح اللوحة في PALETTES
      */
-    public static function paletteKeysFor(int $categoryIndex, array $categoryHues, array $layouts, int $maxDark = 7): array
+    public static function paletteKeysFor(int $categoryIndex, array $categoryHues, array $layouts, int $maxDark = 7, array $taken = [], int $wave = 1): array
     {
-        $maxLight = count($layouts) - $maxDark + 2;
-        $familyOrder = array_flip(array_values(array_unique(array_column(self::PALETTES, 'family'))));
+        $palettes = array_filter(self::PALETTES, fn (array $palette) => ($palette['wave'] ?? 1) <= $wave);
+        $families = array_flip(array_column($palettes, 'family'));
+        $total = count($taken) + count($layouts);
+        $maxDark = (int) round($maxDark * $total / 15);
+        $maxLight = $total - $maxDark + 2;
         $order = array_keys($layouts);
         // التصميمات اللي ليها قيود (نيون/سيجنتشر) بتختار الأول.
         usort($order, fn (int $a, int $b) => [isset(self::LAYOUT_MODES[$layouts[$a]]) ? 0 : 1, $a] <=> [isset(self::LAYOUT_MODES[$layouts[$b]]) ? 0 : 1, $b]);
@@ -447,6 +535,10 @@ class SeedTemplateLibrary extends Command
         $used = [];
         $dark = 0;
         $light = 0;
+        foreach ($taken as $key) {
+            $used[self::PALETTES[$key]['family']] = true;
+            str_contains(self::PALETTES[$key]['mode'], 'dark') ? $dark++ : $light++;
+        }
         $result = [];
 
         foreach ($order as $templateIndex) {
@@ -455,7 +547,7 @@ class SeedTemplateLibrary extends Command
             $best = null;
             $bestScore = INF;
 
-            foreach (self::PALETTES as $key => $palette) {
+            foreach ($palettes as $key => $palette) {
                 $family = $palette['family'];
                 if (isset($used[$family]) || ! in_array($palette['mode'], self::LAYOUT_MODES[$layout] ?? [$palette['mode']], true)) {
                     continue;
@@ -463,7 +555,7 @@ class SeedTemplateLibrary extends Command
 
                 // كل عيلات الطابع مناسبة ليه، فترتيبها بيلف من فئة للتانية — عشان نفس التصميم
                 // مياخدش نفس العيلة في كل الفئات (من غيره "ستاك" كان رملي في أغلب الـ20 فئة).
-                $toneHues = self::TONE_HUES[$tone];
+                $toneHues = array_values(array_filter(self::TONE_HUES[$tone], fn (string $hue) => isset($families[$hue])));
                 $toneRank = array_search($family, $toneHues, true);
                 $score = $toneRank === false
                     ? 9.0
@@ -511,13 +603,14 @@ class SeedTemplateLibrary extends Command
     /**
      * @param  array<string, mixed>  $category
      * @param  array<int, string>  $layouts
+     * @param  array<int, array{font: string, heading_font: string}>  $previous  خطوط الدفعات اللي قبلها
      * @return array<int, array{font: string, heading_font: string}>
      */
-    public static function fontsFor(int $categoryIndex, array $category, array $layouts): array
+    public static function fontsFor(int $categoryIndex, array $category, array $layouts, array $previous = []): array
     {
         $headingOverride = $category['heading_fonts'] ?? null;
         $result = [];
-        $bodyUsage = [];
+        $bodyUsage = array_count_values(array_column($previous, 'font'));
 
         foreach ($layouts as $templateIndex => $layout) {
             // من خيارات التصميم، خط المتن الأقل استخداماً في الفئة لحد دلوقتي (تنوع أكتر بين
