@@ -492,7 +492,9 @@
     perspective: 1300px;
 }
 
-.bq3d-plane {
+/* اسمها bq3d-gallery-plane مش bq3d-plane — الاسم ده بتاع أيقونة الطيارة في مشهد الكرة الأرضية،
+   والتكرار كان بيحوّل المعرض كله لطيارة 2.2rem فالصور مكانتش بتظهر (12 أكتوبر 2026). */
+.bq3d-gallery-plane {
     transform-style: preserve-3d;
 }
 
@@ -503,7 +505,7 @@
 @media (min-width: 768px) {
     .bq3d-gallery--cover .bq3d-tile { transform: rotateY(calc(var(--k, 0) * 22deg)) translateZ(calc(var(--dz, 0) * -70px)); }
     .bq3d-gallery--cover .bq3d-tile:hover { transform: translateZ(60px); }
-    .bq3d-gallery--floor .bq3d-plane { transform: rotateX(22deg); transform-origin: 50% 100%; }
+    .bq3d-gallery--floor .bq3d-gallery-plane { transform: rotateX(22deg); transform-origin: 50% 100%; }
     .bq3d-gallery--floor .bq3d-tile:hover { transform: translateZ(50px); }
 }
 
@@ -887,7 +889,7 @@
 }
 
 /* المحرر المباشر: من غير ميل على أي حاوية فيها خانة (شريط أدوات الصورة بيتحسب من مستطيلها). */
-.bq-live-editable :is(.bq3d-frame, .bq3d-floor, .bq3d-card, .bq3d-tile, .bq3d-plane) {
+.bq-live-editable :is(.bq3d-frame, .bq3d-floor, .bq3d-card, .bq3d-tile, .bq3d-gallery-plane) {
     transform: none !important;
 }
 

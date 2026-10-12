@@ -121,7 +121,7 @@
                 @include('site.partials.section-heading', ['head' => ['heading' => $heading, 'supporting' => $supportingItems, 'label' => $section['eyebrow'] ?? null]])
                 @if ($dp['gallery'] === 'floor')
                     <div class="bq3d-gallery bq3d-gallery--floor">
-                        <div class="bq3d-plane grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5">
+                        <div class="bq3d-gallery-plane grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5">
                             @foreach ($imageItems as $i => $item)
                                 <div class="bq3d-tile relative aspect-square overflow-hidden" style="border-radius: {{ $radius }}; {{ $cardSurface }}">
                                     <img data-slot="{{ $item['slot']->key }}" src="{{ $item['value'] }}" alt="{{ $alt }}" class="h-full w-full object-cover" loading="lazy">
