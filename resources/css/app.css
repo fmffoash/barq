@@ -911,6 +911,10 @@
 .bq3d-imgscene .bq3d-img-main:hover .bq3d-img-hero { transform: rotateY(14deg) rotateX(-6deg) scale(1.06); }
 .bq3d-imgscene .bq3d-img-sat { position: absolute; height: auto; scale: calc(1 - var(--depth) * .25); filter: blur(calc(var(--depth) * 2.2px)) drop-shadow(0 10px 12px rgb(0 0 0 / .22)); opacity: calc(1 - var(--depth) * .25); }
 .bq3d-overlay .bq3d-img-main { pointer-events: none; }
+/* جوه مكان التصميم ([data-scene] في تصميمات Claude Design): الصورة الرئيسية بس وأكبر — المكان غالباً دايرة صغيرة. */
+[data-scene] .bq3d-img-sat, [data-scene] .bq3d-img-orbit { display: none; }
+[data-scene] .bq3d-imgscene .bq3d-img-main { width: 78%; top: 50%; }
+[data-scene] .bq3d-imgscene .bq3d-img-shadow { bottom: 4%; }
 
 @keyframes bq3d-img-float { 0%, 100% { translate: -50% -50%; rotate: -3deg; } 50% { translate: -50% calc(-50% - 1.1rem); rotate: 3deg; } }
 @keyframes bq3d-img-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .78; opacity: .6; } }

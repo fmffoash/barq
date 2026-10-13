@@ -38,7 +38,7 @@ class SeedTemplateLibrary extends Command
 {
     // زوّدها مع أي تعديل في البيانات أو التوزيع — local/update وbarq:local-setup بيعيدوا التوليد
     // لما تختلف عن المتخزّنة في جدول settings، وعلى السيرفر خطوة في الديبلوي (شوف CLAUDE.md).
-    public const LIBRARY_VERSION = '2026-10-11.7';
+    public const LIBRARY_VERSION = '2026-10-13.1';
 
     // (2026-10-11) القالب اللي ينفع لفئة تانية يظهر فيها كمان — المفتاح أول الاسم (قبل « — »).
     // أي اسم بيبدأ بـ متجر/بوتيك/ماركة بيتضاف لـ«متاجر إلكترونية» تلقائياً (extraCategoriesFor).
@@ -752,12 +752,15 @@ class SeedTemplateLibrary extends Command
                 'layout' => $layout,
                 'tone' => $tone,
                 'palette' => $palettes[$templateIndex],
-                'font' => $fonts[$templateIndex]['font'],
-                'heading_font' => $fonts[$templateIndex]['heading_font'],
+                // (2026-10-13) تصميمات Claude Design: ألوانها وخطوطها ونصوصها جاية معاها في البيانات وبتغلب الحساب.
+                'colors' => $entry['colors'] ?? null,
+                'font' => $entry['font'] ?? $fonts[$templateIndex]['font'],
+                'heading_font' => $entry['heading_font'] ?? $fonts[$templateIndex]['heading_font'],
                 'content' => array_merge(
                     $category['tones'][$tone],
                     ['hero_title' => $entry['hero_title'], 'hero_subtitle' => $entry['hero_subtitle']],
                     self::photosFor($categoryIndex, $category, $templateIndex),
+                    $entry['content'] ?? [],
                 ),
             ];
         }
@@ -1151,7 +1154,7 @@ class SeedTemplateLibrary extends Command
         ]);
         $variantAttributes = [
             'name' => 'الأساسية',
-            'colors_json' => self::PALETTES[$plan['palette']]['colors'],
+            'colors_json' => $plan['colors'] ?? self::PALETTES[$plan['palette']]['colors'],
             'font' => $plan['font'],
             'sections_json' => self::SECTIONS,
             'is_default' => true,
