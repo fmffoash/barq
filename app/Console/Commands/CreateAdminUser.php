@@ -55,7 +55,7 @@ class CreateAdminUser extends Command
             // للشمال، فالعربي لوحده بيطلع مقلوب ومش مقروء وقت التجهيز المحلي (barq:local-setup).
             $name = $this->ask('Name / الاسم', self::DEFAULT_NAME);
             $email = $this->ask('Email / البريد الإلكتروني');
-            $password = $this->secret('Password, 8+ characters / كلمة المرور (٨ حروف على الأقل)');
+            $password = $this->secret('Password, 6+ characters / كلمة المرور (٦ حروف أو أرقام على الأقل)');
             $passwordConfirmation = $this->secret('Confirm password / تأكيد كلمة المرور');
         }
 
@@ -67,7 +67,7 @@ class CreateAdminUser extends Command
             ],
             [
                 'email' => ['required', 'email'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'password' => ['required', 'string', 'min:6', 'confirmed'],
             ],
         );
 

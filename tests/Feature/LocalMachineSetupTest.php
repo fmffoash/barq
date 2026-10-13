@@ -115,7 +115,7 @@ class LocalMachineSetupTest extends TestCase
                 ->expectsOutputToContain('Checking the template library')
                 ->expectsQuestion('Name / الاسم', 'فؤاد')
                 ->expectsQuestion('Email / البريد الإلكتروني', 'owner@example.com')
-                ->expectsQuestion('Password, 8+ characters / كلمة المرور (٨ حروف على الأقل)', 'local-pass-123')
+                ->expectsQuestion('Password, 6+ characters / كلمة المرور (٦ حروف أو أرقام على الأقل)', 'local-pass-123')
                 ->expectsQuestion('Confirm password / تأكيد كلمة المرور', 'local-pass-123')
                 ->expectsOutputToContain('All required checks passed.')
                 ->assertSuccessful();

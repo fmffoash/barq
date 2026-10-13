@@ -156,6 +156,13 @@ class UsersAndAccessTest extends TestCase
         $this->put(route('users.password', $staff), ['password' => 'new-strong-pass'])->assertRedirect();
         $this->assertTrue(Hash::check('new-strong-pass', $staff->fresh()->password));
 
+        // (2026-10-13، فؤاد) 6 أرقام بس مسموحة، وأقل من 6 لأ
+        $this->put(route('users.password', $staff), ['password' => '123456'])->assertSessionHasNoErrors();
+        $this->assertTrue(Hash::check('123456', $staff->fresh()->password));
+        $this->put(route('users.password', $staff), ['password' => '12345'])->assertSessionHasErrors('password');
+        $this->post(route('users.store'), ['name' => 'موظف أرقام', 'email' => 'digits@example.com', 'password' => '987654'])->assertSessionHasNoErrors();
+        $this->assertTrue(Hash::check('987654', User::where('email', 'digits@example.com')->value('password')));
+
         // تعديل البيانات كلها
         $this->put(route('users.update', $staff), ['name' => 'موظف جديد', 'email' => 'staff2@example.com', 'is_admin' => '1'])->assertRedirect();
         $this->assertSame('staff2@example.com', $staff->fresh()->email);

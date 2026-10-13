@@ -44,7 +44,7 @@
             </div>
             <div>
                 <label class="mb-1 block text-xs text-slate-400">الباسورد (فاضي = يتولّد مؤقت ويظهرلك مرة واحدة)</label>
-                <input name="password" type="text" minlength="8" autocomplete="new-password" dir="ltr" class="{{ $input }}">
+                <input name="password" type="text" minlength="6" autocomplete="new-password" dir="ltr" class="{{ $input }}">
             </div>
             <label class="flex items-center gap-2 self-end pb-2 text-sm text-slate-300">
                 <input type="checkbox" name="is_admin" value="1" class="rounded border-slate-700 bg-slate-950 text-amber-500">
@@ -97,7 +97,7 @@
                         {{-- الباسورد متشفّر ومابيتعرضش — تغيير بس --}}
                         <form method="POST" action="{{ route('users.password', $user) }}" class="flex flex-wrap items-center gap-1">
                             @csrf @method('PUT')
-                            <input name="password" type="text" minlength="8" placeholder="باسورد جديد" autocomplete="new-password" dir="ltr" class="w-32 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-white">
+                            <input name="password" type="text" minlength="6" placeholder="باسورد جديد" autocomplete="new-password" dir="ltr" class="w-32 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-white">
                             <button type="submit" class="rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 hover:bg-slate-700" title="فاضي = يتولّد مؤقت">تغيير</button>
                         </form>
                     </td>

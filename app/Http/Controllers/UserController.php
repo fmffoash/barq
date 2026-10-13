@@ -34,7 +34,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
-            'password' => ['nullable', 'string', 'min:8', 'max:100'],
+            'password' => ['nullable', 'string', 'min:6', 'max:100'],
             'is_admin' => ['nullable', 'boolean'],
         ]);
 
@@ -49,7 +49,7 @@ class UserController extends Controller
 
     public function password(Request $request, User $user): RedirectResponse
     {
-        $data = $request->validate(['password' => ['nullable', 'string', 'min:8', 'max:100']]);
+        $data = $request->validate(['password' => ['nullable', 'string', 'min:6', 'max:100']]);
         $generated = blank($data['password'] ?? null) ? self::generatePassword() : null;
 
         $user->forceFill(['password' => $generated ?? $data['password']])->save();
