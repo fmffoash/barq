@@ -17,6 +17,21 @@ final class SceneLibrary
         'nursery' => 'مكعبات لعب', 'shutter' => 'كاميرا', 'essence' => 'زجاجة عطر', 'pawprint' => 'بصمة وعضمة',
     ];
 
+    // (2026-10-13) رسومات من صور 3D جاهزة (Microsoft Fluent 3D Emoji، MIT — public/images/scenes3d) بتغلب
+    // الرسم بالكود لنفس المفتاح. main = الصورة الكبيرة، satellites = [ملف، مقاس rem، left، top، عمق 0..1].
+    public const IMAGE_SCENES = [
+        'tooth' => ['main' => 'tooth_3d.png', 'satellites' => [
+            ['toothbrush_3d.png', 5.5, '-2%', '8%', .2], ['sparkles_3d.png', 4, '74%', '4%', .5], ['sparkles_3d.png', 2.6, '80%', '66%', .9],
+        ]],
+        'brew' => ['main' => 'hot_beverage_3d.png', 'satellites' => [
+            ['croissant_3d.png', 5.4, '-4%', '58%', .15], ['shortcake_3d.png', 4.4, '74%', '6%', .6], ['sparkles_3d.png', 2.4, '6%', '6%', .9],
+        ]],
+        // «Wheel» عند مايكروسوفت عجلة خشب (مش كاوتش) — العربية هي الأساس، والعجلة صغيرة بعيد.
+        'tire' => ['main' => 'racing_car_3d.png', 'satellites' => [
+            ['wrench_3d.png', 5, '-2%', '8%', .2], ['gear_3d.png', 4.6, '74%', '4%', .5], ['automobile_3d.png', 4.4, '78%', '64%', .7],
+        ]],
+    ];
+
     /** @return array<string, string> مفتاح => اسم الرسمة (كل الرسومات) */
     public static function all(): array
     {

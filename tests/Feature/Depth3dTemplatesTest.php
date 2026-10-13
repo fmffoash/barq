@@ -38,7 +38,7 @@ class Depth3dTemplatesTest extends TestCase
             $public = $this->get(route('site.show', ['siteSlug' => $site->slug]));
             $public->assertOk();
             $html = $public->getContent();
-            $this->assertSame(2, substr_count($html, 'class="bq3d-scene"'), "{$template->layout}: scene in hero + contact");
+            $this->assertSame(2, substr_count($html, 'class="bq3d-scene'), "{$template->layout}: scene in hero + contact");
             $this->assertStringContainsString('bq3d-still', $html, "{$template->layout}: second scene is static");
             $this->assertStringNotContainsString('live-editor.js', $html);
 

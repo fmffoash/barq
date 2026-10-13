@@ -26,6 +26,8 @@
     $rating = $sections->firstWhere('kind', 'testimonials')['rating'] ?? null;
     // رسمة متختارة للموقع ده (site.scene_override — ميكس) بتغلب رسمة القالب.
     $sceneKey = ($sceneOverride ?? null) ?: $dp['scene'];
+    // رسمة من صور جاهزة (IMAGE_SCENES) بتبان أحسن في النص كبيرة، مش راكبة على صورة الهيرو (2026-10-13).
+    $heroMode = isset(\App\Support\SceneLibrary::IMAGE_SCENES[$sceneKey]) ? 'stage' : $dp['hero'];
 @endphp
 
 {{-- overflow-x: clip — قلبة الظهور الـ3D والمجسمات الطالعة برّه الحاويات ماتعملش سكرول عرضي على
@@ -50,7 +52,7 @@
         <section id="{{ $section['key'] }}" class="relative overflow-hidden px-5 pb-20 pt-12 sm:px-10 sm:pb-28 sm:pt-16">
             <div class="pointer-events-none absolute inset-0" style="{{ $backdrop }}" aria-hidden="true"></div>
 
-            @if ($dp['hero'] === 'stage')
+            @if ($heroMode === 'stage')
                 <div class="relative mx-auto flex max-w-6xl flex-col items-center gap-8 text-center">
                     <div class="flex h-[15rem] items-center justify-center sm:h-[20rem]">
                         @include('site.partials.depth.scene', ['sceneKey' => $sceneKey])
