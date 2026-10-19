@@ -10,6 +10,7 @@ const { chromium } = require('playwright');
     const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
     // 1280x800 page rendered at half resolution -> 640x400 image (sharp on a ~320px card).
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 0.5 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     let failed = 0;
 
     for (const job of jobs) {

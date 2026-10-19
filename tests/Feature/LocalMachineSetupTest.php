@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\SeedTemplateLibrary;
 use App\Models\Template;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,7 +122,9 @@ class LocalMachineSetupTest extends TestCase
                 ->assertSuccessful();
 
             $this->assertSame(['owner@example.com'], User::pluck('email')->all());
-            $this->assertSame(501, Template::count(), 'the existing template stays, the 500 library templates are added');
+            $libraryCount = array_sum(array_map(fn (array $category) => count($category['templates']), SeedTemplateLibrary::libraryData()));
+            $motionCount = count(json_decode(file_get_contents(database_path('data/motion-templates.json')), true));
+            $this->assertSame(1 + $libraryCount + $motionCount, Template::count(), 'The existing template and both template libraries are retained.');
             $this->assertTrue(file_exists($linkDir.'/storage'));
         } finally {
             File::deleteDirectory($linkDir);

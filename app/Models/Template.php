@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\SceneLibrary;
 use Database\Factories\TemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ class Template extends Model
     // resources/views/site/layouts/، وكلهم بيشتغلوا بنفس بيانات الخانات (TemplateSlot) بالظبط،
     // فالتبديل بينهم متعمّد يكون رندر بس، صفر تأثير على الإدارة أو اقتراح المحتوى بالذكاء الاصطناعي.
     public const LAYOUTS = [
+        'motion',
         'classic', 'modern', 'gallery',
         'split', 'magazine', 'bento', 'minimal', 'bold',
         'glass', 'timeline', 'stack', 'diagonal', 'framed',
@@ -49,6 +51,7 @@ class Template extends Model
         'extra_categories',
         'kind',
         'layout',
+        'motion_profile',
         'license_note',
         'is_active',
     ];
@@ -58,6 +61,7 @@ class Template extends Model
         return [
             'is_active' => 'boolean',
             'extra_categories' => 'array',
+            'motion_profile' => 'array',
         ];
     }
 
@@ -101,12 +105,13 @@ class Template extends Model
     // تصميم 3D (site/partials/depth) = مفتاح رسمة في SceneLibrary.
     public static function isDepthLayout(?string $layout): bool
     {
-        return $layout !== null && \App\Support\SceneLibrary::exists($layout);
+        return $layout !== null && SceneLibrary::exists($layout);
     }
 
     public static function layoutLabel(string $layout): string
     {
         return match ($layout) {
+            'motion' => 'موشن 3D',
             'modern' => 'مودرن', 'gallery' => 'جاليري', 'split' => 'سبليت',
             'magazine' => 'مجلة', 'bento' => 'بينتو', 'minimal' => 'مينيمال',
             'bold' => 'بولد', 'glass' => 'جلاس', 'timeline' => 'تايم لاين',

@@ -43,6 +43,9 @@ class LocalSetup extends Command
         // المشاريع الموجودة (SeedTemplateLibrary بيثبّت شكلها قبل أي تغيير).
         $this->line(Template::query()->exists() ? 'Checking the template library...' : 'Creating the template library (takes a few seconds)...');
         $this->call('barq:seed-template-library', ['--if-outdated' => true]);
+        if ($this->call('barq:seed-motion-templates') !== self::SUCCESS) {
+            return self::FAILURE;
+        }
 
         if ($this->option('skip-admin')) {
             return self::SUCCESS;

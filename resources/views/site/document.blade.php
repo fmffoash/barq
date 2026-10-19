@@ -58,6 +58,9 @@
     @else
         @vite(['resources/css/app.css'])
     @endif
+    @if ($layout === 'motion')
+        <link rel="stylesheet" href="{{ $cssMode === 'export' ? 'assets/motion/motion.css' : asset('motion/motion.css').'?v='.filemtime(public_path('motion/motion.css')) }}">
+    @endif
     @if ($editable)
         <meta name="csrf-token" content="{{ csrf_token() }}">
         {{-- ?v={{ filemtime }} (2026-09-21) — الملفين دول static بدون اسم مبني على hash
@@ -142,13 +145,22 @@
 --site-on-primary: لون نص مقروء فوق اللون الأساسي (أبيض أو غامق، SiteRenderer::onColor). --}}
 <body
     id="top"
-    class="bq-site min-h-screen{{ $editable ? ' bq-live-editable' : ' bq-reveal' }}"
+    class="bq-site min-h-screen{{ $editable ? ' bq-live-editable' : ($layout === 'motion' ? ' bq-motion' : ' bq-reveal') }}"
+    @if ($layout === 'motion')
+        data-composition="{{ in_array($motionProfile['composition'] ?? '', ['editorial', 'split', 'immersive', 'studio'], true) ? $motionProfile['composition'] : 'split' }}"
+        data-art="{{ ($motionProfile['art'] ?? '') === 'illustration' ? 'illustration' : 'photograph' }}"
+        data-theme="{{ ($motionProfile['theme'] ?? '') === 'technology' ? 'technology' : 'general' }}"
+    @endif
     style="
         --site-primary: {{ $colors['primary'] }};
         --site-background: {{ $colors['background'] }};
         --site-surface: {{ $colors['surface'] }};
         --site-text: {{ $colors['text'] }};
         --site-muted: {{ $colors['muted'] }};
+        @if ($layout === 'motion')
+            --ink: var(--site-text); --paper: var(--site-background); --accent: var(--site-primary);
+            --muted: var(--site-muted); --line: color-mix(in srgb, var(--site-text) 15%, transparent);
+        @endif
         --site-on-primary: {{ $onPrimary }};
         --site-primary-deep: color-mix(in srgb, var(--site-primary) 62%, {{ $onPrimary === '#ffffff' ? '#000000' : '#ffffff' }});
         --site-font-heading: var(--font-{{ $headingFont ?: ($font ?: 'cairo') }});
@@ -190,6 +202,9 @@
         <script src="{{ asset('js/live-editor.js') }}?v={{ filemtime(public_path('js/live-editor.js')) }}" defer></script>
     @endif
 
+    @if ($layout === 'motion' && ! $editable)
+        <script src="{{ $cssMode === 'export' ? 'assets/motion/motion.js' : asset('motion/motion.js').'?v='.filemtime(public_path('motion/motion.js')) }}" defer></script>
+    @endif
     @stack('scripts')
 </body>
 </html>

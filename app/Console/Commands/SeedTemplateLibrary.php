@@ -364,6 +364,7 @@ class SeedTemplateLibrary extends Command
 
     // الدفعة اللي كل تصميم دخل فيها المكتبة (مش مكتوب = 1). شوف تعليق الدفعات فوق.
     private const LAYOUT_WAVES = [
+        'motion' => 4,
         'aurora' => 2, 'bauhaus' => 2, 'organic' => 2, 'swiss' => 2, 'cinematic' => 2,
         'mashrabiya' => 2, 'showcase' => 2, 'story' => 2, 'retro' => 2, 'terminal' => 2,
         'brew' => 3, 'helix' => 3, 'gloss' => 3, 'forge' => 3, 'skyline' => 3,
@@ -968,51 +969,51 @@ class SeedTemplateLibrary extends Command
 
             // (2026-10-11) فئة فيها قوالب أكتر من عيلات الألوان (الأنواع الفرعية): لو مفيش عيلة فاضية، تتكرر.
             foreach ([false, true] as $reuse) {
-            if ($best !== null) {
-                break;
-            }
-            foreach ($palettes as $key => $palette) {
-                $family = $palette['family'];
-                if ((! $reuse && isset($used[$family])) || ! in_array($palette['mode'], self::LAYOUT_MODES[$layout] ?? [$palette['mode']], true)) {
-                    continue;
+                if ($best !== null) {
+                    break;
                 }
+                foreach ($palettes as $key => $palette) {
+                    $family = $palette['family'];
+                    if ((! $reuse && isset($used[$family])) || ! in_array($palette['mode'], self::LAYOUT_MODES[$layout] ?? [$palette['mode']], true)) {
+                        continue;
+                    }
 
-                // كل عيلات الطابع مناسبة ليه، فترتيبها بيلف من فئة للتانية — عشان نفس التصميم
-                // مياخدش نفس العيلة في كل الفئات (من غيره "ستاك" كان رملي في أغلب الـ20 فئة).
-                $toneHues = array_values(array_filter(self::TONE_HUES[$tone], fn (string $hue) => isset($families[$hue])));
-                $toneRank = array_search($family, $toneHues, true);
-                $score = $toneRank === false
-                    ? 9.0
-                    : (($toneRank + count($toneHues) - ($categoryIndex * 5) % count($toneHues)) % count($toneHues)) * 0.6;
+                    // كل عيلات الطابع مناسبة ليه، فترتيبها بيلف من فئة للتانية — عشان نفس التصميم
+                    // مياخدش نفس العيلة في كل الفئات (من غيره "ستاك" كان رملي في أغلب الـ20 فئة).
+                    $toneHues = array_values(array_filter(self::TONE_HUES[$tone], fn (string $hue) => isset($families[$hue])));
+                    $toneRank = array_search($family, $toneHues, true);
+                    $score = $toneRank === false
+                        ? 9.0
+                        : (($toneRank + count($toneHues) - ($categoryIndex * 5) % count($toneHues)) % count($toneHues)) * 0.6;
 
-                $categoryRank = array_search($family, $categoryHues, true);
-                if ($categoryRank !== false) {
-                    $score -= 6 - $categoryRank * 0.5;
-                }
+                    $categoryRank = array_search($family, $categoryHues, true);
+                    if ($categoryRank !== false) {
+                        $score -= 6 - $categoryRank * 0.5;
+                    }
 
-                if (! in_array($palette['mode'], self::TONE_MODES[$tone], true)) {
-                    $score += 4;
-                }
+                    if (! in_array($palette['mode'], self::TONE_MODES[$tone], true)) {
+                        $score += 4;
+                    }
 
-                $isDark = str_contains($palette['mode'], 'dark');
-                if (($isDark && $dark >= $maxDark) || (! $isDark && $light >= $maxLight)) {
-                    $score += 6;
-                }
+                    $isDark = str_contains($palette['mode'], 'dark');
+                    if (($isDark && $dark >= $maxDark) || (! $isDark && $light >= $maxLight)) {
+                        $score += 6;
+                    }
 
-                foreach (self::PALETTE_GROUPS as $group) {
-                    if (in_array($family, $group, true)) {
-                        $score += 1.5 * count(array_intersect($group, array_keys($used)));
+                    foreach (self::PALETTE_GROUPS as $group) {
+                        if (in_array($family, $group, true)) {
+                            $score += 1.5 * count(array_intersect($group, array_keys($used)));
+                        }
+                    }
+
+                    // فرق صغير ثابت (مش عشوائي — نفس البيانات بتطلع نفس النتيجة دايماً) بيكسر التعادل.
+                    $score += (crc32($layout.'|'.$family.'|'.$categoryIndex) % 1000) / 1000 * 2;
+
+                    if ($score < $bestScore) {
+                        $bestScore = $score;
+                        $best = $key;
                     }
                 }
-
-                // فرق صغير ثابت (مش عشوائي — نفس البيانات بتطلع نفس النتيجة دايماً) بيكسر التعادل.
-                $score += (crc32($layout.'|'.$family.'|'.$categoryIndex) % 1000) / 1000 * 2;
-
-                if ($score < $bestScore) {
-                    $bestScore = $score;
-                    $best = $key;
-                }
-            }
 
             }
             $result[$templateIndex] = $best;

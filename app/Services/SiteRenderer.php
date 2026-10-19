@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\GeneratedSite;
+use App\Models\Template;
 use App\Models\TemplateSlot;
 use App\Models\TemplateVariant;
+use App\Support\SceneLibrary;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -146,13 +148,14 @@ class SiteRenderer
             'fontStyle' => $site->font_style_override ?: 'normal',
             'fontSizeScale' => $site->font_size_scale_override ? (float) $site->font_size_scale_override : 1.0,
             'layout' => $layout,
+            'motionProfile' => $template->motion_profile ?? [],
             'contactAction' => $this->contactAction($sections),
             'contactAnchor' => $this->contactAnchor($sections),
             'siteMeta' => $this->siteMeta($sections, $template->slots),
             // رسمة 3D متختارة للموقع ده (2026-10-11، "ميكس") — على تصميم 3D بتبدّل رسمته، وعلى أي تصميم
             // تاني بتظهر عايمة فوق الهيرو (document.blade.php).
-            'sceneOverride' => \App\Support\SceneLibrary::exists((string) $site->scene_override) ? $site->scene_override : null,
-            'isDepthLayout' => \App\Models\Template::isDepthLayout($layout),
+            'sceneOverride' => SceneLibrary::exists((string) $site->scene_override) ? $site->scene_override : null,
+            'isDepthLayout' => Template::isDepthLayout($layout),
         ];
     }
 

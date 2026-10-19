@@ -57,6 +57,7 @@ class TemplatePreviewService
         return sha1(json_encode([
             'kind' => $template->kind,
             'layout' => $template->layout,
+            ...($template->layout === 'motion' ? ['motion_profile' => $template->motion_profile] : []),
             'name' => $template->name,
             'variant' => $variant ? [
                 'colors' => $this->sortedKeys($variant->colors_json),

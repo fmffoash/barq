@@ -15,9 +15,7 @@ use ZipArchive;
 // القوالب من نوع "landing" (صفحة هبوط) — الـ "wordpress" مالهاش رندر حقيقي أصلاً لسه (Phase 5).
 class SiteExportService
 {
-    public function __construct(private readonly SiteRenderer $renderer)
-    {
-    }
+    public function __construct(private readonly SiteRenderer $renderer) {}
 
     // بيرجع مسار ملف zip جاهز على القرص (مسؤولية الاستدعاء إنه يبعته للمتصفح ويمسحه بعدين).
     public function export(GeneratedSite $site): string
@@ -36,6 +34,13 @@ class SiteExportService
 
         $data = $this->renderer->render($site);
         $data['sections'] = $this->rewriteImagePaths($data['sections'], $assetsDir.'/images');
+        if ($template->layout === 'motion') {
+            File::copyDirectory(public_path('motion'), $assetsDir.'/motion');
+            $data['motionProfile']['scene_image'] = $this->copyPublicImage(
+                $data['motionProfile']['scene_image'] ?? '/images/scenes3d/sparkles_3d.png',
+                $assetsDir.'/images',
+            );
+        }
 
         file_put_contents($exportDir.'/index.html', view('site.export', $data)->render());
 
@@ -64,6 +69,12 @@ class SiteExportService
                     return $item;
                 }
 
+                if (str_starts_with($item['value'], '/images/')) {
+                    $item['value'] = $this->copyPublicImage($item['value'], $imagesDir);
+
+                    return $item;
+                }
+
                 $relativePath = ltrim(Str::after($item['value'], '/storage/'), '/');
                 $disk = Storage::disk('public');
 
@@ -80,6 +91,25 @@ class SiteExportService
 
             return $section;
         });
+    }
+
+    private function copyPublicImage(string $value, string $imagesDir): string
+    {
+        if (! str_starts_with($value, '/images/')) {
+            return $value;
+        }
+
+        $source = realpath(public_path(ltrim($value, '/')));
+        $root = realpath(public_path('images'));
+        if ($source === false || $root === false || ! is_file($source)
+            || ! str_starts_with($source, $root.DIRECTORY_SEPARATOR)) {
+            return '';
+        }
+
+        $filename = substr(sha1($value), 0, 12).'-'.basename($source);
+        File::copy($source, $imagesDir.'/'.$filename);
+
+        return 'assets/images/'.$filename;
     }
 
     // بينسخ CSS المولّد بالـ build + كل الخطوط اللي بتعتمد عليها. قايمة الخطوط دي بتيجي من
@@ -103,7 +133,7 @@ class SiteExportService
 
     private function zipDirectory(string $sourceDir, string $zipPath): void
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
         $files = new \RecursiveIteratorIterator(
