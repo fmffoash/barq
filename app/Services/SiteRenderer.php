@@ -148,7 +148,7 @@ class SiteRenderer
             'fontStyle' => $site->font_style_override ?: 'normal',
             'fontSizeScale' => $site->font_size_scale_override ? (float) $site->font_size_scale_override : 1.0,
             'layout' => $layout,
-            'motionProfile' => $template->motion_profile ?? [],
+            'motionProfile' => $this->motionProfile($template, $site),
             'contactAction' => $this->contactAction($sections),
             'contactAnchor' => $this->contactAnchor($sections),
             'siteMeta' => $this->siteMeta($sections, $template->slots),
@@ -157,6 +157,19 @@ class SiteRenderer
             'sceneOverride' => SceneLibrary::exists((string) $site->scene_override) ? $site->scene_override : null,
             'isDepthLayout' => Template::isDepthLayout($layout),
         ];
+    }
+
+    // (2026-10-19) تصميم «موشن 3D»: الرسمة المتختارة للموقع (scene_override) بتبدّل المجسم العايم
+    // نفسه (الصورة الرئيسية للرسمة دي)، بدل ما تتحط طبقة تانية فوق الهيرو. التصدير بياخدها من هنا برضه.
+    private function motionProfile(Template $template, GeneratedSite $site): array
+    {
+        $profile = $template->motion_profile ?? [];
+        $scene = SceneLibrary::IMAGE_SCENES[(string) $site->scene_override] ?? null;
+        if ($scene) {
+            $profile['scene_image'] = '/images/scenes3d/'.$scene['main'];
+        }
+
+        return $profile;
     }
 
     /**

@@ -7,7 +7,7 @@
       "composition": "editorial",
       "theme": "restaurants",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/croissant_3d.png",
       "source": "01-restaurants/01-cafe.html"
     },
     "colors": {
@@ -210,7 +210,7 @@
       "composition": "split",
       "theme": "restaurants",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/hot_beverage_3d.png",
+      "scene_image": "/images/scenes3d/fork_and_knife_with_plate_3d.png",
       "source": "01-restaurants/02-restaurant.html"
     },
     "colors": {
@@ -394,7 +394,7 @@
       "composition": "immersive",
       "theme": "restaurants",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/hot_beverage_3d.png",
+      "scene_image": "/images/scenes3d/flatbread_3d.png",
       "source": "01-restaurants/03-ful-taameya.html"
     },
     "colors": {
@@ -789,7 +789,7 @@
       "composition": "editorial",
       "theme": "restaurants",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/hot_beverage_3d.png",
+      "scene_image": "/images/scenes3d/fire_3d.png",
       "source": "01-restaurants/05-grills.html"
     },
     "colors": {
@@ -1185,7 +1185,7 @@
       "composition": "split",
       "theme": "clinics",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/medical_symbol_3d.png",
       "source": "02-medical/01-medical-center.html"
     },
     "colors": {
@@ -1228,7 +1228,7 @@
         "section_key": "hero",
         "label_ar": "صورة الغلاف",
         "slot_type": "image",
-        "default_value": "/images/scenes3d/tooth_3d.png",
+        "default_value": "/images/scenes3d/stethoscope_3d.png",
         "sort_order": 4,
         "is_required": false
       },
@@ -1600,7 +1600,7 @@
       "composition": "studio",
       "theme": "clinics",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/stethoscope_3d.png",
       "source": "02-medical/03-internal-medicine.html"
     },
     "colors": {
@@ -1643,7 +1643,7 @@
         "section_key": "hero",
         "label_ar": "صورة الغلاف",
         "slot_type": "image",
-        "default_value": "/images/scenes3d/tooth_3d.png",
+        "default_value": "/images/scenes3d/anatomical_heart_3d.png",
         "sort_order": 4,
         "is_required": false
       },
@@ -1976,7 +1976,7 @@
       "composition": "split",
       "theme": "clinics",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/tooth_3d.png",
+      "scene_image": "/images/scenes3d/eye_3d.png",
       "source": "02-medical/05-eye-center.html"
     },
     "colors": {
@@ -2363,7 +2363,7 @@
       "composition": "studio",
       "theme": "clinics",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/tooth_3d.png",
+      "scene_image": "/images/scenes3d/adhesive_bandage_3d.png",
       "source": "02-medical/07-pharmacy.html"
     },
     "colors": {
@@ -2776,7 +2776,7 @@
       "composition": "split",
       "theme": "clinics",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/tooth_3d.png",
+      "scene_image": "/images/scenes3d/droplet_3d.png",
       "source": "02-medical/09-dermatology.html"
     },
     "colors": {
@@ -2960,7 +2960,7 @@
       "composition": "editorial",
       "theme": "salons",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/hair_pick_3d.png",
       "source": "03-beauty/01-salon.html"
     },
     "colors": {
@@ -3382,7 +3382,7 @@
       "composition": "immersive",
       "theme": "salons",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/ribbon_3d.png",
       "source": "03-beauty/03-nails.html"
     },
     "colors": {
@@ -3425,7 +3425,7 @@
         "section_key": "hero",
         "label_ar": "صورة الغلاف",
         "slot_type": "image",
-        "default_value": "/images/scenes3d/robot_3d.png",
+        "default_value": "/images/scenes3d/gem_stone_3d.png",
         "sort_order": 4,
         "is_required": false
       },
@@ -3750,7 +3750,7 @@
       "composition": "editorial",
       "theme": "salons",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/kiss_mark_3d.png",
       "source": "03-beauty/05-makeup-artist.html"
     },
     "colors": {
@@ -3951,7 +3951,7 @@
       "composition": "immersive",
       "theme": "gyms",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/boxing_glove_3d.png",
+      "scene_image": "/images/scenes3d/stopwatch_3d.png",
       "source": "04-fitness/01-gym.html"
     },
     "colors": {
@@ -4162,7 +4162,7 @@
       "composition": "studio",
       "theme": "gyms",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/trophy_3d.png",
+      "scene_image": "/images/scenes3d/running_shoe_3d.png",
       "source": "04-fitness/02-ladies-gym.html"
     },
     "colors": {
@@ -4372,7 +4372,7 @@
       "composition": "editorial",
       "theme": "gyms",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/martial_arts_uniform_3d.png",
       "source": "04-fitness/03-boxing.html"
     },
     "colors": {
@@ -4767,7 +4767,7 @@
       "composition": "immersive",
       "theme": "gyms",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/boxing_glove_3d.png",
+      "scene_image": "/images/scenes3d/water_wave_3d.png",
       "source": "04-fitness/05-swimming.html"
     },
     "colors": {
@@ -4951,7 +4951,7 @@
       "composition": "immersive",
       "theme": "real-estate",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/house_with_garden_3d.png",
+      "scene_image": "/images/scenes3d/building_construction_3d.png",
       "source": "05-real-estate/01-developer.html"
     },
     "colors": {
@@ -5345,7 +5345,7 @@
       "composition": "editorial",
       "theme": "real-estate",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/house_with_garden_3d.png",
+      "scene_image": "/images/scenes3d/beach_with_umbrella_3d.png",
       "source": "05-real-estate/03-chalets.html"
     },
     "colors": {
@@ -5529,7 +5529,7 @@
       "composition": "split",
       "theme": "real-estate",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/robot_3d.png",
+      "scene_image": "/images/scenes3d/convenience_store_3d.png",
       "source": "05-real-estate/04-retail-units.html"
     },
     "colors": {
@@ -5932,7 +5932,7 @@
       "composition": "studio",
       "theme": "ecommerce",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/package_3d.png",
       "source": "06-shops/01-store.html"
     },
     "colors": {
@@ -6135,7 +6135,7 @@
       "composition": "editorial",
       "theme": "ecommerce",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/robot_3d.png",
+      "scene_image": "/images/scenes3d/glass_of_milk_3d.png",
       "source": "06-shops/02-dairy.html"
     },
     "colors": {
@@ -6319,7 +6319,7 @@
       "composition": "split",
       "theme": "ecommerce",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/shopping_bags_3d.png",
+      "scene_image": "/images/scenes3d/honey_pot_3d.png",
       "source": "06-shops/03-herbs.html"
     },
     "colors": {
@@ -6503,7 +6503,7 @@
       "composition": "immersive",
       "theme": "ecommerce",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/shopping_bags_3d.png",
+      "scene_image": "/images/scenes3d/shopping_cart_3d.png",
       "source": "06-shops/04-supermarket.html"
     },
     "colors": {
@@ -6697,7 +6697,7 @@
       "composition": "studio",
       "theme": "ecommerce",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/shopping_bags_3d.png",
+      "scene_image": "/images/scenes3d/headphone_3d.png",
       "source": "06-shops/05-phones.html"
     },
     "colors": {
@@ -6908,7 +6908,7 @@
       "composition": "split",
       "theme": "education",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/graduation_cap_3d.png",
       "source": "07-education/01-academy.html"
     },
     "colors": {
@@ -7119,7 +7119,7 @@
       "composition": "immersive",
       "theme": "education",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/books_3d.png",
+      "scene_image": "/images/scenes3d/speech_balloon_3d.png",
       "source": "07-education/02-languages.html"
     },
     "colors": {
@@ -7313,7 +7313,7 @@
       "composition": "studio",
       "theme": "education",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/open_book_3d.png",
+      "scene_image": "/images/scenes3d/keyboard_3d.png",
       "source": "07-education/03-coding.html"
     },
     "colors": {
@@ -7689,7 +7689,7 @@
       "composition": "immersive",
       "theme": "legal",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/classical_building_3d.png",
       "source": "08-legal-advisory/01-law-firm.html"
     },
     "colors": {
@@ -7873,7 +7873,7 @@
       "composition": "studio",
       "theme": "legal",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/money_bag_3d.png",
+      "scene_image": "/images/scenes3d/abacus_3d.png",
       "source": "08-legal-advisory/02-accounting.html"
     },
     "colors": {
@@ -8084,7 +8084,7 @@
       "composition": "editorial",
       "theme": "legal",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/balance_scale_3d.png",
+      "scene_image": "/images/scenes3d/compass_3d.png",
       "source": "08-legal-advisory/03-business-consulting.html"
     },
     "colors": {
@@ -8294,7 +8294,7 @@
       "composition": "split",
       "theme": "legal",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/scroll_3d.png",
+      "scene_image": "/images/scenes3d/locked_with_pen_3d.png",
       "source": "08-legal-advisory/04-notary.html"
     },
     "colors": {
@@ -8478,7 +8478,7 @@
       "composition": "studio",
       "theme": "contracting",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/building_construction_3d.png",
       "source": "09-construction-decor/01-contracting.html"
     },
     "colors": {
@@ -8882,7 +8882,7 @@
       "composition": "split",
       "theme": "contracting",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/brick_3d.png",
+      "scene_image": "/images/scenes3d/kitchen_knife_3d.png",
       "source": "09-construction-decor/03-kitchens.html"
     },
     "colors": {
@@ -9092,7 +9092,7 @@
       "composition": "immersive",
       "theme": "contracting",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/robot_3d.png",
+      "scene_image": "/images/scenes3d/paintbrush_3d.png",
       "source": "09-construction-decor/04-painting.html"
     },
     "colors": {
@@ -9285,7 +9285,7 @@
       "composition": "studio",
       "theme": "contracting",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/brick_3d.png",
+      "scene_image": "/images/scenes3d/carpentry_saw_3d.png",
       "source": "09-construction-decor/05-carpentry.html"
     },
     "colors": {
@@ -9487,7 +9487,7 @@
       "composition": "immersive",
       "theme": "auto-service",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/wrench_3d.png",
       "source": "10-cars/01-car-service.html"
     },
     "colors": {
@@ -9909,7 +9909,7 @@
       "composition": "editorial",
       "theme": "auto-service",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/automobile_3d.png",
+      "scene_image": "/images/scenes3d/high_voltage_3d.png",
       "source": "10-cars/03-batteries.html"
     },
     "colors": {
@@ -10285,7 +10285,7 @@
       "composition": "immersive",
       "theme": "auto-service",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/automobile_3d.png",
+      "scene_image": "/images/scenes3d/bubbles_3d.png",
       "source": "10-cars/05-car-wash.html"
     },
     "colors": {
@@ -10478,7 +10478,7 @@
       "composition": "studio",
       "theme": "auto-service",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/automobile_3d.png",
+      "scene_image": "/images/scenes3d/sport_utility_vehicle_3d.png",
       "source": "10-cars/06-car-showroom.html"
     },
     "colors": {
@@ -10689,7 +10689,7 @@
       "composition": "studio",
       "theme": "events",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/balloon_3d.png",
       "source": "11-events/01-party-planner.html"
     },
     "colors": {
@@ -11111,7 +11111,7 @@
       "composition": "split",
       "theme": "events",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/party_popper_3d.png",
+      "scene_image": "/images/scenes3d/balloon_3d.png",
       "source": "11-events/03-birthdays.html"
     },
     "colors": {
@@ -11304,7 +11304,7 @@
       "composition": "immersive",
       "theme": "events",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/party_popper_3d.png",
+      "scene_image": "/images/scenes3d/loudspeaker_3d.png",
       "source": "11-events/04-conferences.html"
     },
     "colors": {
@@ -11488,7 +11488,7 @@
       "composition": "studio",
       "theme": "events",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/party_popper_3d.png",
+      "scene_image": "/images/scenes3d/musical_notes_3d.png",
       "source": "11-events/05-sound-light.html"
     },
     "colors": {
@@ -11681,7 +11681,7 @@
       "composition": "editorial",
       "theme": "travel",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/luggage_3d.png",
       "source": "12-travel/01-travel-agency.html"
     },
     "colors": {
@@ -12067,7 +12067,7 @@
       "composition": "immersive",
       "theme": "travel",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/airplane_3d.png",
+      "scene_image": "/images/scenes3d/kaaba_3d.png",
       "source": "12-travel/03-umrah-hajj.html"
     },
     "colors": {
@@ -12278,7 +12278,7 @@
       "composition": "studio",
       "theme": "travel",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/airplane_3d.png",
+      "scene_image": "/images/scenes3d/water_wave_3d.png",
       "source": "12-travel/04-sea-trips.html"
     },
     "colors": {
@@ -12462,7 +12462,7 @@
       "composition": "editorial",
       "theme": "travel",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/airplane_3d.png",
+      "scene_image": "/images/scenes3d/camping_3d.png",
       "source": "12-travel/05-safari.html"
     },
     "colors": {
@@ -12673,7 +12673,7 @@
       "composition": "studio",
       "theme": "technology",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/gear_3d.png",
       "source": "13-software/01-software-company.html"
     },
     "colors": {
@@ -13085,7 +13085,7 @@
       "composition": "split",
       "theme": "technology",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/laptop_3d.png",
+      "scene_image": "/images/scenes3d/cloud_3d.png",
       "source": "13-software/03-hosting.html"
     },
     "colors": {
@@ -13481,7 +13481,7 @@
       "composition": "studio",
       "theme": "technology",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/laptop_3d.png",
+      "scene_image": "/images/scenes3d/brain_3d.png",
       "source": "13-software/05-ai.html"
     },
     "colors": {
@@ -13664,7 +13664,7 @@
       "composition": "studio",
       "theme": "portfolio",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/framed_picture_3d.png",
       "source": "14-portfolio/01-portfolio.html"
     },
     "colors": {
@@ -14058,7 +14058,7 @@
       "composition": "split",
       "theme": "portfolio",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/artist_palette_3d.png",
+      "scene_image": "/images/scenes3d/laptop_3d.png",
       "source": "14-portfolio/03-web-developer.html"
     },
     "colors": {
@@ -14480,7 +14480,7 @@
       "composition": "editorial",
       "theme": "fashion",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/handbag_3d.png",
       "source": "15-fashion/01-boutique.html"
     },
     "colors": {
@@ -14523,7 +14523,7 @@
         "section_key": "hero",
         "label_ar": "صورة الغلاف",
         "slot_type": "image",
-        "default_value": "/images/scenes3d/t_shirt_3d.png",
+        "default_value": "/images/scenes3d/dress_3d.png",
         "sort_order": 4,
         "is_required": false
       },
@@ -14875,7 +14875,7 @@
       "composition": "immersive",
       "theme": "fashion",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/t_shirt_3d.png",
+      "scene_image": "/images/scenes3d/high_heeled_shoe_3d.png",
       "source": "15-fashion/03-shoes-bags.html"
     },
     "colors": {
@@ -15269,7 +15269,7 @@
       "composition": "editorial",
       "theme": "fashion",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/t_shirt_3d.png",
+      "scene_image": "/images/scenes3d/socks_3d.png",
       "source": "15-fashion/05-kidswear.html"
     },
     "colors": {
@@ -15462,7 +15462,7 @@
       "composition": "editorial",
       "theme": "bakery",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/croissant_3d.png",
+      "scene_image": "/images/scenes3d/cupcake_3d.png",
       "source": "16-bakery/01-cakes.html"
     },
     "colors": {
@@ -15646,7 +15646,7 @@
       "composition": "split",
       "theme": "bakery",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/croissant_3d.png",
+      "scene_image": "/images/scenes3d/baguette_bread_3d.png",
       "source": "16-bakery/02-bakery.html"
     },
     "colors": {
@@ -15857,7 +15857,7 @@
       "composition": "immersive",
       "theme": "bakery",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/croissant_3d.png",
+      "scene_image": "/images/scenes3d/honey_pot_3d.png",
       "source": "16-bakery/03-oriental-sweets.html"
     },
     "colors": {
@@ -16234,7 +16234,7 @@
       "composition": "editorial",
       "theme": "bakery",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/croissant_3d.png",
+      "scene_image": "/images/scenes3d/soft_ice_cream_3d.png",
       "source": "16-bakery/05-ice-cream.html"
     },
     "colors": {
@@ -16436,7 +16436,7 @@
       "composition": "split",
       "theme": "nurseries",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/crayon_3d.png",
       "source": "17-nurseries/01-kindergarten.html"
     },
     "colors": {
@@ -16831,7 +16831,7 @@
       "composition": "studio",
       "theme": "nurseries",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/teddy_bear_3d.png",
+      "scene_image": "/images/scenes3d/pencil_3d.png",
       "source": "17-nurseries/03-prep-kindergarten.html"
     },
     "colors": {
@@ -17032,7 +17032,7 @@
       "composition": "studio",
       "theme": "photography",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/film_frames_3d.png",
       "source": "18-photo-video/01-photo-studio.html"
     },
     "colors": {
@@ -17408,7 +17408,7 @@
       "composition": "split",
       "theme": "photography",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/camera_3d.png",
+      "scene_image": "/images/scenes3d/satellite_antenna_3d.png",
       "source": "18-photo-video/03-aerial.html"
     },
     "colors": {
@@ -17451,7 +17451,7 @@
         "section_key": "hero",
         "label_ar": "صورة الغلاف",
         "slot_type": "image",
-        "default_value": "/images/scenes3d/airplane_3d.png",
+        "default_value": "/images/scenes3d/helicopter_3d.png",
         "sort_order": 4,
         "is_required": false
       },
@@ -17803,7 +17803,7 @@
       "composition": "editorial",
       "theme": "perfumes",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/rose_3d.png",
       "source": "19-perfumes/01-perfume-house.html"
     },
     "colors": {
@@ -18198,7 +18198,7 @@
       "composition": "immersive",
       "theme": "perfumes",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/lotion_bottle_3d.png",
+      "scene_image": "/images/scenes3d/bubbles_3d.png",
       "source": "19-perfumes/03-natural-soap.html"
     },
     "colors": {
@@ -18382,7 +18382,7 @@
       "composition": "split",
       "theme": "veterinary",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/sparkles_3d.png",
+      "scene_image": "/images/scenes3d/paw_prints_3d.png",
       "source": "20-pets/01-vet.html"
     },
     "colors": {
@@ -18777,7 +18777,7 @@
       "composition": "studio",
       "theme": "veterinary",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/cat_face_3d.png",
+      "scene_image": "/images/scenes3d/bone_3d.png",
       "source": "20-pets/03-dog-clinic.html"
     },
     "colors": {
@@ -18969,7 +18969,7 @@
       "composition": "editorial",
       "theme": "veterinary",
       "art": "photograph",
-      "scene_image": "/images/scenes3d/feather_3d.png",
+      "scene_image": "/images/scenes3d/parrot_3d.png",
       "source": "20-pets/04-birds.html"
     },
     "colors": {
@@ -19153,7 +19153,7 @@
       "composition": "split",
       "theme": "veterinary",
       "art": "illustration",
-      "scene_image": "/images/scenes3d/cat_face_3d.png",
+      "scene_image": "/images/scenes3d/canned_food_3d.png",
       "source": "20-pets/05-pet-food.html"
     },
     "colors": {

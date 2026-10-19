@@ -2,6 +2,7 @@
     $D = new \App\Support\DesignedPage($sections, $contactAction ?? null);
     $navigation = $sections->reject(fn ($section) => $section['key'] === 'hero');
     $sceneImage = $motionProfile['scene_image'] ?? '/images/scenes3d/sparkles_3d.png';
+    $copy = \App\Support\MotionCopy::for($motionProfile['theme'] ?? null, $project->name);
     $servicesAnchor = $sections->contains('key', 'services') ? '#services' : '#'.($navigation->first()['key'] ?? 'top');
     $heroSection = $sections->firstWhere('key', 'hero');
     $heroLink = ($heroSection['items'] ?? collect())->firstWhere('slot.slot_type', 'link');
@@ -41,20 +42,20 @@
                         @if ($D->text('hero_subtitle'))<p class="bm-sub" data-slot="hero_subtitle">{!! $D->text('hero_subtitle') !!}</p>@endif
                         <div class="bm-actions">
                             <a class="bm-button" data-slot="{{ $heroLinkKey }}" href="{{ $D->href($heroLinkKey) }}" @if ($D->external($heroLinkKey)) target="_blank" rel="noopener" @endif>{{ $cta }} <span aria-hidden="true">↖</span></a>
-                            <a class="bm-button secondary" href="{{ $servicesAnchor }}">اكتشف التفاصيل ↓</a>
+                            <a class="bm-button secondary" href="{{ $servicesAnchor }}">{{ $copy['explore'] }} ↓</a>
                         </div>
-                        <div class="bm-hero-note"><span class="bm-note-symbol" aria-hidden="true">✳︎</span><span>أهلاً بيك في {{ $project->name }}. خد وقتك واكتشفنا.</span></div>
+                        <div class="bm-hero-note"><span class="bm-note-symbol" aria-hidden="true">✳︎</span><span>{{ $copy['note'] }}</span></div>
                     </div>
                     <div class="bm-stage"><div class="bm-stage-inner">
                         @if ($D->image('hero_image'))<div class="bm-photo-frame"><img class="bm-photo" data-slot="hero_image" src="{{ $D->image('hero_image') }}" alt="{{ $project->name }}" width="640" height="760" fetchpriority="high"></div>@endif
                         <div class="bm-orbit" aria-hidden="true"></div>
                         <div class="bm-sculpture" aria-hidden="true"><div class="bm-cube"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
                         <div class="bm-object" aria-hidden="true"><img src="{{ $sceneImage }}" alt="" width="195" height="195"></div>
-                        <div class="bm-sticker" aria-hidden="true">تفاصيل صغيرة<br>إحساس مختلف ✳︎</div>
+                        <div class="bm-sticker" aria-hidden="true">{{ $copy['sticker'][0] }}<br>{{ $copy['sticker'][1] }} ✳︎</div>
                         <div class="bm-caption">{{ $project->name }}<small>{!! $D->text('hero_eyebrow') !!}</small></div>
                     </div></div>
                 </div>
-                <div class="bm-scroll"><span dir="ltr">MADE FOR THE MOMENT</span><a href="{{ $servicesAnchor }}">كمّل الحكاية ↓</a></div>
+                <div class="bm-scroll"><span>{{ $copy['tagline'] }}</span><a href="{{ $servicesAnchor }}">كمّل الحكاية ↓</a></div>
             </div>
         </section>
         @if ($D->services())

@@ -7,7 +7,10 @@ use App\Models\Project;
 use App\Models\Template;
 use App\Models\User;
 use App\Services\SiteExportService;
+use App\Services\SiteRenderer;
 use App\Services\TemplatePreviewService;
+use App\Support\MotionCopy;
+use App\Support\SceneLibrary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -143,5 +146,61 @@ class MotionTemplatesTest extends TestCase
         $template->update(['motion_profile' => [...$template->motion_profile, 'composition' => 'studio']]);
 
         $this->assertNotSame($fingerprint, $previews->fingerprint($template->fresh()));
+    }
+
+    // (2026-10-19) كل قالب له مجسم عايم من نوع نشاطه (مش ✨ عامة)، مختلف عن صورة الهيرو، وموجود فعلاً.
+    public function test_every_template_has_its_own_existing_floating_object_and_tailored_hero_copy(): void
+    {
+        $definitions = json_decode(file_get_contents(database_path('data/motion-templates.json')), true);
+
+        foreach ($definitions as $definition) {
+            $scene = $definition['profile']['scene_image'];
+            $hero = collect($definition['slots'])->firstWhere('key', 'hero_image')['default_value'];
+            $this->assertFileExists(public_path(ltrim($scene, '/')), $definition['slug']);
+            $this->assertNotSame('/images/scenes3d/sparkles_3d.png', $scene, $definition['slug']);
+            $this->assertNotSame($hero, $scene, $definition['slug']);
+            $this->assertContains($definition['profile']['theme'], MotionCopy::themes(), $definition['slug']);
+        }
+
+        $template = $this->seedMotion();
+        $this->actingAs(User::factory()->create());
+        $copy = MotionCopy::for($template->motion_profile['theme'], $template->name);
+        $this->get(route('templates.preview', $template))
+            ->assertOk()
+            ->assertSee($copy['tagline'])
+            ->assertSee($copy['sticker'][0])
+            ->assertDontSee('MADE FOR THE MOMENT')
+            ->assertDontSee('تفاصيل صغيرة');
+    }
+
+    public function test_reimport_refreshes_the_look_profile_but_keeps_slots_and_colors(): void
+    {
+        $template = $this->seedMotion();
+        $original = $template->motion_profile;
+        $template->update(['motion_profile' => [...$original, 'scene_image' => '/images/scenes3d/sparkles_3d.png']]);
+        $template->slots()->where('key', 'hero_title')->firstOrFail()->update(['default_value' => 'عنوان خاص']);
+        $template->defaultVariant()->update(['colors_json' => [...$template->defaultVariant()->colors_json, 'primary' => '#123456']]);
+
+        $this->artisan('barq:seed-motion-templates')->assertSuccessful();
+
+        $this->assertEquals($original, $template->fresh()->motion_profile);
+        $this->assertSame('عنوان خاص', $template->slots()->where('key', 'hero_title')->firstOrFail()->default_value);
+        $this->assertSame('#123456', $template->fresh()->defaultVariant()->colors_json['primary']);
+    }
+
+    public function test_chosen_scene_replaces_the_floating_object_instead_of_stacking_an_overlay(): void
+    {
+        $template = $this->seedMotion();
+        $user = User::factory()->create();
+        $project = Project::factory()->for($template)->create(['created_by' => $user->id, 'template_variant_id' => $template->defaultVariant()->id]);
+        GeneratedSite::factory()->for($project)->create(['scene_override' => 'helix']);
+        $main = SceneLibrary::IMAGE_SCENES['helix']['main'];
+
+        $html = app(SiteRenderer::class)->render($project->fresh()->site);
+        $this->assertSame('/images/scenes3d/'.$main, $html['motionProfile']['scene_image']);
+
+        $page = view('site.show', $html)->render();
+        $this->assertStringContainsString('<div class="bm-object" aria-hidden="true"><img src="/images/scenes3d/'.$main.'"', $page);
+        $this->assertStringNotContainsString('bq3d-overlay', $page);
     }
 }

@@ -171,7 +171,7 @@
         font-style: {{ $fontStyle }};
     "
 >
-    @if (! empty($sceneOverride) && empty($isDepthLayout))
+    @if (! empty($sceneOverride) && empty($isDepthLayout) && $layout !== 'motion')
         {{-- رسمة 3D مضافة على قالب عادي (ميكس، 2026-10-11) — طبقة عايمة جنب الهيرو. --}}
         <div class="bq3d-overlay" aria-hidden="true">@include('site.partials.depth.scene', ['sceneKey' => $sceneOverride])</div>
     @endif

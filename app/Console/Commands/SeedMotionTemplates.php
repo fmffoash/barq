@@ -16,10 +16,19 @@ class SeedMotionTemplates extends Command
     {
         $definitions = json_decode(file_get_contents(database_path('data/motion-templates.json')), true, flags: JSON_THROW_ON_ERROR);
         $created = 0;
+        $refreshed = 0;
 
         foreach ($definitions as $definition) {
-            $created += DB::transaction(function () use ($definition): int {
-                if (Template::query()->where('slug', $definition['slug'])->exists()) {
+            $created += DB::transaction(function () use ($definition, &$refreshed): int {
+                $existing = Template::query()->where('slug', $definition['slug'])->first();
+                if ($existing) {
+                    // (2026-10-19) القالب موجود: بيتحدّث شكله بس (التكوين والرسمة 3D) لو اتغيّر في الملف.
+                    // الخانات والألوان والمحتوى ومشاريع اليوزرات مابتتلمسش.
+                    if ($existing->layout === 'motion' && $existing->motion_profile != $definition['profile']) {
+                        $existing->update(['motion_profile' => $definition['profile']]);
+                        $refreshed++;
+                    }
+
                     return 0;
                 }
 
@@ -47,7 +56,7 @@ class SeedMotionTemplates extends Command
             });
         }
 
-        $this->info("Motion templates: {$created} added; existing templates and customizations preserved.");
+        $this->info("Motion templates: {$created} added, {$refreshed} look profiles refreshed; slots, colors and projects preserved.");
 
         return self::SUCCESS;
     }
