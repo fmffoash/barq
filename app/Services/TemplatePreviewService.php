@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\GeneratedSite;
 use App\Models\Project;
 use App\Models\Template;
+use Illuminate\Support\Arr;
 
 // معاينة شكل القالب الحقيقي قبل اختياره (2026-10-06، فؤاد: "عايز شكل القالب نفسه بدل الصورة
 // علشان أتفرج عليه وأعاينه قبل ما أختاره"). جزئين:
@@ -58,7 +59,8 @@ class TemplatePreviewService
             'kind' => $template->kind,
             'layout' => $template->layout,
             // sortedKeys (2026-10-19): من غيره صور كروت الموشن مكانتش بتظهر على السيرفر خالص (MySQL بيرتّب المفاتيح).
-            ...($template->layout === 'motion' ? ['motion_profile' => $this->sortedKeys($template->motion_profile)] : []),
+            // specialty للاختيار التلقائي بس (TemplatePicker)، مش جزء من الشكل.
+            ...($template->layout === 'motion' ? ['motion_profile' => $this->sortedKeys(Arr::except($template->motion_profile ?? [], ['specialty']))] : []),
             'name' => $template->name,
             'variant' => $variant ? [
                 'colors' => $this->sortedKeys($variant->colors_json),

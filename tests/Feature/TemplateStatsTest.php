@@ -37,18 +37,38 @@ class TemplateStatsTest extends TestCase
         $this->assertSame($regular->id, (new TemplatePicker(false))->pick('محاماة', 'مكتب محاماة')['template']->id);
     }
 
-    // على المكتبة الحقيقية: التخصص لسه بيكسب، بس جوّه قوالب 3D (عظام ← «عيادة عظام 3D» مش العادي).
-    public function test_real_library_picks_the_3d_template_of_the_same_specialty(): void
+    // الترتيب: موشن ← تصميمات 3D ← العادي، أول درجة فيها قالب في الفئة هي اللي بيتختار منها.
+    public function test_motion_comes_first_then_depth_3d_then_regular(): void
+    {
+        $regular = Template::factory()->create(['kind' => 'landing', 'name' => 'مكتب محاماة — كلاسيك', 'category' => 'محاماة', 'layout' => 'classic']);
+        $depth = Template::factory()->create(['kind' => 'landing', 'name' => 'مكتب محاماة 3D — ميزان', 'category' => 'محاماة', 'layout' => 'verdict']);
+        $picker = new TemplatePicker(false);
+        $this->assertSame($depth->id, $picker->pick('محاماة', 'مكتب محاماة')['template']->id);
+
+        $motion = Template::factory()->create(['kind' => 'landing', 'name' => 'مكتب العدل — موشن 3D', 'category' => 'محاماة', 'layout' => 'motion']);
+        $this->assertSame($motion->id, $picker->pick('محاماة', 'مكتب محاماة')['template']->id);
+        $this->assertNotSame($regular->id, $picker->pick('محاماة', 'مكتب محاماة')['template']->id);
+    }
+
+    // على المكتبة الحقيقية: موشن الأول، والتخصص بيتحسب من motion_profile.specialty (أساميهم أسماء محلات).
+    public function test_real_library_picks_the_motion_template_of_the_same_specialty(): void
     {
         $this->artisan('barq:seed-template-library')->assertSuccessful();
         $this->artisan('barq:seed-motion-templates')->assertSuccessful();
 
-        foreach ([['عيادات وخدمات طبية', 'Dr. Samy · Orthopedic Surgeon'], ['مطاعم وكافيهات', 'Pizza place'], ['جيم ولياقة بدنية', 'أكاديمية سباحة']] as [$category, $context]) {
-            $picked = (new TemplatePicker(false))->pick($category, $context)['template'];
-            $this->assertTrue(Template::is3dLayout($picked->layout), "{$context} → {$picked->name}");
+        $cases = [
+            ['عيادات وخدمات طبية', 'Dr. Samy · Orthopedic Surgeon', 'عيادة عظام'],
+            ['عيادات وخدمات طبية', 'دكتور أسنان في المعادي', 'عيادة أسنان'],
+            ['مطاعم وكافيهات', 'Pizza place', 'بيتزا'],
+            ['جيم ولياقة بدنية', 'أكاديمية سباحة للأطفال', 'أكاديمية سباحة'],
+            ['صالونات وتجميل', 'باربر شوب', 'باربر'],
+        ];
+        foreach ($cases as [$category, $context, $specialty]) {
+            $pick = (new TemplatePicker(false))->pick($category, $context);
+            $this->assertSame('motion', $pick['template']->layout, $context);
+            $this->assertSame($specialty, $pick['template']->motion_profile['specialty'], "{$context} → {$pick['template']->name}");
+            $this->assertSame("مخصوص لـ«{$specialty}»", $pick['reason']);
         }
-
-        $this->assertStringContainsString('عظام', (new TemplatePicker(false))->pick('عيادات وخدمات طبية', 'Dr. Samy · Orthopedic Surgeon')['template']->name);
     }
 
     public function test_choosing_and_switching_templates_is_recorded_once_each(): void

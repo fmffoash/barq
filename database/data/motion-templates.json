@@ -7,6 +7,7 @@
       "composition": "editorial",
       "theme": "restaurants",
       "art": "illustration",
+      "specialty": "كافيه",
       "scene_image": "/images/scenes3d/croissant_3d.png",
       "source": "01-restaurants/01-cafe.html"
     },
@@ -210,6 +211,7 @@
       "composition": "split",
       "theme": "restaurants",
       "art": "photograph",
+      "specialty": "مطعم",
       "scene_image": "/images/scenes3d/fork_and_knife_with_plate_3d.png",
       "source": "01-restaurants/02-restaurant.html"
     },
@@ -394,6 +396,7 @@
       "composition": "immersive",
       "theme": "restaurants",
       "art": "illustration",
+      "specialty": "فول وطعمية",
       "scene_image": "/images/scenes3d/flatbread_3d.png",
       "source": "01-restaurants/03-ful-taameya.html"
     },
@@ -588,6 +591,7 @@
       "composition": "studio",
       "theme": "restaurants",
       "art": "photograph",
+      "specialty": "بيتزا",
       "scene_image": "/images/scenes3d/pizza_3d.png",
       "source": "01-restaurants/04-pizza.html"
     },
@@ -789,6 +793,7 @@
       "composition": "editorial",
       "theme": "restaurants",
       "art": "illustration",
+      "specialty": "مشويات",
       "scene_image": "/images/scenes3d/fire_3d.png",
       "source": "01-restaurants/05-grills.html"
     },
@@ -1000,6 +1005,7 @@
       "composition": "split",
       "theme": "restaurants",
       "art": "photograph",
+      "specialty": "محل عصير",
       "scene_image": "/images/scenes3d/cup_with_straw_3d.png",
       "source": "01-restaurants/06-juice.html"
     },
@@ -1185,6 +1191,7 @@
       "composition": "split",
       "theme": "clinics",
       "art": "illustration",
+      "specialty": "مركز طبي",
       "scene_image": "/images/scenes3d/medical_symbol_3d.png",
       "source": "02-medical/01-medical-center.html"
     },
@@ -1397,6 +1404,7 @@
       "composition": "immersive",
       "theme": "clinics",
       "art": "photograph",
+      "specialty": "عيادة أسنان",
       "scene_image": "/images/scenes3d/tooth_3d.png",
       "source": "02-medical/02-dental.html"
     },
@@ -1600,6 +1608,7 @@
       "composition": "studio",
       "theme": "clinics",
       "art": "illustration",
+      "specialty": "عيادة باطنة",
       "scene_image": "/images/scenes3d/stethoscope_3d.png",
       "source": "02-medical/03-internal-medicine.html"
     },
@@ -1784,6 +1793,7 @@
       "composition": "editorial",
       "theme": "clinics",
       "art": "photograph",
+      "specialty": "عيادة عظام",
       "scene_image": "/images/scenes3d/bone_3d.png",
       "source": "02-medical/04-orthopedics.html"
     },
@@ -1976,6 +1986,7 @@
       "composition": "split",
       "theme": "clinics",
       "art": "illustration",
+      "specialty": "مركز عيون",
       "scene_image": "/images/scenes3d/eye_3d.png",
       "source": "02-medical/05-eye-center.html"
     },
@@ -2178,6 +2189,7 @@
       "composition": "immersive",
       "theme": "clinics",
       "art": "photograph",
+      "specialty": "طبيب أطفال",
       "scene_image": "/images/scenes3d/baby_bottle_3d.png",
       "source": "02-medical/06-pediatrician.html"
     },
@@ -2363,6 +2375,7 @@
       "composition": "studio",
       "theme": "clinics",
       "art": "illustration",
+      "specialty": "صيدلية",
       "scene_image": "/images/scenes3d/adhesive_bandage_3d.png",
       "source": "02-medical/07-pharmacy.html"
     },
@@ -2574,6 +2587,7 @@
       "composition": "editorial",
       "theme": "clinics",
       "art": "photograph",
+      "specialty": "معمل تحاليل",
       "scene_image": "/images/scenes3d/microscope_3d.png",
       "source": "02-medical/08-lab.html"
     },
@@ -2776,6 +2790,7 @@
       "composition": "split",
       "theme": "clinics",
       "art": "illustration",
+      "specialty": "عيادة جلدية وتجميل",
       "scene_image": "/images/scenes3d/droplet_3d.png",
       "source": "02-medical/09-dermatology.html"
     },
@@ -2960,6 +2975,7 @@
       "composition": "editorial",
       "theme": "salons",
       "art": "illustration",
+      "specialty": "صالون",
       "scene_image": "/images/scenes3d/hair_pick_3d.png",
       "source": "03-beauty/01-salon.html"
     },
@@ -3171,6 +3187,7 @@
       "composition": "split",
       "theme": "salons",
       "art": "photograph",
+      "specialty": "باربر",
       "scene_image": "/images/scenes3d/barber_pole_3d.png",
       "source": "03-beauty/02-barber.html"
     },
@@ -3382,6 +3399,7 @@
       "composition": "immersive",
       "theme": "salons",
       "art": "illustration",
+      "specialty": "صالون أظافر",
       "scene_image": "/images/scenes3d/ribbon_3d.png",
       "source": "03-beauty/03-nails.html"
     },
@@ -3566,6 +3584,7 @@
       "composition": "studio",
       "theme": "salons",
       "art": "photograph",
+      "specialty": "سبا",
       "scene_image": "/images/scenes3d/lotus_3d.png",
       "source": "03-beauty/04-spa.html"
     },
@@ -3750,6 +3769,7 @@
       "composition": "editorial",
       "theme": "salons",
       "art": "illustration",
+      "specialty": "ميكب آرتست",
       "scene_image": "/images/scenes3d/kiss_mark_3d.png",
       "source": "03-beauty/05-makeup-artist.html"
     },
@@ -3951,6 +3971,7 @@
       "composition": "immersive",
       "theme": "gyms",
       "art": "illustration",
+      "specialty": "جيم",
       "scene_image": "/images/scenes3d/stopwatch_3d.png",
       "source": "04-fitness/01-gym.html"
     },
@@ -4162,6 +4183,7 @@
       "composition": "studio",
       "theme": "gyms",
       "art": "photograph",
+      "specialty": "جيم حريمي",
       "scene_image": "/images/scenes3d/running_shoe_3d.png",
       "source": "04-fitness/02-ladies-gym.html"
     },
@@ -4372,6 +4394,7 @@
       "composition": "editorial",
       "theme": "gyms",
       "art": "illustration",
+      "specialty": "نادي ملاكمة",
       "scene_image": "/images/scenes3d/martial_arts_uniform_3d.png",
       "source": "04-fitness/03-boxing.html"
     },
@@ -4556,6 +4579,7 @@
       "composition": "split",
       "theme": "gyms",
       "art": "photograph",
+      "specialty": "استوديو يوجا",
       "scene_image": "/images/scenes3d/lotus_3d.png",
       "source": "04-fitness/04-yoga.html"
     },
@@ -4767,6 +4791,7 @@
       "composition": "immersive",
       "theme": "gyms",
       "art": "illustration",
+      "specialty": "أكاديمية سباحة",
       "scene_image": "/images/scenes3d/water_wave_3d.png",
       "source": "04-fitness/05-swimming.html"
     },
@@ -4951,6 +4976,7 @@
       "composition": "immersive",
       "theme": "real-estate",
       "art": "illustration",
+      "specialty": "مطور عقاري",
       "scene_image": "/images/scenes3d/building_construction_3d.png",
       "source": "05-real-estate/01-developer.html"
     },
@@ -5135,6 +5161,7 @@
       "composition": "studio",
       "theme": "real-estate",
       "art": "photograph",
+      "specialty": "فيلات",
       "scene_image": "/images/scenes3d/house_with_garden_3d.png",
       "source": "05-real-estate/02-villas.html"
     },
@@ -5345,6 +5372,7 @@
       "composition": "editorial",
       "theme": "real-estate",
       "art": "illustration",
+      "specialty": "شاليهات",
       "scene_image": "/images/scenes3d/beach_with_umbrella_3d.png",
       "source": "05-real-estate/03-chalets.html"
     },
@@ -5529,6 +5557,7 @@
       "composition": "split",
       "theme": "real-estate",
       "art": "photograph",
+      "specialty": "محلات تجارية",
       "scene_image": "/images/scenes3d/convenience_store_3d.png",
       "source": "05-real-estate/04-retail-units.html"
     },
@@ -5721,6 +5750,7 @@
       "composition": "immersive",
       "theme": "real-estate",
       "art": "illustration",
+      "specialty": "وسيط عقاري",
       "scene_image": "/images/scenes3d/house_with_garden_3d.png",
       "source": "05-real-estate/05-broker.html"
     },
@@ -5932,6 +5962,7 @@
       "composition": "studio",
       "theme": "ecommerce",
       "art": "illustration",
+      "specialty": "متجر",
       "scene_image": "/images/scenes3d/package_3d.png",
       "source": "06-shops/01-store.html"
     },
@@ -6135,6 +6166,7 @@
       "composition": "editorial",
       "theme": "ecommerce",
       "art": "photograph",
+      "specialty": "منتجات ألبان",
       "scene_image": "/images/scenes3d/glass_of_milk_3d.png",
       "source": "06-shops/02-dairy.html"
     },
@@ -6319,6 +6351,7 @@
       "composition": "split",
       "theme": "ecommerce",
       "art": "illustration",
+      "specialty": "عطارة",
       "scene_image": "/images/scenes3d/honey_pot_3d.png",
       "source": "06-shops/03-herbs.html"
     },
@@ -6503,6 +6536,7 @@
       "composition": "immersive",
       "theme": "ecommerce",
       "art": "photograph",
+      "specialty": "سوبر ماركت",
       "scene_image": "/images/scenes3d/shopping_cart_3d.png",
       "source": "06-shops/04-supermarket.html"
     },
@@ -6697,6 +6731,7 @@
       "composition": "studio",
       "theme": "ecommerce",
       "art": "illustration",
+      "specialty": "محل موبايلات",
       "scene_image": "/images/scenes3d/headphone_3d.png",
       "source": "06-shops/05-phones.html"
     },
@@ -6908,6 +6943,7 @@
       "composition": "split",
       "theme": "education",
       "art": "illustration",
+      "specialty": "أكاديمية",
       "scene_image": "/images/scenes3d/graduation_cap_3d.png",
       "source": "07-education/01-academy.html"
     },
@@ -7119,6 +7155,7 @@
       "composition": "immersive",
       "theme": "education",
       "art": "photograph",
+      "specialty": "مركز لغات",
       "scene_image": "/images/scenes3d/speech_balloon_3d.png",
       "source": "07-education/02-languages.html"
     },
@@ -7313,6 +7350,7 @@
       "composition": "studio",
       "theme": "education",
       "art": "illustration",
+      "specialty": "كورسات برمجة",
       "scene_image": "/images/scenes3d/keyboard_3d.png",
       "source": "07-education/03-coding.html"
     },
@@ -7506,6 +7544,7 @@
       "composition": "editorial",
       "theme": "education",
       "art": "photograph",
+      "specialty": "تأسيس أطفال",
       "scene_image": "/images/scenes3d/crayon_3d.png",
       "source": "07-education/04-kids-foundation.html"
     },
@@ -7689,6 +7728,7 @@
       "composition": "immersive",
       "theme": "legal",
       "art": "illustration",
+      "specialty": "مكتب محاماة",
       "scene_image": "/images/scenes3d/classical_building_3d.png",
       "source": "08-legal-advisory/01-law-firm.html"
     },
@@ -7873,6 +7913,7 @@
       "composition": "studio",
       "theme": "legal",
       "art": "photograph",
+      "specialty": "مكتب محاسبة",
       "scene_image": "/images/scenes3d/abacus_3d.png",
       "source": "08-legal-advisory/02-accounting.html"
     },
@@ -8084,6 +8125,7 @@
       "composition": "editorial",
       "theme": "legal",
       "art": "illustration",
+      "specialty": "استشارات أعمال",
       "scene_image": "/images/scenes3d/compass_3d.png",
       "source": "08-legal-advisory/03-business-consulting.html"
     },
@@ -8294,6 +8336,7 @@
       "composition": "split",
       "theme": "legal",
       "art": "photograph",
+      "specialty": "مكتب توثيق",
       "scene_image": "/images/scenes3d/locked_with_pen_3d.png",
       "source": "08-legal-advisory/04-notary.html"
     },
@@ -8478,6 +8521,7 @@
       "composition": "studio",
       "theme": "contracting",
       "art": "illustration",
+      "specialty": "شركة مقاولات",
       "scene_image": "/images/scenes3d/building_construction_3d.png",
       "source": "09-construction-decor/01-contracting.html"
     },
@@ -8671,6 +8715,7 @@
       "composition": "editorial",
       "theme": "contracting",
       "art": "photograph",
+      "specialty": "ديكور داخلي",
       "scene_image": "/images/scenes3d/couch_and_lamp_3d.png",
       "source": "09-construction-decor/02-interior.html"
     },
@@ -8882,6 +8927,7 @@
       "composition": "split",
       "theme": "contracting",
       "art": "illustration",
+      "specialty": "مطابخ",
       "scene_image": "/images/scenes3d/kitchen_knife_3d.png",
       "source": "09-construction-decor/03-kitchens.html"
     },
@@ -9092,6 +9138,7 @@
       "composition": "immersive",
       "theme": "contracting",
       "art": "photograph",
+      "specialty": "دهانات",
       "scene_image": "/images/scenes3d/paintbrush_3d.png",
       "source": "09-construction-decor/04-painting.html"
     },
@@ -9285,6 +9332,7 @@
       "composition": "studio",
       "theme": "contracting",
       "art": "illustration",
+      "specialty": "ورشة نجارة",
       "scene_image": "/images/scenes3d/carpentry_saw_3d.png",
       "source": "09-construction-decor/05-carpentry.html"
     },
@@ -9487,6 +9535,7 @@
       "composition": "immersive",
       "theme": "auto-service",
       "art": "illustration",
+      "specialty": "مركز سيارات",
       "scene_image": "/images/scenes3d/wrench_3d.png",
       "source": "10-cars/01-car-service.html"
     },
@@ -9698,6 +9747,7 @@
       "composition": "studio",
       "theme": "auto-service",
       "art": "photograph",
+      "specialty": "محل كاوتش",
       "scene_image": "/images/scenes3d/racing_car_3d.png",
       "source": "10-cars/02-tires.html"
     },
@@ -9909,6 +9959,7 @@
       "composition": "editorial",
       "theme": "auto-service",
       "art": "illustration",
+      "specialty": "محل بطاريات",
       "scene_image": "/images/scenes3d/high_voltage_3d.png",
       "source": "10-cars/03-batteries.html"
     },
@@ -10101,6 +10152,7 @@
       "composition": "split",
       "theme": "auto-service",
       "art": "photograph",
+      "specialty": "مركز زيوت",
       "scene_image": "/images/scenes3d/oil_drum_3d.png",
       "source": "10-cars/04-oil-change.html"
     },
@@ -10285,6 +10337,7 @@
       "composition": "immersive",
       "theme": "auto-service",
       "art": "illustration",
+      "specialty": "غسيل سيارات",
       "scene_image": "/images/scenes3d/bubbles_3d.png",
       "source": "10-cars/05-car-wash.html"
     },
@@ -10478,6 +10531,7 @@
       "composition": "studio",
       "theme": "auto-service",
       "art": "photograph",
+      "specialty": "معرض سيارات",
       "scene_image": "/images/scenes3d/sport_utility_vehicle_3d.png",
       "source": "10-cars/06-car-showroom.html"
     },
@@ -10689,6 +10743,7 @@
       "composition": "studio",
       "theme": "events",
       "art": "illustration",
+      "specialty": "منظّم حفلات",
       "scene_image": "/images/scenes3d/balloon_3d.png",
       "source": "11-events/01-party-planner.html"
     },
@@ -10900,6 +10955,7 @@
       "composition": "editorial",
       "theme": "events",
       "art": "photograph",
+      "specialty": "تنظيم أفراح",
       "scene_image": "/images/scenes3d/ring_3d.png",
       "source": "11-events/02-weddings.html"
     },
@@ -11111,6 +11167,7 @@
       "composition": "split",
       "theme": "events",
       "art": "illustration",
+      "specialty": "أعياد ميلاد",
       "scene_image": "/images/scenes3d/balloon_3d.png",
       "source": "11-events/03-birthdays.html"
     },
@@ -11304,6 +11361,7 @@
       "composition": "immersive",
       "theme": "events",
       "art": "photograph",
+      "specialty": "تنظيم مؤتمرات",
       "scene_image": "/images/scenes3d/loudspeaker_3d.png",
       "source": "11-events/04-conferences.html"
     },
@@ -11488,6 +11546,7 @@
       "composition": "studio",
       "theme": "events",
       "art": "illustration",
+      "specialty": "صوت وإضاءة",
       "scene_image": "/images/scenes3d/musical_notes_3d.png",
       "source": "11-events/05-sound-light.html"
     },
@@ -11681,6 +11740,7 @@
       "composition": "editorial",
       "theme": "travel",
       "art": "illustration",
+      "specialty": "شركة سياحة",
       "scene_image": "/images/scenes3d/luggage_3d.png",
       "source": "12-travel/01-travel-agency.html"
     },
@@ -11865,6 +11925,7 @@
       "composition": "split",
       "theme": "travel",
       "art": "photograph",
+      "specialty": "حجز طيران",
       "scene_image": "/images/scenes3d/airplane_3d.png",
       "source": "12-travel/02-flights.html"
     },
@@ -12067,6 +12128,7 @@
       "composition": "immersive",
       "theme": "travel",
       "art": "illustration",
+      "specialty": "عمرة وحج",
       "scene_image": "/images/scenes3d/kaaba_3d.png",
       "source": "12-travel/03-umrah-hajj.html"
     },
@@ -12278,6 +12340,7 @@
       "composition": "studio",
       "theme": "travel",
       "art": "photograph",
+      "specialty": "رحلات بحر",
       "scene_image": "/images/scenes3d/water_wave_3d.png",
       "source": "12-travel/04-sea-trips.html"
     },
@@ -12462,6 +12525,7 @@
       "composition": "editorial",
       "theme": "travel",
       "art": "illustration",
+      "specialty": "رحلات سفاري",
       "scene_image": "/images/scenes3d/camping_3d.png",
       "source": "12-travel/05-safari.html"
     },
@@ -12673,6 +12737,7 @@
       "composition": "studio",
       "theme": "technology",
       "art": "illustration",
+      "specialty": "شركة برمجيات",
       "scene_image": "/images/scenes3d/gear_3d.png",
       "source": "13-software/01-software-company.html"
     },
@@ -12875,6 +12940,7 @@
       "composition": "editorial",
       "theme": "technology",
       "art": "photograph",
+      "specialty": "تطوير تطبيقات",
       "scene_image": "/images/scenes3d/mobile_phone_with_arrow_3d.png",
       "source": "13-software/02-apps.html"
     },
@@ -13085,6 +13151,7 @@
       "composition": "split",
       "theme": "technology",
       "art": "illustration",
+      "specialty": "استضافة مواقع",
       "scene_image": "/images/scenes3d/cloud_3d.png",
       "source": "13-software/03-hosting.html"
     },
@@ -13270,6 +13337,7 @@
       "composition": "immersive",
       "theme": "technology",
       "art": "photograph",
+      "specialty": "أمن سيبراني",
       "scene_image": "/images/scenes3d/shield_3d.png",
       "source": "13-software/04-cybersecurity.html"
     },
@@ -13481,6 +13549,7 @@
       "composition": "studio",
       "theme": "technology",
       "art": "illustration",
+      "specialty": "ذكاء اصطناعي",
       "scene_image": "/images/scenes3d/brain_3d.png",
       "source": "13-software/05-ai.html"
     },
@@ -13664,6 +13733,7 @@
       "composition": "studio",
       "theme": "portfolio",
       "art": "illustration",
+      "specialty": "معرض أعمال",
       "scene_image": "/images/scenes3d/framed_picture_3d.png",
       "source": "14-portfolio/01-portfolio.html"
     },
@@ -13874,6 +13944,7 @@
       "composition": "editorial",
       "theme": "portfolio",
       "art": "photograph",
+      "specialty": "مصمم جرافيك",
       "scene_image": "/images/scenes3d/artist_palette_3d.png",
       "source": "14-portfolio/02-graphic-designer.html"
     },
@@ -14058,6 +14129,7 @@
       "composition": "split",
       "theme": "portfolio",
       "art": "illustration",
+      "specialty": "مطور ويب",
       "scene_image": "/images/scenes3d/laptop_3d.png",
       "source": "14-portfolio/03-web-developer.html"
     },
@@ -14269,6 +14341,7 @@
       "composition": "immersive",
       "theme": "portfolio",
       "art": "photograph",
+      "specialty": "كاتب محتوى",
       "scene_image": "/images/scenes3d/fountain_pen_3d.png",
       "source": "14-portfolio/04-copywriter.html"
     },
@@ -14480,6 +14553,7 @@
       "composition": "editorial",
       "theme": "fashion",
       "art": "illustration",
+      "specialty": "بوتيك",
       "scene_image": "/images/scenes3d/handbag_3d.png",
       "source": "15-fashion/01-boutique.html"
     },
@@ -14664,6 +14738,7 @@
       "composition": "split",
       "theme": "fashion",
       "art": "photograph",
+      "specialty": "ملابس رجالي",
       "scene_image": "/images/scenes3d/necktie_3d.png",
       "source": "15-fashion/02-menswear.html"
     },
@@ -14875,6 +14950,7 @@
       "composition": "immersive",
       "theme": "fashion",
       "art": "illustration",
+      "specialty": "أحذية وشنط",
       "scene_image": "/images/scenes3d/high_heeled_shoe_3d.png",
       "source": "15-fashion/03-shoes-bags.html"
     },
@@ -15085,6 +15161,7 @@
       "composition": "studio",
       "theme": "fashion",
       "art": "photograph",
+      "specialty": "عبايات",
       "scene_image": "/images/scenes3d/coat_3d.png",
       "source": "15-fashion/04-abayas.html"
     },
@@ -15269,6 +15346,7 @@
       "composition": "editorial",
       "theme": "fashion",
       "art": "illustration",
+      "specialty": "ملابس أطفال",
       "scene_image": "/images/scenes3d/socks_3d.png",
       "source": "15-fashion/05-kidswear.html"
     },
@@ -15462,6 +15540,7 @@
       "composition": "editorial",
       "theme": "bakery",
       "art": "illustration",
+      "specialty": "محل تورت",
       "scene_image": "/images/scenes3d/cupcake_3d.png",
       "source": "16-bakery/01-cakes.html"
     },
@@ -15646,6 +15725,7 @@
       "composition": "split",
       "theme": "bakery",
       "art": "photograph",
+      "specialty": "فرن عيش",
       "scene_image": "/images/scenes3d/baguette_bread_3d.png",
       "source": "16-bakery/02-bakery.html"
     },
@@ -15857,6 +15937,7 @@
       "composition": "immersive",
       "theme": "bakery",
       "art": "illustration",
+      "specialty": "حلويات شرقية",
       "scene_image": "/images/scenes3d/honey_pot_3d.png",
       "source": "16-bakery/03-oriental-sweets.html"
     },
@@ -16041,6 +16122,7 @@
       "composition": "studio",
       "theme": "bakery",
       "art": "photograph",
+      "specialty": "دونتس",
       "scene_image": "/images/scenes3d/doughnut_3d.png",
       "source": "16-bakery/04-donuts.html"
     },
@@ -16234,6 +16316,7 @@
       "composition": "editorial",
       "theme": "bakery",
       "art": "illustration",
+      "specialty": "آيس كريم",
       "scene_image": "/images/scenes3d/soft_ice_cream_3d.png",
       "source": "16-bakery/05-ice-cream.html"
     },
@@ -16436,6 +16519,7 @@
       "composition": "split",
       "theme": "nurseries",
       "art": "illustration",
+      "specialty": "روضة",
       "scene_image": "/images/scenes3d/crayon_3d.png",
       "source": "17-nurseries/01-kindergarten.html"
     },
@@ -16620,6 +16704,7 @@
       "composition": "immersive",
       "theme": "nurseries",
       "art": "photograph",
+      "specialty": "حضانة رضّع",
       "scene_image": "/images/scenes3d/baby_bottle_3d.png",
       "source": "17-nurseries/02-baby-nursery.html"
     },
@@ -16831,6 +16916,7 @@
       "composition": "studio",
       "theme": "nurseries",
       "art": "illustration",
+      "specialty": "روضة تأسيس",
       "scene_image": "/images/scenes3d/pencil_3d.png",
       "source": "17-nurseries/03-prep-kindergarten.html"
     },
@@ -17032,6 +17118,7 @@
       "composition": "studio",
       "theme": "photography",
       "art": "illustration",
+      "specialty": "استوديو تصوير",
       "scene_image": "/images/scenes3d/film_frames_3d.png",
       "source": "18-photo-video/01-photo-studio.html"
     },
@@ -17216,6 +17303,7 @@
       "composition": "editorial",
       "theme": "photography",
       "art": "photograph",
+      "specialty": "إنتاج فيديو",
       "scene_image": "/images/scenes3d/movie_camera_3d.png",
       "source": "18-photo-video/02-video-production.html"
     },
@@ -17408,6 +17496,7 @@
       "composition": "split",
       "theme": "photography",
       "art": "illustration",
+      "specialty": "تصوير جوي",
       "scene_image": "/images/scenes3d/satellite_antenna_3d.png",
       "source": "18-photo-video/03-aerial.html"
     },
@@ -17592,6 +17681,7 @@
       "composition": "immersive",
       "theme": "photography",
       "art": "photograph",
+      "specialty": "مصور أفراح",
       "scene_image": "/images/scenes3d/camera_with_flash_3d.png",
       "source": "18-photo-video/04-wedding-photographer.html"
     },
@@ -17803,6 +17893,7 @@
       "composition": "editorial",
       "theme": "perfumes",
       "art": "illustration",
+      "specialty": "دار عطور",
       "scene_image": "/images/scenes3d/rose_3d.png",
       "source": "19-perfumes/01-perfume-house.html"
     },
@@ -18014,6 +18105,7 @@
       "composition": "split",
       "theme": "perfumes",
       "art": "photograph",
+      "specialty": "بخور وعود",
       "scene_image": "/images/scenes3d/candle_3d.png",
       "source": "19-perfumes/02-incense.html"
     },
@@ -18198,6 +18290,7 @@
       "composition": "immersive",
       "theme": "perfumes",
       "art": "illustration",
+      "specialty": "صابون طبيعي",
       "scene_image": "/images/scenes3d/bubbles_3d.png",
       "source": "19-perfumes/03-natural-soap.html"
     },
@@ -18382,6 +18475,7 @@
       "composition": "split",
       "theme": "veterinary",
       "art": "illustration",
+      "specialty": "عيادة بيطرية",
       "scene_image": "/images/scenes3d/paw_prints_3d.png",
       "source": "20-pets/01-vet.html"
     },
@@ -18584,6 +18678,7 @@
       "composition": "immersive",
       "theme": "veterinary",
       "art": "photograph",
+      "specialty": "عيادة قطط",
       "scene_image": "/images/scenes3d/cat_face_3d.png",
       "source": "20-pets/02-cat-clinic.html"
     },
@@ -18777,6 +18872,7 @@
       "composition": "studio",
       "theme": "veterinary",
       "art": "illustration",
+      "specialty": "عيادة كلاب",
       "scene_image": "/images/scenes3d/bone_3d.png",
       "source": "20-pets/03-dog-clinic.html"
     },
@@ -18969,6 +19065,7 @@
       "composition": "editorial",
       "theme": "veterinary",
       "art": "photograph",
+      "specialty": "طيور زينة",
       "scene_image": "/images/scenes3d/parrot_3d.png",
       "source": "20-pets/04-birds.html"
     },
@@ -19153,6 +19250,7 @@
       "composition": "split",
       "theme": "veterinary",
       "art": "illustration",
+      "specialty": "متجر أكل حيوانات",
       "scene_image": "/images/scenes3d/canned_food_3d.png",
       "source": "20-pets/05-pet-food.html"
     },

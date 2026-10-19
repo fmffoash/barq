@@ -133,13 +133,16 @@ class TemplatePicker
             return null;
         }
 
-        // (2026-10-19، طلب فؤاد) الأولوية لقوالب 3D: لو الفئة فيها قالب 3D واحد على الأقل، الاختيار
-        // بيبقى منهم بس (والتخصص بيتحسب جوّاهم عادي). مفيش = كل القوالب زي الأول. القالب المتسمّي
-        // بالاسم في الشات مش بيعدّي من هنا، فبيتطبّق زي ما هو.
+        // (2026-10-19، طلب فؤاد) ترتيب الأولوية: موشن 3D الأول، بعده تصميمات الرسومات 3D، بعدهم العادي.
+        // أول درجة فيها قالب في الفئة هي اللي بيتختار منها (والتخصص بيتحسب جوّاها عادي). القالب
+        // المتسمّي بالاسم في الشات مش بيعدّي من هنا، فبيتطبّق زي ما هو.
         if (Template::prefers3d()) {
-            $threeD = $templates->filter(fn (Template $t) => Template::is3dLayout($t->layout));
-            if ($threeD->isNotEmpty()) {
-                $templates = $threeD->values();
+            foreach ([fn (Template $t) => $t->layout === 'motion', fn (Template $t) => Template::isDepthLayout($t->layout)] as $tier) {
+                $matching = $templates->filter($tier);
+                if ($matching->isNotEmpty()) {
+                    $templates = $matching->values();
+                    break;
+                }
             }
         }
 
@@ -160,7 +163,8 @@ class TemplatePicker
         $styles = $this->styleKeys($styleHint);
 
         // ندرة كل كلمة تخصص جوّه الفئة: كلمة في قالب واحد بس = وزن عالي.
-        $specialties = $templates->mapWithKeys(fn (Template $t) => [$t->id => $this->specialtyTokens($t->name)]);
+        // قوالب الموشن أساميها أسماء محلات («عيادة ابتسامة») — تخصصها الحقيقي في motion_profile.specialty.
+        $specialties = $templates->mapWithKeys(fn (Template $t) => [$t->id => $this->specialtyTokens(trim(($t->motion_profile['specialty'] ?? '').' '.explode('—', $t->name, 2)[0]))]);
         $df = [];
         foreach ($specialties as $tokens) {
             foreach (array_unique($tokens) as $token) {
@@ -200,7 +204,7 @@ class TemplatePicker
                 - ($avoidLayout !== null && $template->layout === $avoidLayout ? 1.0 : 0.0)
                 + ($this->jitter ? mt_rand(0, 300) / 1000 : 0.0);
 
-            $label = trim(explode('—', $template->name, 2)[0]);
+            $label = $template->motion_profile['specialty'] ?? trim(explode('—', $template->name, 2)[0]);
 
             return [
                 'template' => $template,
