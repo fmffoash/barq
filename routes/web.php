@@ -74,7 +74,12 @@ Route::middleware(['auth', 'session.valid'])->group(function () {
     // إعدادات الذكاء الاصطناعي (2026-10-10): الحالة، النموذج، حجم السياق، السرعة الحقيقية.
     // إدارة اليوزرات (2026-10-11) — الأدمن بس
     Route::middleware('admin')->group(function (): void {
-        Route::get('users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+        // إحصائيات القوالب + الحذف + أولوية 3D (2026-10-19) — مسار منفصل عن templates/{template}
+        Route::get('template-stats', [\App\Http\Controllers\TemplateStatsController::class, 'index'])->name('template-stats.index');
+        Route::put('template-stats/prefer-3d', [\App\Http\Controllers\TemplateStatsController::class, 'prefer3d'])->name('template-stats.prefer-3d');
+        Route::delete('template-stats/templates', [\App\Http\Controllers\TemplateStatsController::class, 'destroy'])->name('template-stats.destroy');
+
+        Route::get('users',[\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
         Route::post('users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
         Route::put('users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
         Route::put('users/{user}/password', [\App\Http\Controllers\UserController::class, 'password'])->name('users.password');

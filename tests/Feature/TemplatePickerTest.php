@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Models\Setting;
 use App\Models\Template;
 use App\Services\TemplatePicker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,6 +52,9 @@ class TemplatePickerTest extends TestCase
     public function test_second_wave_specialties_are_picked_from_the_real_library(): void
     {
         $this->artisan('barq:seed-template-library')->assertSuccessful();
+        // التست ده بيقيس مطابقة التخصص في المكتبة العادية — أولوية 3D (2026-10-19) متقفولة هنا،
+        // ومتجرّبة في TemplateStatsTest.
+        Setting::put(Template::PREFER_3D_SETTING, false);
 
         $cases = [
             ['عيادات وخدمات طبية', 'Dr. Samy · Orthopedic Surgeon', 'عيادة عظام'],

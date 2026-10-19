@@ -6,8 +6,6 @@ use App\Models\Project;
 use App\Models\Template;
 use App\Services\TemplatePreviewService;
 use Illuminate\Http\RedirectResponse;
-use App\Console\Commands\SeedTemplateLibrary;
-use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -149,17 +147,11 @@ class TemplateController extends Controller
 
     public function destroy(Template $template): RedirectResponse
     {
-        // مواقع قايمة بتعتمد عليه — الحذف هيكسرها، فالأرشيف بديله.
-        if ($template->projects()->exists()) {
+        // مواقع قايمة بتعتمد عليه — الحذف هيكسرها، فالأرشيف بديله. (قالب المكتبة بيتسجّل إنه
+        // اتمسح عشان تحديث المكتبة مايرجّعوش — Template::deletePermanently.)
+        if (! $template->deletePermanently()) {
             return back()->with('status', 'القالب ده عليه مشاريع، فمينفعش يتمسح — أرشفه بدل كده.');
         }
-
-        // قالب من المكتبة: يتسجّل إنه اتمسح عشان تحديث المكتبة مايرجّعوش.
-        if ($template->license_note === SeedTemplateLibrary::LICENSE_NOTE) {
-            Setting::put(SeedTemplateLibrary::DELETED_SETTING, array_values(array_unique([...SeedTemplateLibrary::deletedSlugs(), $template->slug])));
-        }
-
-        $template->delete();
 
         return redirect()
             ->route('templates.index')

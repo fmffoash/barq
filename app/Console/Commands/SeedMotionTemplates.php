@@ -18,7 +18,14 @@ class SeedMotionTemplates extends Command
         $created = 0;
         $refreshed = 0;
 
+        // قالب الأدمن مسحه (Template::deletePermanently) مايرجعش تاني.
+        $deleted = SeedTemplateLibrary::deletedSlugs();
+
         foreach ($definitions as $definition) {
+            if (in_array($definition['slug'], $deleted, true)) {
+                continue;
+            }
+
             $created += DB::transaction(function () use ($definition, &$refreshed): int {
                 $existing = Template::query()->where('slug', $definition['slug'])->first();
                 if ($existing) {

@@ -6,6 +6,7 @@ use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 // المشروع — طلب عميل واحد لموقع. بيختار قالب ونسخة، وبمجرد ما يتملى بالبيانات بيتولّد منه
@@ -34,6 +35,27 @@ class Project extends Model
             // بيانات المكان من كوبي جوجل مابس (PlaceParser) — تليفون/عنوان/مواعيد/تقييم...
             'place_json' => 'array',
         ];
+    }
+
+    // (2026-10-19) إحصائيات القوالب: كل اختيار أو تبديل قالب بيتسجّل هنا مرة واحدة، مهما كان مصدره.
+    protected static function booted(): void
+    {
+        static::created(function (Project $project): void {
+            if ($project->template_id) {
+                TemplateEvent::create(['project_id' => $project->id, 'to_template_id' => $project->template_id, 'user_id' => auth()->id() ?? $project->created_by]);
+            }
+        });
+
+        static::updated(function (Project $project): void {
+            if ($project->wasChanged('template_id')) {
+                TemplateEvent::create([
+                    'project_id' => $project->id,
+                    'from_template_id' => $project->getOriginal('template_id'),
+                    'to_template_id' => $project->template_id,
+                    'user_id' => auth()->id(),
+                ]);
+            }
+        });
     }
 
     public function template(): BelongsTo
@@ -69,7 +91,7 @@ class Project extends Model
         return $this->hasOne(GeneratedSite::class);
     }
 
-    public function aiChatMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function aiChatMessages(): HasMany
     {
         return $this->hasMany(AiChatMessage::class)->orderBy('created_at');
     }

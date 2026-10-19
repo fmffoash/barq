@@ -41,6 +41,13 @@
 
                     @if (auth()->user()->is_admin)
                     <a
+                        href="{{ route('template-stats.index') }}"
+                        class="text-sm font-medium {{ request()->routeIs('template-stats.*') ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400' }} transition"
+                    >
+                        📊 إحصائيات القوالب
+                    </a>
+
+                    <a
                         href="{{ route('users.index') }}"
                         class="text-sm font-medium {{ request()->routeIs('users.*') ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400' }} transition"
                     >

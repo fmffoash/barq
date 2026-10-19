@@ -133,6 +133,16 @@ class TemplatePicker
             return null;
         }
 
+        // (2026-10-19، طلب فؤاد) الأولوية لقوالب 3D: لو الفئة فيها قالب 3D واحد على الأقل، الاختيار
+        // بيبقى منهم بس (والتخصص بيتحسب جوّاهم عادي). مفيش = كل القوالب زي الأول. القالب المتسمّي
+        // بالاسم في الشات مش بيعدّي من هنا، فبيتطبّق زي ما هو.
+        if (Template::prefers3d()) {
+            $threeD = $templates->filter(fn (Template $t) => Template::is3dLayout($t->layout));
+            if ($threeD->isNotEmpty()) {
+                $templates = $threeD->values();
+            }
+        }
+
         $scored = $this->score($templates, $context, $styleHint, $avoidLayout);
         $best = $scored->sortByDesc('score')->first();
 

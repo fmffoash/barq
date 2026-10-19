@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Console\Commands\SeedTemplateLibrary;
 use App\Support\SceneLibrary;
 use Database\Factories\TemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -106,6 +107,35 @@ class Template extends Model
     public static function isDepthLayout(?string $layout): bool
     {
         return $layout !== null && SceneLibrary::exists($layout);
+    }
+
+    // (2026-10-19) قالب 3D = تصميمات الرسومات (الـ98) أو «موشن 3D» (الـ98). TemplatePicker بيدّيهم
+    // الأولوية لما الإعداد ده شغال (افتراضي شغال، بيتقفل من صفحة إحصائيات القوالب).
+    public const PREFER_3D_SETTING = 'prefer_3d_templates';
+
+    public static function is3dLayout(?string $layout): bool
+    {
+        return $layout === 'motion' || self::isDepthLayout($layout);
+    }
+
+    public static function prefers3d(): bool
+    {
+        return (bool) Setting::get(self::PREFER_3D_SETTING, true);
+    }
+
+    // حذف نهائي — مرفوض لو عليه مشاريع (هيكسر مواقعها). قالب مكتبة (عادي أو موشن) بيتسجّل إنه
+    // اتمسح عشان أوامر تحديث المكتبة مايرجّعوش تاني.
+    public function deletePermanently(): bool
+    {
+        if ($this->projects()->exists()) {
+            return false;
+        }
+
+        if ($this->license_note === SeedTemplateLibrary::LICENSE_NOTE || $this->layout === 'motion') {
+            Setting::put(SeedTemplateLibrary::DELETED_SETTING, array_values(array_unique([...SeedTemplateLibrary::deletedSlugs(), $this->slug])));
+        }
+
+        return (bool) $this->delete();
     }
 
     public static function layoutLabel(string $layout): string
