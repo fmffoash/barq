@@ -166,7 +166,9 @@ chown -R www-data:www-data storage bootstrap/cache
   - `barq:seed-motion-templates` بقى بيحدّث `motion_profile` بس للقوالب الموجودة (الخانات والألوان والمشاريع
     مابتتلمسش)، عشان أي تحسين شكل يوصل السيرفر.
   - القايمة فوق مابقتش بتنزل سطرين في الشاشات المتوسطة.
-  - 3 تستات جديدة في `MotionTemplatesTest`.
+  - **باج من شغل Codex اتصلح:** صور كروت الـ98 مكانتش بتظهر على السيرفر خالص — بصمة الصورة كانت بتحسب
+    `motion_profile` بترتيب مفاتيحه، وMySQL بيرتّبها (SQLite لأ). دلوقتي `sortedKeys` زي الألوان.
+  - 4 تستات جديدة في `MotionTemplatesTest` (الـ suite 297).
 - بلوك Laravel Boost اللي Codex حطّه آخر الملف ده اتشال من هنا (إنجليزي، 134 سطر، وبيقول PHP 8.4 والسيرفر 8.3)
   — موجود في `AGENTS.md` لـ Codex.
 

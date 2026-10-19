@@ -148,6 +148,20 @@ class MotionTemplatesTest extends TestCase
         $this->assertNotSame($fingerprint, $previews->fingerprint($template->fresh()));
     }
 
+    // MySQL بيعيد ترتيب مفاتيح عمود JSON — نفس الشكل لازم يطلع نفس البصمة وإلا صور الكروت بتختفي على السيرفر.
+    public function test_thumbnail_fingerprint_ignores_motion_profile_key_order(): void
+    {
+        $template = $this->seedMotion();
+        $previews = app(TemplatePreviewService::class);
+        $fingerprint = $previews->fingerprint($template);
+
+        $reordered = $template->motion_profile;
+        krsort($reordered);
+        $template->update(['motion_profile' => $reordered]);
+
+        $this->assertSame($fingerprint, $previews->fingerprint($template->fresh()));
+    }
+
     // (2026-10-19) كل قالب له مجسم عايم من نوع نشاطه (مش ✨ عامة)، مختلف عن صورة الهيرو، وموجود فعلاً.
     public function test_every_template_has_its_own_existing_floating_object_and_tailored_hero_copy(): void
     {

@@ -57,7 +57,8 @@ class TemplatePreviewService
         return sha1(json_encode([
             'kind' => $template->kind,
             'layout' => $template->layout,
-            ...($template->layout === 'motion' ? ['motion_profile' => $template->motion_profile] : []),
+            // sortedKeys (2026-10-19): من غيره صور كروت الموشن مكانتش بتظهر على السيرفر خالص (MySQL بيرتّب المفاتيح).
+            ...($template->layout === 'motion' ? ['motion_profile' => $this->sortedKeys($template->motion_profile)] : []),
             'name' => $template->name,
             'variant' => $variant ? [
                 'colors' => $this->sortedKeys($variant->colors_json),
