@@ -136,6 +136,7 @@ class TemplatePicker
         // (2026-10-19، طلب فؤاد) ترتيب الأولوية: موشن 3D الأول، بعده تصميمات الرسومات 3D، بعدهم العادي.
         // أول درجة فيها قالب في الفئة هي اللي بيتختار منها (والتخصص بيتحسب جوّاها عادي). القالب
         // المتسمّي بالاسم في الشات مش بيعدّي من هنا، فبيتطبّق زي ما هو.
+        $pool = $templates;
         if (Template::prefers3d()) {
             foreach ([fn (Template $t) => $t->layout === 'motion', fn (Template $t) => Template::isDepthLayout($t->layout)] as $tier) {
                 $matching = $templates->filter($tier);
@@ -146,7 +147,9 @@ class TemplatePicker
             }
         }
 
-        $scored = $this->score($templates, $context, $styleHint, $avoidLayout);
+        // ندرة الكلمة بتتحسب على الفئة كلها مش الدرجة بس — جوّه الموشن كل تخصص مرة واحدة، فـ«مطعم» كانت
+        // بتبان نادرة زي «بيتزا» و«مطعم بيتزا» بيروح للمطعم العام.
+        $scored = $this->score($templates, $context, $styleHint, $avoidLayout, $pool);
         $best = $scored->sortByDesc('score')->first();
 
         return ['template' => $best['template'], 'reason' => $best['reason']];
@@ -156,22 +159,24 @@ class TemplatePicker
      * @param  Collection<int, Template>  $templates
      * @return Collection<int, array{template: Template, score: float, reason: string|null}>
      */
-    public function score(Collection $templates, string $context, string $styleHint = '', ?string $avoidLayout = null): Collection
+    public function score(Collection $templates, string $context, string $styleHint = '', ?string $avoidLayout = null, ?Collection $pool = null): Collection
     {
         [$words, $joined] = CategoryGuesser::words($context);
         $words = $this->withSynonyms($words, $joined);
         $styles = $this->styleKeys($styleHint);
 
-        // ندرة كل كلمة تخصص جوّه الفئة: كلمة في قالب واحد بس = وزن عالي.
+        // ندرة كل كلمة تخصص جوّه الفئة ($pool = كل قوالب الفئة): كلمة في قالب واحد بس = وزن عالي.
         // قوالب الموشن أساميها أسماء محلات («عيادة ابتسامة») — تخصصها الحقيقي في motion_profile.specialty.
-        $specialties = $templates->mapWithKeys(fn (Template $t) => [$t->id => $this->specialtyTokens(trim(($t->motion_profile['specialty'] ?? '').' '.explode('—', $t->name, 2)[0]))]);
+        $tokensOf = fn (Template $t) => $this->specialtyTokens($t->motion_profile['specialty'] ?? $t->name);
+        $specialties = $templates->mapWithKeys(fn (Template $t) => [$t->id => $tokensOf($t)]);
+        $pool ??= $templates;
         $df = [];
-        foreach ($specialties as $tokens) {
-            foreach (array_unique($tokens) as $token) {
+        foreach ($pool as $t) {
+            foreach (array_unique($tokensOf($t)) as $token) {
                 $df[$token] = ($df[$token] ?? 0) + 1;
             }
         }
-        $n = max($templates->count(), 1);
+        $n = max($pool->count(), 1);
 
         [$recentTemplates, $recentLayouts] = $this->recentUse();
 
